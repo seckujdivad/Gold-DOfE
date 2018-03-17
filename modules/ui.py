@@ -5,6 +5,7 @@ import time
 class UI:
     def __init__(self):
         self.ready = {'tkthread': False}
+        
         threading.Thread(target = self.tkthread).start() #start tkinter window in separate thread
         clearpass = False
         while not clearpass:
@@ -18,6 +19,7 @@ class UI:
         
         class main: #store data to do with ui
             title = ''
+            geometry = None
             current = None
             page_frame = tk.Frame(self.root)
         
@@ -38,7 +40,6 @@ class UI:
             ismagicvariable = itemname.startswith('__') and itemname.endswith('__')
             isspecialcase = itemname in ['main']
             if not (ismagicvariable or isspecialcase):
-                print(itemname)
                 item = self.uiobjects.__getattribute__(self.uiobjects, itemname) #get class from name
                 if not 'config' in dir(item):
                     item.config = {'name': itemname}
@@ -54,8 +55,29 @@ class UI:
         self.uiobjects.main.current = page #set loading page as current page
         if 'on_load' in dir(page):
             page.on_load() #run the load function for the page
+        page.config['methods'].set_title(page.config["name"]) #set correct window title
+    
+    def set_title(self, title):
+        self.uiobjects.main.title = title
+        if self.uiobjects.main.current == None:
+            self.uiobjects.root.title(self.uiobjects.main.title)
+        elif self.uiobjects.main.current.config['methods'].current_title == None:
+            self.uiobjects.root.title(self.uiobjects.main.title)
+        else:
+            self.uiobjects.main.current.config['methods'].set_title(self.uiobjects.main.current.config['methods'].current_title)
+    
+    def set_geometry(self, geometry):
+        self.uiobjects.main.geometry = geometry
+        self.root.geometry(self.uiobjects.main.geometry)
 
 class PageMethods:
     def __init__(self, uiobject, page):
         self.uiobject = uiobject
         self.page = page
+        
+        self.current_title = None
+    
+    def set_title(self, title = None):
+        if not title == None:
+            self.current_title = title
+        self.uiobject.root.title(f'{self.uiobject.uiobjects.main.title} - {self.current_title}')
