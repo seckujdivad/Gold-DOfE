@@ -7,7 +7,7 @@ class App:
     def __init__(self):
         self.ui = modules.ui.UI()
         self.ui.load(self.ui.uiobjects.menu)
-        self.ui.set_title('Test')
+        self.ui.set_title('Working title')
         self.ui.set_geometry('800x600')
 
 if __name__ == '__main__':
