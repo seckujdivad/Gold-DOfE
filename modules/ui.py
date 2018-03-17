@@ -48,7 +48,7 @@ class UI:
             geometry = None
             current = None
             page_frame = tk.Frame(self.root)
-            page_frame.pack()
+            page_frame.pack(fill = tk.BOTH, expand = True)
         
         class uiobjects:
             class menu: #menu ui
@@ -56,12 +56,21 @@ class UI:
                 
                 @classmethod
                 def on_load(self):
-                    self.frame.pack()
+                    self.frame.pack(fill = tk.BOTH, expand = True)
                     
                 frame = tk.Frame(main.page_frame)
-                toplabel = tk.Label(frame, text = 'hello', **self.styling.get(font_size = 'large', object_type = tk.Label))
-                toplabel.grid(row = 0, column = 0)
-                self.styling.set_weight(frame, 1, 1)
+                label_title = tk.Label(frame, text = 'Working title', **self.styling.get(font_size = 'large', object_type = tk.Label))
+                button_play = tk.Button(frame, text = 'New game', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_load = tk.Button(frame, text = 'Load save', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_connect = tk.Button(frame, text = 'Connect to a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_host = tk.Button(frame, text = 'Host a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                
+                label_title.grid(row = 0, column = 0, sticky = 'NESW')
+                button_play.grid(row = 1, column = 0, sticky = 'NESW')
+                button_load.grid(row = 2, column = 0, sticky = 'NESW')
+                button_connect.grid(row = 3, column = 0, sticky = 'NESW')
+                button_host.grid(row = 4, column = 0, sticky = 'NESW')
+                self.styling.set_weight(frame, 1, 5)
         uiobjects.main = main
         self.uiobjects = uiobjects
         
