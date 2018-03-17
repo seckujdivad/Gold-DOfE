@@ -111,6 +111,9 @@ class UI:
                 def on_close(self):
                     self.frame.pack_forget()
                 
+                def choose_cancel(ui_object):
+                    ui_object.load(ui_object.uiobjects.menu)
+                
                 frame = tk.Frame(main.page_frame)
                 
                 '''username_label
@@ -118,9 +121,16 @@ class UI:
                 pilrender_label = tk.Label(frame, text = 'PIL rendering', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 pilrender_flipswitch = TkFlipSwitch(frame, options = [{'text': 'On', 'command': print},
                                                                       {'text': 'Off', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_cancel = tk.Button(frame, text = 'Cancel', command = functools.partial(choose_cancel, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                                                                      
                 pilrender_label.grid(row = 0, column = 0, sticky = 'NESW')
                 pilrender_flipswitch.grid(row = 0, column = 1, sticky = 'NESW')
-                self.styling.set_weight(frame, 2, 1, dorows = False)
+                
+                button_close.grid(row = 1, column = 0, sticky = 'NESW')
+                button_cancel.grid(row = 1, column = 1, sticky = 'NESW')
+                
+                self.styling.set_weight(frame, 2, 2, dorows = False)
         uiobjects.main = main
         self.uiobjects = uiobjects
         
