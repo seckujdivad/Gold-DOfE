@@ -20,12 +20,21 @@ class UI:
         class styling:
             @classmethod
             def get(self, font_size = 'medium', object_type = tk.Label, relief = 'default'):
+                'Get styling for a specific type of widget'
                 output = {}
                 if object_type == tk.Button:
                     output['overrelief'] = self.reliefs[relief]['overrelief']
                 output['relief'] = self.reliefs[relief]['relief']
                 output['font'] = self.fonts[font_size]
                 return output
+            
+            @classmethod
+            def set_weight(self, frame, width, height, weight_ = 1):
+                'Set uniform weighting across a frame'
+                for cheight in range(height):
+                    frame.rowconfigure(cheight, weight = weight_)
+                    for cwidth in range(width):
+                        frame.columnconfigure(cwidth, weight = weight_)
                 
             fonts = {'small': ('', 8),
                      'medium': ('', 15),
@@ -39,6 +48,7 @@ class UI:
             geometry = None
             current = None
             page_frame = tk.Frame(self.root)
+            page_frame.pack()
         
         class uiobjects:
             class menu: #menu ui
@@ -49,7 +59,9 @@ class UI:
                     self.frame.pack()
                     
                 frame = tk.Frame(main.page_frame)
-                toplabel = tk.Label(frame, **self.styling.get())
+                toplabel = tk.Label(frame, text = 'hello', **self.styling.get(font_size = 'large', object_type = tk.Label))
+                toplabel.grid(row = 0, column = 0)
+                self.styling.set_weight(frame, 1, 1)
         uiobjects.main = main
         self.uiobjects = uiobjects
         
