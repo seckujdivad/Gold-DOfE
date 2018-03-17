@@ -17,6 +17,23 @@ class UI:
     def tkthread(self):
         self.root = tk.Tk() #create tkinter window
         
+        class styling:
+            @classmethod
+            def get(self, font_size = 'medium', object_type = tk.Label, relief = 'default'):
+                output = {}
+                if object_type == tk.Button:
+                    output['overrelief'] = self.reliefs[relief]['overrelief']
+                output['relief'] = self.reliefs[relief]['relief']
+                output['font'] = self.fonts[font_size]
+                return output
+                
+            fonts = {'small': ('', 8),
+                     'medium': ('', 15),
+                     'large': ('', 25)}
+            reliefs = {'default': {'relief': tk.FLAT,
+                                   'overrelief': tk.GROOVE}}
+        self.styling = styling        
+        
         class main: #store data to do with ui
             title = ''
             geometry = None
@@ -32,6 +49,7 @@ class UI:
                     self.frame.pack()
                     
                 frame = tk.Frame(main.page_frame)
+                toplabel = tk.Label(frame, **self.styling.get())
         uiobjects.main = main
         self.uiobjects = uiobjects
         
