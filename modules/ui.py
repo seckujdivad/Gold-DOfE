@@ -6,6 +6,8 @@ import os
 import sys
 import functools
 
+import modules.engine
+
 class UI:
     def __init__(self):
         self.ready = {'tkthread': False}
@@ -29,7 +31,8 @@ class UI:
                 if object_type == tk.Button:
                     output['overrelief'] = self.reliefs[relief]['overrelief']
                 output['relief'] = self.reliefs[relief]['relief']
-                output['font'] = self.fonts[font_size]
+                if not object_type in [tk.Canvas]:
+                    output['font'] = self.fonts[font_size]
                 return output
             
             @classmethod
@@ -74,13 +77,16 @@ class UI:
                 
                 def load_settings(ui_object):
                     ui_object.load(ui_object.uiobjects.settings)
+                
+                def load_host_server(ui_object):
+                    ui_object.load(ui_object.uiobjects.game)
                     
                 frame = tk.Frame(main.page_frame)
-                label_title = tk.Label(frame, text = 'Working title', **self.styling.get(font_size = 'large', object_type = tk.Label))
+                label_title = tk.Label(frame, text = 'Hydrophobes', **self.styling.get(font_size = 'large', object_type = tk.Label))
                 button_play = tk.Button(frame, text = 'New game', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_load = tk.Button(frame, text = 'Load save', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_connect = tk.Button(frame, text = 'Connect to a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_host = tk.Button(frame, text = 'Host a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_host = tk.Button(frame, text = 'Host a server', command = functools.partial(load_host_server, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_settings = tk.Button(frame, text = 'Change settings', command = functools.partial(load_settings, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 label_userdata = tk.Label(frame, text = 'Loading...', **self.styling.get(font_size = 'small', object_type = tk.Label))
                 
@@ -99,7 +105,7 @@ class UI:
                 
                 @classmethod
                 def on_load(self):
-                    self.button_close.config(command = functools.partial(self.choose_accept))
+                    self.button_close.config(command = functools.partial(self.choose_accept)) #can't use functools with classmethods inside of classes that haven't been created yet
                     
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     
@@ -118,7 +124,7 @@ class UI:
                     ui_object.load(ui_object.uiobjects.menu)
                 
                 @classmethod
-                def choose_accept(self): #couldn't use classmethod with this for some reason, has to do with functools.partial thinking it can't be called (class not created?)
+                def choose_accept(self):
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
                         settingsdict = json.load(file)
                         
@@ -146,6 +152,31 @@ class UI:
                 button_cancel.grid(row = 1, column = 1, sticky = 'NESW')
                 
                 self.styling.set_weight(frame, 2, 2, dorows = False)
+                
+            class game:
+                config = {'name': 'Game'}
+                
+                @classmethod
+                def on_load(self):
+                    self.frame.pack(fill = tk.BOTH, expand = True)
+                    
+                    self.game = modules.engine.Game(self.canvas)
+                    self.game.connect_to_server()
+                
+                @classmethod
+                def on_close(self):
+                    self.game.close()
+                    
+                    self.frame.pack_forget()
+                
+                frame = tk.Frame(main.page_frame)
+                
+                canvas = tk.Canvas(frame, **self.styling.get(font_size = 'medium', object_type = tk.Canvas))
+                
+                canvas.grid(row = 0, column = 0, sticky = 'NESW')
+                
+                self.styling.set_weight(frame, 1, 1, dorows = True)
+                
         uiobjects.main = main
         self.uiobjects = uiobjects
         
