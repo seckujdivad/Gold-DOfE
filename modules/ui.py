@@ -95,9 +95,12 @@ class UI:
                 
             class settings:
                 config = {'name': 'Settings'}
+                ui_object = self
                 
                 @classmethod
                 def on_load(self):
+                    self.button_close.config(command = functools.partial(self.choose_accept))
+                    
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
@@ -113,6 +116,18 @@ class UI:
                 
                 def choose_cancel(ui_object):
                     ui_object.load(ui_object.uiobjects.menu)
+                
+                @classmethod
+                def choose_accept(self): #couldn't use classmethod with this for some reason, has to do with functools.partial thinking it can't be called (class not created?)
+                    with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+                        settingsdict = json.load(file)
+                        
+                    settingsdict['graphics']['PILrender'] = [True, False][self.pilrender_flipswitch.state]
+                    
+                    with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
+                       json.dump(settingsdict, file, sort_keys=True, indent=4)
+                       
+                    self.ui_object.load(self.ui_object.uiobjects.menu)
                 
                 frame = tk.Frame(main.page_frame)
                 

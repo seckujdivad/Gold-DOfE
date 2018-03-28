@@ -1,8 +1,8 @@
 {
-	"user": {
-		"name": "unknown"
-	},
-	"graphics": {
-		"PILrender": false
-	}
+    "graphics": {
+        "PILrender": false
+    },
+    "user": {
+        "name": "unknown"
+    }
 }
