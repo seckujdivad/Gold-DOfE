@@ -1,4 +1,5 @@
 import tkinter as tk
+import sqlite3 as sql
 import socket
 import threading
 import time
@@ -83,3 +84,16 @@ class Client:
     
     def send_raw(self, text):
         self.connection.send(text.encode())
+
+class DBAccess:
+    def __init__(self, address):
+        self.address = address
+        
+        self.connection = sql.connect(self.address)
+    
+    def load_map(self, name):
+        pass
+    
+    def close(self):
+        self.connection.commit()
+        self.connection.close()

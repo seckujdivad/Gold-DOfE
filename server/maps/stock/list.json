@@ -1,0 +1,7 @@
+{
+	"background": {
+		"base": "textures/background/base.png",
+		"overlay": "textures/background/overlay.png",
+		"scatters": ["textures/background/scatter0.png"]
+	}
+}
