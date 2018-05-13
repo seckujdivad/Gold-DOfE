@@ -80,12 +80,15 @@ class UI:
                 
                 def load_host_server(ui_object):
                     ui_object.load(ui_object.uiobjects.game)
+                
+                def load_connect_server(ui_object):
+                    ui_object.load(ui_object.uiobjects.connect_server)
                     
                 frame = tk.Frame(main.page_frame)
                 label_title = tk.Label(frame, text = 'Hydrophobes', **self.styling.get(font_size = 'large', object_type = tk.Label))
                 button_play = tk.Button(frame, text = 'New game', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_load = tk.Button(frame, text = 'Load save', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_connect = tk.Button(frame, text = 'Connect to a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_connect = tk.Button(frame, text = 'Connect to a server', command = functools.partial(load_connect_server, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_host = tk.Button(frame, text = 'Host a server', command = functools.partial(load_host_server, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_settings = tk.Button(frame, text = 'Change settings', command = functools.partial(load_settings, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 label_userdata = tk.Label(frame, text = 'Loading...', **self.styling.get(font_size = 'small', object_type = tk.Label))
@@ -144,7 +147,7 @@ class UI:
                                                                       {'text': 'Off', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_cancel = tk.Button(frame, text = 'Cancel', command = functools.partial(choose_cancel, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                                                                      
+                
                 pilrender_label.grid(row = 0, column = 0, sticky = 'NESW')
                 pilrender_flipswitch.grid(row = 0, column = 1, sticky = 'NESW')
                 
@@ -152,6 +155,37 @@ class UI:
                 button_cancel.grid(row = 1, column = 1, sticky = 'NESW')
                 
                 self.styling.set_weight(frame, 2, 2, dorows = False)
+            
+            class connect_server:
+                config = {'name': 'Connect'}
+                
+                @classmethod
+                def on_load(self):
+                    self.frame.pack(fill = tk.BOTH, expand = True)
+                
+                @classmethod
+                def on_close(self):
+                    self.frame.pack_forget()
+                
+                frame = tk.Frame(main.page_frame)
+                
+                serverlist_frame = tk.Frame(frame)
+                serverlist_list = tk.Listbox(serverlist_frame)
+                serverlist_bar = tk.Scrollbar(serverlist_frame, command = serverlist_list.yview)
+                serverlist_list.config(yscrollcommand = serverlist_bar.set)
+                
+                button_connect = tk.Button(frame, text = 'Connect', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_rescan = tk.Button(frame, text = 'Connect', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                
+                serverlist_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                serverlist_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                
+                serverlist_frame.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
+                button_connect.grid(row = 1, column = 0, sticky = 'NESW')
+                button_rescan.grid(row = 1, column = 1, sticky = 'NESW')
+                
+                self.styling.set_weight(frame, 2, 2)
+                frame.rowconfigure(1, weight = 0)
                 
             class game:
                 config = {'name': 'Game'}

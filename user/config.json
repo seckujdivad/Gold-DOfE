@@ -4,5 +4,14 @@
     },
     "user": {
         "name": "unknown"
-    }
+    },
+	"servers": [{
+		"name": "Laptop",
+		"address": "david-juckes",
+		"port": "normal"
+	}, {
+		"name": "Local PC",
+		"address": "localhost",
+		"port": "normal"
+	}]
 }
