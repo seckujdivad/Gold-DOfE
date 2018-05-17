@@ -6,11 +6,10 @@ import os
 import sys
 import functools
 
-import modules.engine
-
 class UI:
     def __init__(self):
         self.ready = {'tkthread': False}
+        self.triggers = {}
         
         threading.Thread(target = self.tkthread).start() #start tkinter window in separate thread
         clearpass = False
@@ -68,7 +67,7 @@ class UI:
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
                         settingsdict = json.load(file)
-                    text_ = f"Name: {settingsdict['user']['name']}, PIL rendering: {settingsdict['graphics']['PILrender']}"
+                    text_ = 'Name: {}, PIL rendering: {}'.format(settingsdict['user']['name'], settingsdict['graphics']['PILrender'])
                     self.label_userdata.config(text = text_)
                 
                 @classmethod
@@ -104,11 +103,11 @@ class UI:
                 
             class settings:
                 config = {'name': 'Settings'}
-                ui_object = self
                 
                 @classmethod
                 def on_load(self):
-                    self.button_close.config(command = functools.partial(self.choose_accept)) #can't use functools with classmethods inside of classes that haven't been created yet
+                    self.button_close.config(command = self.choose_accept) #can't use functools with classmethods inside of classes that haven't been created yet
+                    self.button_cancel.config(command = self.choose_cancel)
                     
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     
@@ -123,8 +122,9 @@ class UI:
                 def on_close(self):
                     self.frame.pack_forget()
                 
-                def choose_cancel(ui_object):
-                    ui_object.load(ui_object.uiobjects.menu)
+                @classmethod
+                def choose_cancel(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
                 
                 @classmethod
                 def choose_accept(self):
@@ -136,7 +136,7 @@ class UI:
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
                        json.dump(settingsdict, file, sort_keys=True, indent=4)
                        
-                    self.ui_object.load(self.ui_object.uiobjects.menu)
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
                 
                 frame = tk.Frame(main.page_frame)
                 
@@ -146,7 +146,7 @@ class UI:
                 pilrender_flipswitch = TkFlipSwitch(frame, options = [{'text': 'On', 'command': print},
                                                                       {'text': 'Off', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_cancel = tk.Button(frame, text = 'Cancel', command = functools.partial(choose_cancel, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 pilrender_label.grid(row = 0, column = 0, sticky = 'NESW')
                 pilrender_flipswitch.grid(row = 0, column = 1, sticky = 'NESW')
@@ -162,27 +162,60 @@ class UI:
                 @classmethod
                 def on_load(self):
                     self.frame.pack(fill = tk.BOTH, expand = True)
+                    self.populate_server_list()
+                    
+                    self.button_back.config(command = self.return_to_menu)
+                    self.button_connect.config(command = self.choose_server)
                 
                 @classmethod
                 def on_close(self):
                     self.frame.pack_forget()
                 
+                @classmethod
+                def populate_server_list(self):
+                    with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+                        settingsdata = json.load(file)
+                    self.serverlist_list.delete(0, tk.END)
+                    formatter = '{} ({}:{}){}'
+                    for server in settingsdata['network']['servers']:
+                        port = server['port']
+                        if port == 'normal':
+                            port = settingsdata['network']['default port']
+                        if server['internal']:
+                            additional_text = ' - limited to local network'
+                        else:
+                            additional_text = ''
+                        self.serverlist_list.insert(tk.END, formatter.format(server['name'], server['address'], server['port'], additional_text))
+                
+                @classmethod
+                def return_to_menu(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
+                
+                @classmethod
+                def choose_server(self):
+                    curselection = self.serverlist_list.curselection()
+                    if not curselection == ():
+                        with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+                            settingsdata = json.load(file)
+                        server_target = settingsdata['network']['servers'][curselection[0]]
+                        self.config['methods'].uiobject.call_trigger('connect to server', [server_target])
+                
                 frame = tk.Frame(main.page_frame)
                 
                 serverlist_frame = tk.Frame(frame)
-                serverlist_list = tk.Listbox(serverlist_frame)
+                serverlist_list = tk.Listbox(serverlist_frame, **self.styling.get(font_size = 'small', object_type = tk.Listbox))
                 serverlist_bar = tk.Scrollbar(serverlist_frame, command = serverlist_list.yview)
                 serverlist_list.config(yscrollcommand = serverlist_bar.set)
                 
                 button_connect = tk.Button(frame, text = 'Connect', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_rescan = tk.Button(frame, text = 'Connect', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_back = tk.Button(frame, text = 'Return to menu', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 serverlist_bar.pack(side = tk.RIGHT, fill = tk.Y)
                 serverlist_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                 
                 serverlist_frame.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
-                button_connect.grid(row = 1, column = 0, sticky = 'NESW')
-                button_rescan.grid(row = 1, column = 1, sticky = 'NESW')
+                button_back.grid(row = 1, column = 0, sticky = 'NESW')
+                button_connect.grid(row = 1, column = 1, sticky = 'NESW')
                 
                 self.styling.set_weight(frame, 2, 2)
                 frame.rowconfigure(1, weight = 0)
@@ -193,9 +226,7 @@ class UI:
                 @classmethod
                 def on_load(self):
                     self.frame.pack(fill = tk.BOTH, expand = True)
-                    
-                    self.game = modules.engine.Game(self.canvas)
-                    self.game.connect_to_server()
+                    self.config['methods'].uiobject.call_trigger('create game object', [self.canvas])
                 
                 @classmethod
                 def on_close(self):
@@ -248,6 +279,23 @@ class UI:
     def set_geometry(self, geometry):
         self.uiobjects.main.geometry = geometry
         self.root.geometry(self.uiobjects.main.geometry)
+    
+    def set_trigger(self, string, function):
+        if string in self.triggers:
+            self.triggers[string].append(function)
+        else:
+            self.triggers[string] = [function]
+    
+    def clear_triggers(self, string):
+        if string in self.triggers:
+            self.triggers.pop(string)
+    
+    def call_trigger(self, string, args):
+        if string in self.triggers:
+            for function in self.triggers[string]:
+                function(*args)
+        else:
+            raise ValueError('Trigger "{}" hasn\'t been registered'.format(string))
 
 class PageMethods:
     def __init__(self, uiobject, page):
@@ -259,7 +307,7 @@ class PageMethods:
     def set_title(self, title = None):
         if not title == None:
             self.current_title = title
-        self.uiobject.root.title(f'{self.uiobject.uiobjects.main.title} - {self.current_title}')
+        self.uiobject.root.title('{} - {}'.format(self.uiobject.uiobjects.main.title, self.current_title))
 
 class TkFlipSwitch:
     def __init__(self, container, **kwargs):
@@ -303,6 +351,6 @@ class TkFlipSwitch:
                 button.config(state = tk.NORMAL, **self.filtered_args)
             self.buttons[index].config(relief = tk.FLAT, state = tk.DISABLED)
             self.state = index
-
+            
             if run_binds:
                 self.internal_args['options'][index]['command']()

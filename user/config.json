@@ -2,16 +2,24 @@
     "graphics": {
         "PILrender": false
     },
+    "network": {
+        "default port": 4321,
+        "servers": [
+            {
+                "address": "david-juckes",
+                "internal": false,
+                "name": "Laptop",
+                "port": "normal"
+            },
+            {
+                "address": "localhost",
+                "internal": true,
+                "name": "Local PC",
+                "port": "normal"
+            }
+        ]
+    },
     "user": {
         "name": "unknown"
-    },
-	"servers": [{
-		"name": "Laptop",
-		"address": "david-juckes",
-		"port": "normal"
-	}, {
-		"name": "Local PC",
-		"address": "localhost",
-		"port": "normal"
-	}]
+    }
 }
