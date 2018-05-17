@@ -2,6 +2,7 @@ import tkinter as tk
 import sqlite3 as sql
 import time
 import threading
+import os
 
 import modules.networking
 
@@ -20,6 +21,8 @@ class Game:
         
         self.running = True        
         threading.Thread(target = self.main, daemon = True).start()
+        
+        self.engine = Engine(self)
     
     def main(self):
         while self.running:
@@ -37,7 +40,21 @@ class Game:
             print('map:', request.arguments['map name'])
 
 class Engine:
-    pass
+    def __init__(self, game):
+        self.game = game
+        
+        class map:
+            class textures:
+                pass
+            name = None
+            cfg = None
+        self.map = map
+    
+    def load_map(self, name):
+        if os.path.isdir(os.path.join(sys.path[0], 'server', 'maps', name)):
+            self.map.name = name
+            with open(os.path.join(sys.path[0], 'server', 'maps', name, 'list.json'), 'r') as file:
+                self.map.cfg = json.load(file)
 
 class Water:
     pass
