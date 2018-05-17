@@ -16,6 +16,8 @@ class Game:
             name = 'localhost'
         self.server = server
         
+        self.client.recv_binds.append(self.recv_handler)
+        
         self.running = True        
         threading.Thread(target = self.main, daemon = True).start()
     
@@ -23,20 +25,16 @@ class Game:
         while self.running:
             time.sleep(1)
     
-    def connect_to_server(self, serverdata = None):
-        'Connect to a server. If the hostname is None, a server will be created'
-        if serverdata == None:
-            self.server.mode = 'internal'
-            self.server.name = 'localhost'
-            self.server.object = mocules.networking.Server(4321)
-        else:
-            self.server.mode = 'external'
-            self.server.name = serverdata['address']
-        self.client = modules.networking.Client(self.server.name, 4321)
-        self.client.send_raw('hello world!')
-    
     def close(self):
         self.running = False
+    
+    def recv_handler(self, request):
+        data = request.as_dict()
+        
+        if request.command == 'say':
+            print(request.arguments['text'])
+        elif request.command == 'load map':
+            print('map:', request.arguments['map name'])
 
 class Engine:
     pass

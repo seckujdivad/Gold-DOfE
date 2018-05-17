@@ -4,12 +4,13 @@ import threading
 import modules.ui
 
 class ServerCommandLineUI:
-    def __init__(self, command_handler, default_title = 'Server Command Line'):
+    def __init__(self, command_handler, pipe, default_title = 'Server Command Line'):
         self.default_title = default_title
         self.command_handler = command_handler
+        self.pipe = pipe
     
         threading.Thread(target = self.main_thread, name = 'Server command line UI').start()
-    
+        
     def main_thread(self):
         self.root = tk.Tk()
         
@@ -35,6 +36,8 @@ class ServerCommandLineUI:
         self.set_title_status()
         self.root.bind('<Return>', self.process_command)
         
+        threading.Thread(target = self.listen_to_pipe, name = 'Server command line pipe listen').start()
+        
         self.root.mainloop()
     
     def process_command(self, event = None):
@@ -53,6 +56,13 @@ class ServerCommandLineUI:
             self.root.title(self.default_title)
         else:
             self.root.title('{} - {}'.format(self.default_title, status))
+    
+    def listen_to_pipe(self):
+        while True:
+            data = self.pipe.recv()
+            for line in data.split('\n'):
+                self.listbox_box.insert(tk.END, line)
+            self.listbox_box.see(tk.END)
     
     class styling:
         class fonts:
