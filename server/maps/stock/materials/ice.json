@@ -1,0 +1,12 @@
+{
+	"texture": {
+		"animated": false,
+		"address": "textures/ice.png"
+	},
+	"movement": {
+		"accelerate": 0.2,
+		"deccelerate": 0.1,
+		"cap": 10,
+		"damage": 0
+	}
+}
