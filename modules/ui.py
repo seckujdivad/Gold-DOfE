@@ -44,7 +44,7 @@ class UI:
                         if docolumns:
                             frame.columnconfigure(cwidth, weight = weight_)
                 
-            fonts = {'small': ('', 8),
+            fonts = {'small': ('', 10),
                      'medium': ('', 15),
                      'large': ('', 25)} #default fonts
             reliefs = {'default': {'relief': tk.FLAT,

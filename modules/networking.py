@@ -54,7 +54,12 @@ sv_conns: list of connections to the server'''
                     output = 'Map \'{}\' not found'.format(argstring)
             else:
                 output = 'No permissions'
+        else:
+            output = 'Command not found, try \'help\''
         return output
+    
+    def load_map(self, mapname):
+        pass
 
 class Client:
     def __init__(self, host_, port_):
