@@ -257,6 +257,7 @@ class UI:
         
         self.ready['tkthread'] = True
         self.root.mainloop()
+        self.call_trigger('window closed')
     
     def load(self, page, *pageargs, **pagekwargs):
         'Load a page'
@@ -290,10 +291,13 @@ class UI:
         if string in self.triggers:
             self.triggers.pop(string)
     
-    def call_trigger(self, string, args):
+    def call_trigger(self, string, args = None):
         if string in self.triggers:
             for function in self.triggers[string]:
-                function(*args)
+                if args == None:
+                    function()
+                else:
+                    function(*args)
         else:
             raise ValueError('Trigger "{}" hasn\'t been registered'.format(string))
 

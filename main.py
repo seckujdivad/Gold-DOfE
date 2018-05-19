@@ -16,6 +16,7 @@ class App:
         
         self.ui.set_trigger('connect to server', self.connect_to_server)
         self.ui.set_trigger('create game object', self.create_game_object)
+        self.ui.set_trigger('window closed', self.close)
     
     def connect_to_server(self, server_data):
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
@@ -39,6 +40,10 @@ class App:
     
     def create_game_object(self, canvas):
         self.game = modules.engine.Game(canvas, self.client)
+    
+    def close(self):
+        print('closing')
+        sys.exit()
 
 if __name__ == '__main__':
     App()

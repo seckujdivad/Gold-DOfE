@@ -2,6 +2,8 @@ import multiprocessing as mp
 import socket
 import threading
 import json
+import os
+import sys
 
 import modules.servercmds
 
@@ -11,6 +13,7 @@ class Server:
             host = ''
             port = port_
             connections = []
+            map = None
         self.serverdata = serverdata
         
         self.output_pipe, pipe = mp.Pipe()
@@ -22,6 +25,13 @@ class Server:
         
         self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe)
         
+        with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
+            settingsdata = json.load(file)
+        for script in settingsdata['scripts']['autoexec']:
+            with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
+                text = file.read()
+            self.output_pipe.send(self.run_script(text))
+        
     def acceptance_thread(self):
         while True:
             self.output_pipe.send('Ready for incoming connections')
@@ -31,6 +41,9 @@ class Server:
     
     def connection_handler(self, address, connection):
         self.output_pipe.send('New connection from {}'.format(address[0]))
+        
+        self.send(connection, Request(command = 'load map', arguments = {'map name': self.serverdata.map}))
+        
         while True:
             data = connection.recv(2048)
             print(data.decode('UTF-8'))
@@ -76,13 +89,30 @@ say: send a message to all players'''
                     output = 'No permissions'
             else:
                 output = 'Command not found, try \'help\''
+        elif name == 'exec':
+            with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(argstring)), 'r') as file:
+                text = file.read()
+            output = self.run_script(text)
+        elif name == 'echo':
+            output = argstring
         else:
             output = 'Command not found, try \'help\''
         return output
     
+    def run_script(self, text):
+        output = ''
+        for line in text.split('\n'):
+            if not line == '':
+                cmdout = self.handle_command(line)
+                if not cmdout == '':
+                    output += '{}\n'.format(cmdout)
+        return output
+    
     def load_map(self, mapname):
-        req = Request(command = 'load map', arguments = {'map name': mapname})
+        self.serverdata.map = mapname
+        req = Request(command = 'load map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
+        
     
     def kick_address(self, target_address):
         i = 0

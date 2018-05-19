@@ -1,5 +1,8 @@
 {
 	"network": {
 		"port": 4321
+	},
+	"scripts": {
+		"autoexec": ["autoexec"]
 	}
 }

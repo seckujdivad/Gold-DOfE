@@ -1,0 +1,5 @@
+echo Loading autoexec...
+
+map stock
+
+echo Autoexec done!
