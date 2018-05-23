@@ -1,6 +1,6 @@
 {
     "graphics": {
-        "PILrender": false
+        "PILrender": true
     },
     "network": {
         "default port": 4321,
