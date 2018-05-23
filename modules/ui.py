@@ -164,6 +164,8 @@ class UI:
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     self.populate_server_list()
                     
+                    self.serverlist_list.bind('<Return>', self.choose_server)
+                    
                     self.button_back.config(command = self.return_to_menu)
                     self.button_connect.config(command = self.choose_server)
                 
@@ -192,7 +194,7 @@ class UI:
                     self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
                 
                 @classmethod
-                def choose_server(self):
+                def choose_server(self, event = None):
                     curselection = self.serverlist_list.curselection()
                     if not curselection == ():
                         with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:

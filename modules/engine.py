@@ -49,7 +49,6 @@ class Engine:
         
         class map:
             class textures:
-                scatters = []
                 base = None
                 overlay = None
                 
