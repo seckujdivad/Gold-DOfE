@@ -1,0 +1,6 @@
+How to use the model loader:
+Press Shift+F1 and navigate to models then the desired model
+Set the coordinates to 0,0,0
+Add a dynamic paint brush to the model using the object material in the physics tab
+Go to the scanner object and select "Bake Image Sequence"
+Copy the images out of the voxelscan_output folder

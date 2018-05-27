@@ -1,4 +1,4 @@
 {
 	"type": "stack",
-	"textures": ["stack/layer0.png", "stack/layer1.png"]
+	"textures": "stack"
 }
