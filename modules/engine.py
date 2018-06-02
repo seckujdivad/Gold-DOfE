@@ -170,6 +170,8 @@ class Model:
             else:
                 for img in os.listdir(os.path.join(self.path, 'stack')):
                     self.graphics.stack.textures.append(self.imageloader(file = os.path.join(self.path, 'stack', img)))
+            self.graphics.stack.offsets.x = self.config['offsets'][0]
+            self.graphics.stack.offsets.y = self.config['offsets'][1]
         else:
             raise ValueError('Display type \'{}\' doesn\'t exist'.format(self.config['type']))
         self._render()
