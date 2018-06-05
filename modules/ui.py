@@ -119,9 +119,9 @@ class UI:
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
                         settingsdict = json.load(file)
                     if settingsdict['graphics']['PILrender']:
-                        self.pilrender_flipswitch.on_option_press(0)
+                        self.pilrender_flipswitch.on_option_press(0, run_binds = False)
                     else:
-                        self.pilrender_flipswitch.on_option_press(1)
+                        self.pilrender_flipswitch.on_option_press(1, run_binds = False)
                 
                 @classmethod
                 def on_close(self):
@@ -357,11 +357,10 @@ class TkFlipSwitch:
         self.pack_forget = self.frame.pack_forget
 
     def on_option_press(self, index, run_binds = True):
-        if not self.state == index:
-            for button in self.buttons:
-                button.config(state = tk.NORMAL, **self.filtered_args)
-            self.buttons[index].config(relief = tk.FLAT, state = tk.DISABLED)
-            self.state = index
-            
-            if run_binds:
-                self.internal_args['options'][index]['command']()
+        for button in self.buttons:
+            button.config(state = tk.NORMAL, **self.filtered_args)
+        self.buttons[index].config(relief = tk.FLAT, state = tk.DISABLED)
+        self.state = index
+        
+        if run_binds:
+            self.internal_args['options'][index]['command']()
