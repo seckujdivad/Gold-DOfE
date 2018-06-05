@@ -26,8 +26,8 @@ class Server:
         self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe)
         
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
-            settingsdata = json.load(file)
-        for script in settingsdata['scripts']['autoexec']:
+            self.settingsdata = json.load(file)
+        for script in self.settingsdata['scripts']['autoexec']:
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
                 text = file.read()
             self.output_pipe.send(self.run_script(text))
@@ -35,9 +35,15 @@ class Server:
     def acceptance_thread(self):
         while True:
             self.output_pipe.send('Ready for incoming connections')
+            
             conn, addr = self.connection.accept()
             threading.Thread(target = self.connection_handler, args = [addr, conn], daemon = True).start()
             self.serverdata.connections.append([addr, conn])
+            
+            for script in self.settingsdata['scripts']['userconnect']:
+                with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
+                    text = file.read()
+                self.output_pipe.send(self.run_script(text))
     
     def connection_handler(self, address, connection):
         self.output_pipe.send('New connection from {}'.format(address[0]))

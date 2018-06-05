@@ -3,6 +3,7 @@
 		"port": 4321
 	},
 	"scripts": {
-		"autoexec": ["autoexec"]
+		"autoexec": ["autoexec"],
+		"userconnect": ["connection"]
 	}
 }

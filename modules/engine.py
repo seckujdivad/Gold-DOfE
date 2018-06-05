@@ -104,7 +104,7 @@ class Engine:
             
             #load player
             self.map.player = Player(os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['player']), self)
-            self.map.player.setpos(400, 300)
+            self.map.player.setpos(400, 300, 45)
             
             #add overlay
             self.map.textures.obj_overlay = self.game.canvas.create_image(400, 300, image = self.map.textures.overlay)
@@ -120,17 +120,20 @@ class Player:
         class pos:
             x = 0
             y = 0
+            rotation = 0
         self.pos = pos
         
         self.model = Model(path, self.engine.map.rendermethod, self.engine.game.canvas)
-        self.setpos()
+        self.setpos(100, 100)
     
-    def setpos(self, x = None, y = None):
+    def setpos(self, x = None, y = None, rotation = None):
         if not x == None:
             self.pos.x = x
         if not y == None:
             self.pos.y = y
-        self.model.setpos(self.pos.x, self.pos.y)
+        if not rotation == None:
+            self.pos.rotation = rotation
+        self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
 
 class Model:
     def __init__(self, path, imageloader, canvas):
@@ -141,8 +144,10 @@ class Model:
         class graphics:
             x = 0
             y = 0
-            rotation = 0
+            rotation = None
+            prev_rotation = None
             displaytype = None
+            preimgloader = None
             class flat:
                 texture = None
                 imgobj = None
@@ -150,11 +155,14 @@ class Model:
             class stack:
                 class offsets:
                     x = 0
-                    y = -0.8
+                    y = 0
                 textures = []
                 imgobjs = []
                 canvobjs = []
         self.graphics = graphics
+        
+        if not self.imageloader == tk.PhotoImage:
+            self.preimgloader = __import__('PIL.Image').Image.open
         
         with open(os.path.join(self.path, 'list.json'), 'r') as file:
             self.config = json.load(file)
@@ -169,7 +177,7 @@ class Model:
                     self.graphics.stack.textures.append(self.imageloader(file = os.path.join(self.path, img)))
             else:
                 for img in os.listdir(os.path.join(self.path, 'stack')):
-                    self.graphics.stack.textures.append(self.imageloader(file = os.path.join(self.path, 'stack', img)))
+                    self.graphics.stack.textures.append(self.preimgloader(os.path.join(self.path, 'stack', img)))
             self.graphics.stack.offsets.x = self.config['offsets'][0]
             self.graphics.stack.offsets.y = self.config['offsets'][1]
         else:
@@ -185,22 +193,50 @@ class Model:
         if self.graphics.displaytype == 'flat':
             self.graphics.flat.canvobj = self.canvas.create_image(self.graphics.x, self.graphics.y, image = self.graphics.flat.texture)
         elif self.graphics.displaytype == 'stack':
-            for tex in self.graphics.stack.textures:
-                self.graphics.stack.canvobjs.append(self.canvas.create_image(self.graphics.x, self.graphics.y, image = tex))
+            self.create_rotations(self.config['rotations'])
     
     def setpos(self, x = None, y = None, rotation = None):
         if not x == None:
             self.graphics.x = x
         if not y == None:
             self.graphics.y = y
+        if rotation == None and self.graphics.rotation == None:
+            rotation = 0
+        if not rotation == None:
+            self.graphics.prev_rotation = self.graphics.rotation
+            self.graphics.rotation = rotation
             
         if self.graphics.displaytype == 'flat':
             self.canvas.coords(self.graphics.flat.canvobj, self.graphics.x, self.graphics.y)
         elif self.graphics.displaytype == 'stack':
             i = 0
-            for canvobj in self.graphics.stack.canvobjs:
+            if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
+                for canvobj in self.objset_from_angle(self.graphics.prev_rotation):
+                    self.canvas.coords(canvobj, self.config['offscreen'][0], self.config['offscreen'][1])
+            for canvobj in self.objset_from_angle(self.graphics.rotation):
                 self.canvas.coords(canvobj, self.graphics.x + (i * self.graphics.stack.offsets.x), self.graphics.y + (i * self.graphics.stack.offsets.y))
                 i += 1
+    
+    def create_rotations(self, num_rotations):
+        'Premake all canvas objects for different rotations to speed up rendering'
+        angle_increment = 360 / num_rotations
+        i = 0
+        l = []
+        for rot in range(num_rotations):
+            self.graphics.stack.canvobjs.append([])
+            self.graphics.stack.imgobjs.append([])
+            angle = angle_increment * rot
+            for tex in self.graphics.stack.textures:
+                rotated_image = tex.rotate(angle)
+                loaded_image = self.imageloader(image = rotated_image)
+                new_canv_obj = self.canvas.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image)
+                self.graphics.stack.canvobjs[i].append(new_canv_obj)
+                self.canvas.coords(new_canv_obj, self.config['offscreen'][0], self.config['offscreen'][1])
+                self.graphics.stack.imgobjs[i].append(loaded_image)
+            i += 1
+    
+    def objset_from_angle(self, angle):
+        return self.graphics.stack.canvobjs[int((angle / 360) * len(self.graphics.stack.canvobjs))]
 
 class DBAccess:
     def __init__(self, address):

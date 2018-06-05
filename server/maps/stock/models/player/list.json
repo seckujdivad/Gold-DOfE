@@ -1,5 +1,7 @@
 {
 	"type": "stack",
 	"textures": "stack",
-	"offsets": [0, -0.8]
+	"offsets": [0, -0.8],
+	"rotations": 8,
+	"offscreen": [-100, -100]
 }
