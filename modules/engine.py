@@ -60,6 +60,33 @@ class Engine:
             rendermethod = None
             player = None
         self.map = map
+        
+        class inputs:
+            keystates = {}
+            delay = 0.5
+            binds = {}
+            
+            @classmethod
+            def mainloop(self, canvas):
+                canvas.bind('<KeyPress>', self.onkeypress)
+                canvas.bind('<KeyRelease>', self.onkeyrelease)
+                
+                while True:
+                    for keysym in self.keystates:
+                        if self.keystates[keysym]:
+                            for bind in self.binds[keysym]:
+                                threading.Thread(target = bind, name = 'Function bound to {}'.format(keysym)).start()
+                    time.sleep(delay)
+            
+            @classmethod
+            def onkeypress(self, event):
+                self.keystates[event.keysym] = True
+            
+            @classmethod
+            def onkeyrelease(self, event):
+                self.keystates[event.keysym] = False
+        self.inputs = inputs
+        self.inputs.mainloop(self.game.canvas)
     
     def load_map(self, name):
         if os.path.isdir(os.path.join(sys.path[0], 'server', 'maps', name)):
