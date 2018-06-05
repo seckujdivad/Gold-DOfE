@@ -178,8 +178,12 @@ class Model:
             else:
                 for img in os.listdir(os.path.join(self.path, 'stack')):
                     self.graphics.stack.textures.append(self.preimgloader(os.path.join(self.path, 'stack', img)))
+                    
+            if self.config['numlayers'] == len(self.graphics.stack.textures):
+                self.graphics.stack.offsets.y = self.config['offsets'][1]
+            else:
+                self.graphics.stack.offsets.y = self.config['offsets'][1] * (len(self.graphics.stack.textures) / self.config['numlayers'])
             self.graphics.stack.offsets.x = self.config['offsets'][0]
-            self.graphics.stack.offsets.y = self.config['offsets'][1]
         else:
             raise ValueError('Display type \'{}\' doesn\'t exist'.format(self.config['type']))
         self._render()
@@ -219,16 +223,27 @@ class Model:
     
     def create_rotations(self, num_rotations):
         'Premake all canvas objects for different rotations to speed up rendering'
+        
+        if self.config['numlayers'] == len(self.graphics.stack.textures): #find out the indexes of the images to be used
+                iterator = range(len(self.graphics.stack.textures))
+        else:
+            iterator = []
+            mult = len(self.graphics.stack.textures) / self.config['numlayers']
+            for i in range(self.config['numlayers']):
+                iterator.append(int(i * mult))
+            print(iterator)
+        
         angle_increment = 360 / num_rotations
         i = 0
-        l = []
         for rot in range(num_rotations):
+            #create sublists
             self.graphics.stack.canvobjs.append([])
             self.graphics.stack.imgobjs.append([])
-            angle = angle_increment * rot
-            for tex in self.graphics.stack.textures:
-                rotated_image = tex.rotate(angle)
-                loaded_image = self.imageloader(image = rotated_image)
+            
+            angle = angle_increment * rot #precalculate angle
+            
+            for tex in iterator:
+                loaded_image = self.imageloader(image = self.graphics.stack.textures[tex].rotate(angle))
                 new_canv_obj = self.canvas.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image)
                 self.graphics.stack.canvobjs[i].append(new_canv_obj)
                 self.canvas.coords(new_canv_obj, self.config['offscreen'][0], self.config['offscreen'][1])
