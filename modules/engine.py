@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import random
+import math
 
 import modules.networking
 
@@ -136,9 +137,10 @@ class Engine:
             
             #load player
             self.map.player = Player(os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['player']), self)
-            self.map.player.setpos(400, 300, 45)
-            self.inputs.binds['Left'] = [self.map.player.rotate_left]
-            self.inputs.binds['Right'] = [self.map.player.rotate_right]
+            self.map.player.setpos(400, 300, 0)
+            self.inputs.binds['Left'] = [self.map.player.rotate_right]
+            self.inputs.binds['Right'] = [self.map.player.rotate_left]
+            self.inputs.binds['Up'] = [self.map.player.move_forward]
             
             #add overlay
             self.map.textures.obj_overlay = self.game.canvas.create_image(400, 300, image = self.map.textures.overlay)
@@ -157,6 +159,7 @@ class Player:
             rotation = 0
             class movement:
                 rotationincrement = 10
+                forwardincrement = 10
         self.pos = pos
         
         self.model = Model(path, self.engine.map.rendermethod, self.engine.game.canvas)
@@ -176,6 +179,11 @@ class Player:
     
     def rotate_right(self):
         self.setpos(rotation = self.pos.rotation + self.pos.movement.rotationincrement)
+    
+    def move_forward(self):
+        self.pos.x += math.sin(math.radians(self.pos.rotation)) * self.pos.movement.forwardincrement
+        self.pos.y += math.cos(math.radians(self.pos.rotation)) * self.pos.movement.forwardincrement
+        self.setpos(self.pos.x, self.pos.y)
 
 class Model:
     def __init__(self, path, imageloader, canvas):
