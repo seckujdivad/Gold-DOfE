@@ -67,7 +67,12 @@ class UI:
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
                         settingsdict = json.load(file)
-                    text_ = 'Name: {}, PIL rendering: {}'.format(settingsdict['user']['name'], settingsdict['graphics']['PILrender'])
+                        
+                    pilrender_msg = settingsdict['graphics']['PILrender']
+                    if not pilrender_msg:
+                        pilrender_msg = 'False (WARNING! - disables sprite rotation)'
+                        
+                    text_ = 'Name: {}, PIL rendering: {} \nInstall PIL/Pillow through "get_packages.bat"'.format(settingsdict['user']['name'], pilrender_msg)
                     self.label_userdata.config(text = text_)
                 
                 @classmethod
