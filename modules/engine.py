@@ -63,20 +63,25 @@ class Engine:
         
         class inputs:
             keystates = {}
-            delay = 0.5
+            delay = 0.1
             binds = {}
             
             @classmethod
             def mainloop(self, canvas):
-                canvas.bind('<KeyPress>', self.onkeypress)
-                canvas.bind('<KeyRelease>', self.onkeyrelease)
-                
+                root = canvas.nametowidget('.')
+                root.bind('<KeyPress>', self.onkeypress)
+                root.bind('<KeyRelease>', self.onkeyrelease)
+                threading.Thread(target = self.mainthread).start()
+            
+            @classmethod
+            def mainthread(self):
                 while True:
                     for keysym in self.keystates:
                         if self.keystates[keysym]:
-                            for bind in self.binds[keysym]:
-                                threading.Thread(target = bind, name = 'Function bound to {}'.format(keysym)).start()
-                    time.sleep(delay)
+                            if keysym in self.binds:
+                                for bind in self.binds[keysym]:
+                                    threading.Thread(target = bind, name = 'Function bound to {}'.format(keysym)).start()
+                    time.sleep(self.delay)
             
             @classmethod
             def onkeypress(self, event):
@@ -132,6 +137,8 @@ class Engine:
             #load player
             self.map.player = Player(os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['player']), self)
             self.map.player.setpos(400, 300, 45)
+            self.inputs.binds['Left'] = [self.map.player.rotate_left]
+            self.inputs.binds['Right'] = [self.map.player.rotate_right]
             
             #add overlay
             self.map.textures.obj_overlay = self.game.canvas.create_image(400, 300, image = self.map.textures.overlay)
@@ -148,6 +155,8 @@ class Player:
             x = 0
             y = 0
             rotation = 0
+            class movement:
+                rotationincrement = 10
         self.pos = pos
         
         self.model = Model(path, self.engine.map.rendermethod, self.engine.game.canvas)
@@ -159,8 +168,14 @@ class Player:
         if not y == None:
             self.pos.y = y
         if not rotation == None:
-            self.pos.rotation = rotation
+            self.pos.rotation = rotation % 360
         self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
+    
+    def rotate_left(self):
+        self.setpos(rotation = self.pos.rotation - self.pos.movement.rotationincrement)
+    
+    def rotate_right(self):
+        self.setpos(rotation = self.pos.rotation + self.pos.movement.rotationincrement)
 
 class Model:
     def __init__(self, path, imageloader, canvas):
