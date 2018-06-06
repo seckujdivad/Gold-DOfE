@@ -1,5 +1,6 @@
 import tkinter as tk
 import sqlite3 as sql
+import multiprocessing as mp
 import time
 import threading
 import os
@@ -25,6 +26,9 @@ class Game:
         
         self.client.recv_binds.append(self.recv_handler)
         
+        self.message_pipe, pipe = mp.Pipe()
+        self.messagedisplay = CanvasMessages(self.canvas, pipe)
+        
         self.running = True        
         threading.Thread(target = self.main, daemon = True).start()
     
@@ -43,6 +47,7 @@ class Game:
         
         if request.command == 'say':
             print(request.arguments['text'])
+            self.message_pipe.send(request.arguments['text'])
         elif request.command == 'load map':
             print('map:', request.arguments['map name'])
             self.engine.load_map(request.arguments['map name'])
@@ -352,3 +357,68 @@ class DBAccess:
     def close(self):
         self.connection.commit()
         self.connection.close()
+        
+class CanvasMessages:
+    def __init__(self, canvas, pipe):
+        self.canvas = canvas
+        self.pipe = pipe
+        
+        self.messages = []
+        self.running = True
+        
+        class graphical_properties:
+            updatedelay = 0.1
+            maxlen = 10
+            font = ('', 10)
+            height = 20
+            persist = 8
+            colour = 'black'
+            alignment = 'br' #tl: top left, tr: top right, bl: bottom left, br: bottom right
+            '''alignment_library = {'tl': tk.SE,
+                                 'tr': tk.SW,
+                                 'bl': tk.NE,
+                                 'br': tk.NW}'''
+            alignment_library = {'tl': tk.NW,
+                                 'tr': tk.NE,
+                                 'bl': tk.SW,
+                                 'br': tk.SE}
+        self.graphical_properties = graphical_properties
+        
+        threading.Thread(target = self.pipe_receiver).start()
+        threading.Thread(target = self.graphics_handler).start()
+    
+    def pipe_receiver(self):
+        while self.running:
+            data = self.pipe.recv()
+            self.messages.insert(0, {'text': data, 'timestamp': time.time(), 'obj': self.canvas.create_text(0, 0, text = data, fill = self.graphical_properties.colour, font = self.graphical_properties.font, anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment])})
+            if len(self.messages) > self.graphical_properties.maxlen:
+                for message in self.messages[self.graphical_properties.maxlen:]:
+                    self.canvas.delete(message['obj'])
+                self.messages = self.messages[:self.graphical_properties.maxlen]
+    
+    def graphics_handler(self):
+        while self.running:
+            todelete = []
+            for i in range(len(self.messages)):
+                message = self.messages[i]
+                x, y = self.calc_coords(i)
+                self.canvas.coords(message['obj'], x, y)
+                if time.time() - message['timestamp'] > self.graphical_properties.persist:
+                    self.canvas.delete(message['obj'])
+                    todelete.insert(0, i)
+            for i in todelete:
+                self.messages.pop(i)
+            time.sleep(self.graphical_properties.updatedelay)
+    
+    def calc_coords(self, position):
+        if self.graphical_properties.alignment == 'tl':
+            return 10, 10 + (position * self.graphical_properties.height)
+        elif self.graphical_properties.alignment == 'tr':
+            return self.canvas.winfo_width() - 10, 10 + (position * self.graphical_properties.height)
+        elif self.graphical_properties.alignment == 'bl':
+            return 10, self.canvas.winfo_height() - (position * self.graphical_properties.height) - 10
+        elif self.graphical_properties.alignment == 'br':
+            return self.canvas.winfo_width() - 10, self.canvas.winfo_height() - (position * self.graphical_properties.height) - 10
+        
+    def stop(self):
+        self.running = False
