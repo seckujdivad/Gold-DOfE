@@ -122,6 +122,7 @@ class UI:
                         self.pilrender_flipswitch.on_option_press(0, run_binds = False)
                     else:
                         self.pilrender_flipswitch.on_option_press(1, run_binds = False)
+                    self.mdlquality_flipswitch.on_option_press(settingsdict['graphics']['stacked model quality'], run_binds = False)
                 
                 @classmethod
                 def on_close(self):
@@ -137,6 +138,7 @@ class UI:
                         settingsdict = json.load(file)
                         
                     settingsdict['graphics']['PILrender'] = [True, False][self.pilrender_flipswitch.state]
+                    settingsdict['graphics']['stacked model quality'] = self.mdlquality_flipswitch.state
                     
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
                        json.dump(settingsdict, file, sort_keys=True, indent=4)
@@ -150,16 +152,23 @@ class UI:
                 pilrender_label = tk.Label(frame, text = 'PIL rendering', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 pilrender_flipswitch = TkFlipSwitch(frame, options = [{'text': 'On', 'command': print},
                                                                       {'text': 'Off', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                mdlquality_label = tk.Label(frame, text = 'Model quality', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                mdlquality_flipswitch = TkFlipSwitch(frame, options = [{'text': 'Low', 'command': print},
+                                                                       {'text': 'Medium', 'command': print},
+                                                                       {'text': 'High', 'command': print},
+                                                                       {'text': 'Full', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 pilrender_label.grid(row = 0, column = 0, sticky = 'NESW')
                 pilrender_flipswitch.grid(row = 0, column = 1, sticky = 'NESW')
+                mdlquality_label.grid(row = 1, column = 0, sticky = 'NESW')
+                mdlquality_flipswitch.grid(row = 1, column = 1, sticky = 'NESW')
                 
-                button_close.grid(row = 1, column = 0, sticky = 'NESW')
-                button_cancel.grid(row = 1, column = 1, sticky = 'NESW')
+                button_close.grid(row = 2, column = 0, sticky = 'NESW')
+                button_cancel.grid(row = 2, column = 1, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 2, 2, dorows = False)
+                self.styling.set_weight(frame, 2, 3, dorows = False)
             
             class connect_server:
                 config = {'name': 'Connect'}

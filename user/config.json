@@ -1,6 +1,7 @@
 {
     "graphics": {
-        "PILrender": true
+        "PILrender": true,
+        "stacked model quality": 1
     },
     "network": {
         "default port": 4321,
