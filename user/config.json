@@ -3,6 +3,16 @@
         "PILrender": true,
         "stacked model quality": 1
     },
+    "hud": {
+        "chat": {
+            "colour": "green",
+            "font": "",
+            "fontsize": 9,
+            "maxlen": 10,
+            "position": 3,
+            "spacing": 20
+        }
+    },
     "network": {
         "default port": 4321,
         "servers": [
@@ -22,15 +32,5 @@
     },
     "user": {
         "name": "unknown"
-    },
-	"hud": {
-		"chat": {
-			"colour": "green",
-			"font": "",
-			"fontsize": 9,
-			"maxlen": 10,
-			"position": 3,
-			"spacing": 20
-		}
-	}
+    }
 }
