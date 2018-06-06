@@ -22,12 +22,20 @@ class Game:
             name = 'localhost'
         self.server = server
         
+        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+            self.settingsdict = json.load(file)
+        
         self.engine = Engine(self)
         
         self.client.recv_binds.append(self.recv_handler)
         
         self.message_pipe, pipe = mp.Pipe()
         self.messagedisplay = CanvasMessages(self.canvas, pipe)
+        self.messagedisplay.graphical_properties.font = (self.settingsdict['hud']['chat']['font'], self.settingsdict['hud']['chat']['fontsize'])
+        self.messagedisplay.graphical_properties.persist = self.settingsdict['hud']['chat']['maxlen']
+        self.messagedisplay.graphical_properties.height = self.settingsdict['hud']['chat']['spacing']
+        self.messagedisplay.graphical_properties.colour = self.settingsdict['hud']['chat']['colour']
+        self.messagedisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['chat']['position']]
         
         self.running = True        
         threading.Thread(target = self.main, daemon = True).start()
