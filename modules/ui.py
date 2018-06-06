@@ -243,20 +243,27 @@ class UI:
                 def on_load(self):
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     self.config['methods'].uiobject.call_trigger('create game object', [self.canvas])
+                    self.button_exit.config(command = self.return_to_menu)
                 
                 @classmethod
                 def on_close(self):
-                    self.game.close()
-                    
                     self.frame.pack_forget()
+                    self.config['methods'].uiobject.call_trigger('close game')
+                
+                @classmethod
+                def return_to_menu(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
                 
                 frame = tk.Frame(main.page_frame)
                 
                 canvas = tk.Canvas(frame, **self.styling.get(font_size = 'medium', object_type = tk.Canvas))
+                button_exit = tk.Button(frame, text = 'Exit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 canvas.grid(row = 0, column = 0, sticky = 'NESW')
+                button_exit.grid(row = 1, column = 0, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 1, 1, dorows = True)
+                self.styling.set_weight(frame, 1, 2, dorows = True)
+                frame.rowconfigure(1, weight = 0)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects

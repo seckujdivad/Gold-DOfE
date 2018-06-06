@@ -34,6 +34,9 @@ class Game:
     
     def close(self):
         self.running = False
+        self.client.disconnect()
+        self.engine.inputs.stop()
+        self.engine.unload_current_map()
     
     def recv_handler(self, request):
         data = request.as_dict()
@@ -43,6 +46,9 @@ class Game:
         elif request.command == 'load map':
             print('map:', request.arguments['map name'])
             self.engine.load_map(request.arguments['map name'])
+        elif request.command == 'disconnect':
+            if self.running == True:
+                print('connection to server interrupted')
 
 class Engine:
     def __init__(self, game):
@@ -66,9 +72,14 @@ class Engine:
             keystates = {}
             delay = 0.1
             binds = {}
+            cont = None
             
             @classmethod
             def mainloop(self, canvas):
+                self.cont = True
+                self.keystates = {}
+                self.binds = {}
+            
                 root = canvas.nametowidget('.')
                 root.bind('<KeyPress>', self.onkeypress)
                 root.bind('<KeyRelease>', self.onkeyrelease)
@@ -76,7 +87,7 @@ class Engine:
             
             @classmethod
             def mainthread(self):
-                while True:
+                while self.cont:
                     for keysym in self.keystates:
                         if self.keystates[keysym]:
                             if keysym in self.binds:
@@ -91,6 +102,10 @@ class Engine:
             @classmethod
             def onkeyrelease(self, event):
                 self.keystates[event.keysym] = False
+                
+            @classmethod
+            def stop(self):
+                self.cont = False
         self.inputs = inputs
         self.inputs.mainloop(self.game.canvas)
     
@@ -107,13 +122,7 @@ class Engine:
                 self.map.rendermethod = tk.PhotoImage
         
             #delete old scatters, background and overlays
-            if not self.map.textures.obj_scatter == []:
-                for scatter in self.map.textures.obj_scatter:
-                    self.game.canvas.delete(scatter)
-            if not self.map.textures.obj_base == None:
-                self.game.canvas.delete(self.map.textures.obj_base)
-            if not self.map.textures.obj_overlay == None:
-                self.game.canvas.delete(self.map.textures.obj_overlay)
+            self.unload_current_map()
             
             #open map cfg
             self.map.name = name
@@ -144,6 +153,20 @@ class Engine:
             
             #add overlay
             self.map.textures.obj_overlay = self.game.canvas.create_image(400, 300, image = self.map.textures.overlay)
+    
+    def unload_current_map(self):
+        if not self.map.textures.obj_scatter == []:
+            for scatter in self.map.textures.obj_scatter:
+                scatter.destroy()
+            self.map.textures.obj_scatter = []
+        if not self.map.textures.obj_base == None:
+            self.game.canvas.delete(self.map.textures.obj_base)
+            self.map.textures.obj_base = None
+        if not self.map.textures.obj_overlay == None:
+            self.game.canvas.delete(self.map.textures.obj_overlay)
+            self.map.textures.obj_overlay = None
+        if not self.map.player == None:
+            self.map.player.model.destroy()
 
 class Water:
     pass
@@ -308,6 +331,14 @@ class Model:
     
     def objset_from_angle(self, angle):
         return self.graphics.stack.canvobjs[int((angle / 360) * len(self.graphics.stack.canvobjs))]
+        
+    def destroy(self):
+        if self.graphics.displaytype == 'flat':
+            self.canvas.delete(self.graphics.flat.canvobj)
+        else:
+            for rotationset in self.graphics.stack.canvobjs:
+                for obj in rotationset:
+                    self.canvas.delete(obj)
 
 class DBAccess:
     def __init__(self, address):

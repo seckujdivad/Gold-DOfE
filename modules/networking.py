@@ -50,9 +50,17 @@ class Server:
         
         self.send(connection, Request(command = 'load map', arguments = {'map name': self.serverdata.map}))
         
-        while True:
-            data = connection.recv(2048)
-            print(data.decode('UTF-8'))
+        cont = True
+        while cont:
+            try:
+                data = connection.recv(2048)
+                req = Request(json.loads(data.decode()))
+            except ConnectionResetError or ConnectionAbortedError:
+                req = Request(command = 'disconnect')
+                cont = False
+                
+            if req.command == 'disconnect':
+                self.output_pipe.send('User {} disconnected'.format(address[0]))
     
     def handle_command(self, command, source = 'internal'):
         if command == '' or command.startswith(' '):
@@ -118,7 +126,6 @@ say: send a message to all players'''
         self.serverdata.map = mapname
         req = Request(command = 'load map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
-        
     
     def kick_address(self, target_address):
         i = 0
@@ -158,12 +165,23 @@ class Client:
     def send_raw(self, text):
         self.connection.send(text.encode())
     
+    def send(self, data):
+        self.send_raw(data.as_json().encode())
+    
     def recv_loop(self):
-        while True:
-            data = self.connection.recv(1024).decode('UTF-8')
-            req = Request(data)
+        cont = True
+        while cont:
+            try:
+                data = self.connection.recv(1024).decode('UTF-8')
+                req = Request(data)
+            except ConnectionAbortedError:
+                req = Request(command = 'disconnect')
+                cont = False
             for bind in self.recv_binds:
                 bind(req)
+    
+    def disconnect(self):
+        self.connection.close()
 
 class Request:
     def __init__(self, data = {}, **args):
