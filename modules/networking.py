@@ -21,7 +21,6 @@ class Server:
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.bind((self.serverdata.host, self.serverdata.port))
         self.connection.listen(5)
-        threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
         
         self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe)
         
@@ -31,6 +30,8 @@ class Server:
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
                 text = file.read()
             self.output_pipe.send(self.run_script(text))
+        
+        threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
         
     def acceptance_thread(self):
         while True:
@@ -48,8 +49,6 @@ class Server:
     def connection_handler(self, address, connection):
         self.output_pipe.send('New connection from {}'.format(address[0]))
         
-        self.send(connection, Request(command = 'load map', arguments = {'map name': self.serverdata.map}))
-        
         cont = True
         while cont:
             try:
@@ -61,6 +60,9 @@ class Server:
                 
             if req.command == 'disconnect':
                 self.output_pipe.send('User {} disconnected'.format(address[0]))
+            elif req.command == 'var update r':
+                if req.subcommand == 'map':
+                    self.send(connection, Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map}))
     
     def handle_command(self, command, source = 'internal'):
         if command == '' or command.startswith(' '):
@@ -124,7 +126,7 @@ say: send a message to all players'''
     
     def load_map(self, mapname):
         self.serverdata.map = mapname
-        req = Request(command = 'load map', arguments = {'map name': self.serverdata.map})
+        req = Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
     
     def kick_address(self, target_address):
@@ -139,10 +141,7 @@ say: send a message to all players'''
             self.serverdata.connections.pop(i)
     
     def send(self, connection, data):
-        try:
-            connection.send(data.as_json().encode())
-        except socket.error:
-            pass
+        connection.send(data.as_json().encode())
         
     def send_all(self, data):
         for address, connection in self.serverdata.connections:
@@ -166,7 +165,7 @@ class Client:
         self.connection.send(text.encode())
     
     def send(self, data):
-        self.send_raw(data.as_json().encode())
+        self.send_raw(data.as_json())
     
     def recv_loop(self):
         cont = True

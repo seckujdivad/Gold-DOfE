@@ -28,6 +28,7 @@ class Game:
         self.engine = Engine(self)
         
         self.client.recv_binds.append(self.recv_handler)
+        self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'map'))
         
         self.message_pipe, pipe = mp.Pipe()
         self.messagedisplay = CanvasMessages(self.canvas, pipe)
@@ -54,14 +55,16 @@ class Game:
         data = request.as_dict()
         
         if request.command == 'say':
-            print(request.arguments['text'])
             self.message_pipe.send(request.arguments['text'])
         elif request.command == 'load map':
-            print('map:', request.arguments['map name'])
             self.engine.load_map(request.arguments['map name'])
         elif request.command == 'disconnect':
             if self.running == True:
                 print('connection to server interrupted')
+        elif request.command == 'var update w':
+            if request.subcommand == 'map':
+                if not self.engine.map.name == request.arguments['map name']:
+                    self.engine.load_map(request.arguments['map name'])
 
 class Engine:
     def __init__(self, game):
