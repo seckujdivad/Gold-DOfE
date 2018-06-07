@@ -55,7 +55,7 @@ class Game:
         data = request.as_dict()
         
         if request.command == 'say':
-            self.message_pipe.send(request.arguments['text'])
+            self.message_pipe.send(['chat', request.arguments['text']])
         elif request.command == 'load map':
             self.engine.load_map(request.arguments['map name'])
         elif request.command == 'disconnect':
@@ -393,6 +393,10 @@ class CanvasMessages:
                                  'tr': tk.NE,
                                  'bl': tk.SW,
                                  'br': tk.SE}
+            formatlib = {'tl': '[{0:^16}] {1}',
+                         'tr': '{1} [{0:^16}]',
+                         'bl': '[{0:^16}] {1}',
+                         'br': '{1} [{0:^16}]'}
         self.graphical_properties = graphical_properties
         
         threading.Thread(target = self.pipe_receiver).start()
@@ -401,7 +405,11 @@ class CanvasMessages:
     def pipe_receiver(self):
         while self.running:
             data = self.pipe.recv()
-            self.messages.insert(0, {'text': data, 'timestamp': time.time(), 'obj': self.canvas.create_text(0, 0, text = data, fill = self.graphical_properties.colour, font = self.graphical_properties.font, anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment])})
+            if type(data) == str:
+                displaytext = data
+            elif type(data) == list:
+                displaytext = self.graphical_properties.formatlib[self.graphical_properties.alignment].format(data[0], data[1])
+            self.messages.insert(0, {'text': displaytext, 'timestamp': time.time(), 'obj': self.canvas.create_text(0, 0, text = displaytext, fill = self.graphical_properties.colour, font = self.graphical_properties.font, anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment])})
             if len(self.messages) > self.graphical_properties.maxlen:
                 for message in self.messages[self.graphical_properties.maxlen:]:
                     self.canvas.delete(message['obj'])
