@@ -5,7 +5,7 @@
     },
     "hud": {
         "chat": {
-            "colour": "green",
+            "colour": "#00BB00",
             "font": "",
             "fontsize": 9,
             "maxlen": 10,

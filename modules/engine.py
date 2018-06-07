@@ -134,8 +134,10 @@ class Engine:
             #use correct rendering method
             if self.map.settingscfg['graphics']['PILrender']:
                 self.map.rendermethod = __import__('PIL.ImageTk').ImageTk.PhotoImage
+                self.game.message_pipe.send(['map load', 'Loaded PIL image renderer'])
             else:
                 self.map.rendermethod = tk.PhotoImage
+                self.game.message_pipe.send(['map load', 'Loaded internal image renderer'])
         
             #delete old scatters, background and overlays
             self.unload_current_map()
@@ -144,13 +146,17 @@ class Engine:
             self.map.name = name
             with open(os.path.join(sys.path[0], 'server', 'maps', name, 'list.json'), 'r') as file:
                 self.map.cfg = json.load(file)
+            self.game.message_pipe.send(['map load', 'Loaded map cfg'])
             
             #render base and overlay
             self.map.textures.base = self.map.rendermethod(file = os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['background']['base']))
+            self.game.message_pipe.send(['map load', 'Loaded base texture'])
             self.map.textures.overlay = self.map.rendermethod(file = os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['background']['overlay']))
+            self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
             
             #add base layer
             self.map.textures.obj_base = self.game.canvas.create_image(400, 300, image = self.map.textures.base)
+            self.game.message_pipe.send(['map load', 'Rendered base texture'])
             
             #add scatters
             self.map.textures.obj_scatter = []
@@ -159,16 +165,21 @@ class Engine:
                     scattermdl = Model(os.path.join(sys.path[0], 'server', 'maps', name, scatter), self.map.rendermethod, self.game.canvas)
                     scattermdl.setpos(random.randint(0, 800), random.randint(0, 600))
                     self.map.textures.obj_scatter.append(scattermdl)
+            self.game.message_pipe.send(['map load', 'Loaded scatters'])
             
             #load player
+            self.game.message_pipe.send(['map load', 'Creating player model...'])
             self.map.player = Player(os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['player']), self)
+            self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
             self.inputs.binds['Left'] = [self.map.player.rotate_right]
             self.inputs.binds['Right'] = [self.map.player.rotate_left]
             self.inputs.binds['Up'] = [self.map.player.move_forward]
+            self.game.message_pipe.send(['map load', 'Added keybinds'])
             
             #add overlay
             self.map.textures.obj_overlay = self.game.canvas.create_image(400, 300, image = self.map.textures.overlay)
+            self.game.message_pipe.send(['map load', 'Rendered overlay'])
     
     def unload_current_map(self):
         if not self.map.textures.obj_scatter == []:
@@ -183,6 +194,7 @@ class Engine:
             self.map.textures.obj_overlay = None
         if not self.map.player == None:
             self.map.player.model.destroy()
+        self.game.message_pipe.send(['map load', 'Cleared old map assets'])
 
 class Water:
     pass
@@ -425,6 +437,8 @@ class CanvasMessages:
                 if time.time() - message['timestamp'] > self.graphical_properties.persist:
                     self.canvas.delete(message['obj'])
                     todelete.insert(0, i)
+                else:
+                    self.canvas.tag_raise(message['obj'])
             for i in todelete:
                 self.messages.pop(i)
             time.sleep(self.graphical_properties.updatedelay)
