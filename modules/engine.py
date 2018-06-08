@@ -104,12 +104,16 @@ class Engine:
             @classmethod
             def mainthread(self):
                 while self.cont:
-                    for keysym in self.keystates:
-                        if self.keystates[keysym]:
+                    start = time.time()
+                    keysnapshot = self.keystates.copy() #so that the interated dictionary doesn't change state
+                    for keysym in keysnapshot:
+                        if keysnapshot[keysym]:
                             if keysym in self.binds:
                                 for bind in self.binds[keysym]:
-                                    threading.Thread(target = bind, name = 'Function bound to {}'.format(keysym)).start()
-                    time.sleep(self.delay)
+                                    bind()
+                    delay = self.delay - (time.time() - start)
+                    if delay > 0:
+                        time.sleep(delay)
             
             @classmethod
             def onkeypress(self, event):
@@ -208,15 +212,32 @@ class Player:
             x = 0
             y = 0
             rotation = 0
+            updating = False #is currently updating position
             class movement:
                 rotationincrement = 10
                 forwardincrement = 10
         self.pos = pos
         
+        self.setpos_queue, pipe = mp.Pipe()
+        
         self.model = Model(path, self.engine.map.rendermethod, self.engine.game.canvas)
+        
+        threading.Thread(target = self._setpos_queue, args = [pipe]).start()
+        
         self.setpos(100, 100)
     
     def setpos(self, x = None, y = None, rotation = None):
+        self.setpos_queue.send([x, y, rotation])
+    
+    def _setpos_queue(self, pipe):
+        while True:
+            x, y, rotation = pipe.recv()
+            event = threading.Event()
+            event.clear()
+            threading.Thread(target = self._setpos, args = [event, x, y, rotation]).start()
+            event.wait()
+    
+    def _setpos(self, event, x = None, y = None, rotation = None):
         if not x == None:
             self.pos.x = x
         if not y == None:
@@ -224,17 +245,20 @@ class Player:
         if not rotation == None:
             self.pos.rotation = rotation % 360
         self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
+        event.set()
     
     def rotate_left(self):
-        self.setpos(rotation = self.pos.rotation - self.pos.movement.rotationincrement)
+        self.pos.rotation -= self.pos.movement.rotationincrement
+        self.setpos()
     
     def rotate_right(self):
-        self.setpos(rotation = self.pos.rotation + self.pos.movement.rotationincrement)
+        self.pos.rotation += self.pos.movement.rotationincrement
+        self.setpos()
     
     def move_forward(self):
         self.pos.x -= math.sin(math.radians(self.pos.rotation)) * self.pos.movement.forwardincrement
         self.pos.y -= math.cos(math.radians(self.pos.rotation)) * self.pos.movement.forwardincrement
-        self.setpos(self.pos.x, self.pos.y)
+        self.setpos()
 
 class Model:
     def __init__(self, path, imageloader, canvas):
@@ -338,7 +362,6 @@ class Model:
             mult = len(self.graphics.stack.textures) / self.graphics.stack.numlayers
             for i in range(self.graphics.stack.numlayers):
                 iterator.append(int(i * mult))
-            print(iterator)
         
         angle_increment = 360 / num_rotations
         i = 0
