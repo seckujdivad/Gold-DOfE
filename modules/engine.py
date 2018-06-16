@@ -25,11 +25,6 @@ class Game:
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             self.settingsdict = json.load(file)
         
-        self.engine = Engine(self)
-        
-        self.client.recv_binds.append(self.recv_handler)
-        self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'map'))
-        
         self.message_pipe, pipe = mp.Pipe()
         self.messagedisplay = CanvasMessages(self.canvas, pipe)
         self.messagedisplay.graphical_properties.font = (self.settingsdict['hud']['chat']['font'], self.settingsdict['hud']['chat']['fontsize'])
@@ -37,6 +32,11 @@ class Game:
         self.messagedisplay.graphical_properties.height = self.settingsdict['hud']['chat']['spacing']
         self.messagedisplay.graphical_properties.colour = self.settingsdict['hud']['chat']['colour']
         self.messagedisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['chat']['position']]
+        
+        self.engine = Engine(self)
+        
+        self.client.recv_binds.append(self.recv_handler)
+        self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'map'))
         
         self.running = True        
         threading.Thread(target = self.main, daemon = True).start()
@@ -179,6 +179,7 @@ class Engine:
             self.inputs.binds['Left'] = [self.map.player.rotate_right]
             self.inputs.binds['Right'] = [self.map.player.rotate_left]
             self.inputs.binds['Up'] = [self.map.player.move_forward]
+            self.inputs.binds['Down'] = [self.map.player.move_backward]
             self.game.message_pipe.send(['map load', 'Added keybinds'])
             
             #add overlay
@@ -212,10 +213,12 @@ class Player:
             x = 0
             y = 0
             rotation = 0
-            updating = False #is currently updating position
+            class velocity:
+                magnitude = 0
+                direction = 0
             class movement:
                 rotationincrement = 10
-                forwardincrement = 10
+                forwardincrement = 0.1
         self.pos = pos
         
         self.setpos_queue, pipe = mp.Pipe()
@@ -223,19 +226,21 @@ class Player:
         self.model = Model(path, self.engine.map.rendermethod, self.engine.game.canvas)
         
         threading.Thread(target = self._setpos_queue, args = [pipe]).start()
+        threading.Thread(target = self._speedcalc).start()
         
         self.setpos(100, 100)
     
     def setpos(self, x = None, y = None, rotation = None):
-        self.setpos_queue.send([x, y, rotation])
+        self.setpos_queue.send([time.time(), x, y, rotation])
     
     def _setpos_queue(self, pipe):
         while True:
-            x, y, rotation = pipe.recv()
-            event = threading.Event()
-            event.clear()
-            threading.Thread(target = self._setpos, args = [event, x, y, rotation]).start()
-            event.wait()
+            timestamp, x, y, rotation = pipe.recv()
+            if time.time() - timestamp < 1: #block older inputs
+                event = threading.Event()
+                event.clear()
+                threading.Thread(target = self._setpos, args = [event, x, y, rotation]).start()
+                event.wait()
     
     def _setpos(self, event, x = None, y = None, rotation = None):
         if not x == None:
@@ -247,6 +252,33 @@ class Player:
         self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
         event.set()
     
+    def _speedcalc(self):
+        while True:
+            if self.pos.velocity.magnitude > 0:
+                self.pos.x += math.cos(math.radians(self.pos.velocity.direction)) * self.pos.velocity.magnitude
+                self.pos.y += math.sin(math.radians(self.pos.velocity.direction)) * self.pos.velocity.magnitude
+                self.setpos()
+            time.sleep(0.1)
+    
+    def addvelocity(self, magnitude, direction):
+        resultantx = (math.cos(math.radians(direction)) * magnitude) + (math.cos(math.radians(self.pos.velocity.direction)) * self.pos.velocity.magnitude)
+        resultanty = (math.sin(math.radians(direction)) * magnitude) + (math.sin(math.radians(self.pos.velocity.direction)) * self.pos.velocity.magnitude)
+        self.pos.velocity.magnitude = math.hypot(resultantx, resultanty)
+        if resultanty == 0:
+            if resultantx > 0:
+                self.pos.velocity.direction = 90
+            elif resultantx < 0:
+                self.pos.velocity.direction = 270
+            else:
+                self.pos.velocity.direction = 0
+        elif resultantx == 0:
+            if resultanty > 0:
+                self.pos.velocity.direction = 180
+            else:
+                self.pos.velocity.direction = 0
+        else:
+            self.pos.velocity.direction = math.degrees(math.atan(resultanty / resultantx))
+    
     def rotate_left(self):
         self.pos.rotation -= self.pos.movement.rotationincrement
         self.setpos()
@@ -256,9 +288,10 @@ class Player:
         self.setpos()
     
     def move_forward(self):
-        self.pos.x -= math.sin(math.radians(self.pos.rotation)) * self.pos.movement.forwardincrement
-        self.pos.y -= math.cos(math.radians(self.pos.rotation)) * self.pos.movement.forwardincrement
-        self.setpos()
+        self.addvelocity(self.pos.movement.forwardincrement, self.pos.rotation)
+     
+    def move_backward(self):
+        self.addvelocity(0 - self.pos.movement.forwardincrement, self.pos.rotation)
 
 class Model:
     def __init__(self, path, imageloader, canvas):
