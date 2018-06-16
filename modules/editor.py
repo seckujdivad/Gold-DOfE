@@ -4,8 +4,19 @@ import sys
 import functools
 
 class Map:
-    def __init__(self):
-        pass
+    def __init__(self, name):
+        self.name = name
+        
+        self.path = os.path.join(sys.path[0], 'server', 'maps', self.name)
+        
+    def get_text(self, path):
+        with open(os.path.join(self.path, path), 'r') as file:
+            text = file.read()
+        return text
+    
+    def write_text(self, path, text):
+        with open(os.path.join(self.path, path), 'w') as file:
+            file.write(text)
 
 class Editor:
     def __init__(self, frame, pagemethods):
@@ -14,12 +25,43 @@ class Editor:
         
         class editors:
             class Text:
-                def __init__(self, frame, editorobj):
+                def __init__(self, frame, editorobj, tabobj):
                     self.frame = frame
                     self.editorobj = editorobj
+                    self.tabobj = tabobj
+                    
+                    self.toprow = tk.Frame(self.frame)
+                    self.path = tk.Entry(self.toprow, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.save = tk.Button(self.toprow, text = 'Save', command = self.save_text, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
+                    self.reload = tk.Button(self.toprow, text = 'Reload', command = self.reload_text, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
+                    
+                    self.path.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    self.save.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.reload.pack(side = tk.RIGHT, fill = tk.Y)
                     
                     self.textentry = tk.Text(self.frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
-                    self.textentry.pack()
+                    
+                    self.toprow.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.textentry.grid(row = 1, column = 0, sticky = 'NESW')
+                
+                def reload_text(self):
+                    path = self.path.get()
+                    try:
+                        self.textentry.delete(0, tk.END)
+                    except tk.TclError:
+                        pass
+                    self.textentry.insert(tk.END, self.editorobj.map.get_text(self.path.get()))
+                    
+                    self.tabobj.set_title(path)
+                
+                def save_text(self):
+                    try:
+                        text = self.textentry.get(0.0, tk.END)
+                    except tk.TclError:
+                        text = ''
+                    path = self.path.get()
+                    self.editorobj.map.write_text(path, text)
+                    self.tabobj.set_title(path)
             
             library = {'Text': Text}
             
@@ -28,7 +70,6 @@ class Editor:
                 new_pane = EditorTab(name, self, len(self.uiobjs.tabs))
                 new_pane.show()
                 self.uiobjs.tabs.append(new_pane)
-                
             
             uiobjs = None
         self.editors = editors
@@ -60,7 +101,8 @@ class Editor:
         self.uiobjs.tabs_current_frame.grid(row = 2, column = 0, sticky = 'NESW')
     
     def load(self, map_name):
-        pass
+        self.map = Map(map_name)
+        self.editors.map = self.map
 
 class EditorTab:
     def __init__(self, name, editorobj, index):
@@ -81,7 +123,7 @@ class EditorTab:
         
         self.frame = tk.Frame(self.editorobj.uiobjs.tabs_current_frame)
         
-        self.editor = self.editorobj.library[self.name](self.frame, self.editorobj)
+        self.editor = self.editorobj.library[self.name](self.frame, self.editorobj, self)
     
     def show(self):
         if not self.editorobj.uiobjs.tabs_current == None:
