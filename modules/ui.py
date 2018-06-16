@@ -87,24 +87,25 @@ class UI:
                 
                 def load_connect_server(ui_object):
                     ui_object.load(ui_object.uiobjects.connect_server)
+                
+                def load_editor(ui_object):
+                    ui_object.load(ui_object.uiobjects.editor_choose_file)
                     
                 frame = tk.Frame(main.page_frame)
                 label_title = tk.Label(frame, text = 'Hydrophobes', **self.styling.get(font_size = 'large', object_type = tk.Label))
-                button_play = tk.Button(frame, text = 'New game', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_load = tk.Button(frame, text = 'Load save', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_editor = tk.Button(frame, text = 'Map editor', command = functools.partial(load_editor, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_connect = tk.Button(frame, text = 'Connect to a server', command = functools.partial(load_connect_server, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_host = tk.Button(frame, text = 'Host a server', command = functools.partial(load_host_server, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_settings = tk.Button(frame, text = 'Change settings', command = functools.partial(load_settings, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 label_userdata = tk.Label(frame, text = 'Loading...', **self.styling.get(font_size = 'small', object_type = tk.Label))
                 
                 label_title.grid(row = 0, column = 0, sticky = 'NESW')
-                button_play.grid(row = 1, column = 0, sticky = 'NESW')
-                button_load.grid(row = 2, column = 0, sticky = 'NESW')
-                button_connect.grid(row = 3, column = 0, sticky = 'NESW')
-                button_host.grid(row = 4, column = 0, sticky = 'NESW')
-                button_settings.grid(row = 5, column = 0, sticky = 'NESW')
-                label_userdata.grid(row = 6, column = 0, sticky = 'NESW')
-                self.styling.set_weight(frame, 1, 7)
+                button_editor.grid(row = 1, column = 0, sticky = 'NESW')
+                button_connect.grid(row = 2, column = 0, sticky = 'NESW')
+                button_host.grid(row = 3, column = 0, sticky = 'NESW')
+                button_settings.grid(row = 4, column = 0, sticky = 'NESW')
+                label_userdata.grid(row = 5, column = 0, sticky = 'NESW')
+                self.styling.set_weight(frame, 1, 6)
                 
             class settings:
                 config = {'name': 'Settings'}
@@ -278,8 +279,77 @@ class UI:
                 canvas.grid(row = 0, column = 0, sticky = 'NESW')
                 button_exit.grid(row = 1, column = 0, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 1, 2, dorows = True)
+                self.styling.set_weight(frame, 1, 2)
                 frame.rowconfigure(1, weight = 0)
+            
+            class editor_choose_file:
+                config = {'name': 'Editor'}
+                
+                @classmethod
+                def on_load(self):
+                    for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps')):
+                        self.listbox_box.insert(tk.END, name)
+                    
+                    self.button_choose.config(command = self.open_map)
+                    self.button_go_back.config(command = self.return_to_menu)
+                    
+                    self.frame.pack(fill = tk.BOTH, expand = True)
+                
+                @classmethod
+                def on_close(self):
+                    self.listbox_box.delete(0, tk.END)
+                    self.frame.pack_forget()
+                
+                @classmethod
+                def open_map(self):
+                    index = self.listbox_box.curselection()
+                    if type(index[0]) == int: #if there is a selection
+                        map_name = self.listbox_box.get(index[0])
+                        self.config['methods'].uiobject.call_trigger('edit map', [map_name])
+                
+                @classmethod
+                def return_to_menu(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
+                
+                frame = tk.Frame(main.page_frame)
+                
+                listbox_frame = tk.Frame(frame)
+                listbox_box = tk.Listbox(listbox_frame, **self.styling.get(font_size = 'small', object_type = tk.Listbox))
+                listbox_bar = tk.Scrollbar(listbox_frame, command = listbox_box.yview)
+                listbox_box.config(yscrollcommand = listbox_bar.set)
+                
+                listbox_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                listbox_box.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                
+                entry_mapname = tk.Entry(frame, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
+                button_new = tk.Button(frame, text = 'Create new map', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_choose = tk.Button(frame, text = 'Open map', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_go_back = tk.Button(frame, text = 'Return to menu', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                
+                listbox_frame.grid(row = 0, column = 0, columnspan = 4, sticky = 'NESW')
+                
+                entry_mapname.grid(row = 1, column = 0, sticky = 'NESW')
+                button_new.grid(row = 1, column = 1, sticky = 'NESW')
+                button_choose.grid(row = 1, column = 2, sticky = 'NESW')
+                button_go_back.grid(row = 1, column = 3, sticky = 'NESW')
+                
+                self.styling.set_weight(frame, 4, 2)
+                frame.rowconfigure(1, weight = 0)
+            
+            class editor:
+                config = {'name': 'Editor'}
+                
+                @classmethod
+                def on_load(self):
+                    self.frame.pack(fill = tk.BOTH, expand = True)
+                    self.config['methods'].uiobject.call_trigger('start editor', [self.frame, self.config['methods']])
+                
+                @classmethod
+                def on_close(self):
+                    self.config['methods'].uiobject.call_trigger('close editor', [])
+                    self.frame.pack_forget()
+                
+                frame = tk.Frame(main.page_frame)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects
