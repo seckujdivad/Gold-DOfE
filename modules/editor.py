@@ -127,26 +127,39 @@ class EditorTab:
         self.editor = self.editorobj.library[self.name](self.frame, self.editorobj, self)
     
     def show(self):
+        print(self.editorobj.uiobjs.tabs, self.editorobj.uiobjs.tabs_current)
         if not self.editorobj.uiobjs.tabs_current == None:
             self.editorobj.uiobjs.tabs[self.editorobj.uiobjs.tabs_current].hide()
         self.frame.pack(fill = tk.BOTH, expand = True)
         self.editorobj.uiobjs.tabs_current = self.index
+        self.active = True
     
     def hide(self):
         self.frame.pack_forget()
+        self.active = False
     
     def destroy(self):
         self.hide()
         self.header_frame.pack_forget()
-        self.editorobj.uiobjs.tabs[self.editorobj.uiobjs.tabs_current] = None
+        self.editorobj.uiobjs.tabs[self.index] = None
         cont = True
         i = 0
-        while cont:
-            if not self.editorobj.uiobjs.tabs[i] == None:
-                self.editorobj.uiobjs.tabs_current = None
-                self.editorobj.uiobjs.tabs[i].show()
-                cont = False
-            i += 1
+        if self.active:
+            while cont:
+                if not self.editorobj.uiobjs.tabs[i] == None:
+                    self.editorobj.uiobjs.tabs_current = None
+                    self.editorobj.uiobjs.tabs[i].show()
+                    cont = False
+                i += 1
+                if i == len(self.editorobj.uiobjs.tabs):
+                    cont = False
+                    self.editorobj.uiobjs.tabs_current = None
+        update_current = True
+        for item in self.editorobj.uiobjs.tabs:
+            if not item == None:
+                update_current = False
+        if update_current:
+            self.editorobj.uiobjs.tabs_current = None
     
     def set_title(self, text):
         self.header_button.config(text = '{}: {}'.format(self.name, text))
