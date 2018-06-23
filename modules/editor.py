@@ -2,6 +2,7 @@ import tkinter as tk
 import os
 import sys
 import functools
+import json
 
 class Map:
     def __init__(self, name):
@@ -25,6 +26,9 @@ class Editor:
         
         class editors:
             class Text:
+                '''
+                Edit a text file in the map directory
+                '''
                 def __init__(self, frame, editorobj, tabobj):
                     self.frame = frame
                     self.editorobj = editorobj
@@ -63,7 +67,79 @@ class Editor:
                     self.editorobj.map.write_text(path, text)
                     self.tabobj.set_title(path)
             
-            library = {'Text': Text}
+            class Tree:
+                '''
+                View the entire map directory, copy file paths
+                '''
+                def __init__(self, frame, editorobj, tabobj):
+                    self.frame = frame
+                    self.editorobj = editorobj
+                    self.tabobj = tabobj
+                    
+                    self.all_paths = []
+                    
+                    self.list_frame = tk.Frame(self.frame)
+                    self.list_list = tk.Listbox(self.list_frame, font = ('Courier New', 9))
+                    self.list_bar = tk.Scrollbar(self.list_frame, command = self.list_list.yview)
+                    self.list_list.config(yscrollcommand = self.list_bar.set)
+                    
+                    self.button_copy = tk.Button(self.frame, text = 'Copy', command = self.copy_selection_to_clipboard, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Button))
+                    
+                    self.list_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.list_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    self.list_frame.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.button_copy.grid(row = 1, column = 0, sticky = 'NESW')
+                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 1, 2)
+                    self.frame.rowconfigure(1, weight = 0)
+                    
+                    self.tabobj.set_title(self.editorobj.map.name)
+                    
+                    self.populate_list()
+                    
+                def populate_list(self):
+                    with open(os.path.join(self.editorobj.map.path, 'editorcfg.json'), 'r') as file:
+                        cfg = json.load(file)
+                        
+                    all_items, self.all_paths = self.index_dir('', 0, cfg['ignore'])
+                    
+                    for item in all_items:
+                        self.list_list.insert(tk.END, item)
+                
+                def index_dir(self, path, depth, ignore):
+                    map_path = self.editorobj.map.path
+                    output = []
+                    prefix = '    ' * depth
+                    paths = []
+                    for item in os.listdir(os.path.join(map_path, path)):
+                        if os.path.isdir(os.path.join(map_path, path, item)):
+                            paths.append(os.path.join(path, item))
+                            output.append('+{}{}'.format(prefix, item))
+                            if not os.path.join(path, item) in ignore:
+                                noutput, npaths = self.index_dir(os.path.join(path, item), depth + 1, ignore)
+                                output += noutput
+                                paths += npaths
+                        else:
+                            paths.append(os.path.join(path, item))
+                            if depth == 0:
+                                output.append(' {}{}'.format(prefix, item))
+                            else:
+                                output.append('|{}{}'.format(prefix, item))
+                        #paths.append(os.path.join(path, item))
+                    return output, paths
+                
+                def copy_selection_to_clipboard(self, event = None):
+                    selection = self.list_list.curselection()
+                    if not selection == ():
+                        text = self.all_paths[selection[0]]
+                        self.set_clipboard(text)
+                
+                def set_clipboard(self, text):
+                    self.editorobj.uiobjs.pagemethods.uiobject.root.clipboard_clear()
+                    self.editorobj.uiobjs.pagemethods.uiobject.root.clipboard_append(text)
+            
+            library = {'Text': Text,
+                       'Tree': Tree}
             
             @classmethod
             def create_new(self, name):
