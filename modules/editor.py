@@ -127,7 +127,6 @@ class EditorTab:
         self.editor = self.editorobj.library[self.name](self.frame, self.editorobj, self)
     
     def show(self):
-        print(self.editorobj.uiobjs.tabs, self.editorobj.uiobjs.tabs_current)
         if not self.editorobj.uiobjs.tabs_current == None:
             self.editorobj.uiobjs.tabs[self.editorobj.uiobjs.tabs_current].hide()
         self.frame.pack(fill = tk.BOTH, expand = True)
@@ -139,27 +138,16 @@ class EditorTab:
         self.active = False
     
     def destroy(self):
-        self.hide()
-        self.header_frame.pack_forget()
-        self.editorobj.uiobjs.tabs[self.index] = None
-        cont = True
-        i = 0
-        if self.active:
-            while cont:
-                if not self.editorobj.uiobjs.tabs[i] == None:
-                    self.editorobj.uiobjs.tabs_current = None
-                    self.editorobj.uiobjs.tabs[i].show()
-                    cont = False
-                i += 1
-                if i == len(self.editorobj.uiobjs.tabs):
-                    cont = False
-                    self.editorobj.uiobjs.tabs_current = None
+        self.hide() #remove pane containing editor
+        self.header_frame.pack_forget() #remove tab from the list of tabs on the screen
+        self.editorobj.uiobjs.tabs[self.index] = None #remove this tab from the list of tabs in memory
+        
+        #set the focus to none if there are no availabble tabs
         update_current = True
+        self.editorobj.uiobjs.tabs_current = None
         for item in self.editorobj.uiobjs.tabs:
             if not item == None:
-                update_current = False
-        if update_current:
-            self.editorobj.uiobjs.tabs_current = None
+                item.show()
     
     def set_title(self, text):
         self.header_button.config(text = '{}: {}'.format(self.name, text))
