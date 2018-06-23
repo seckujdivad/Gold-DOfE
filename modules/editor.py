@@ -43,13 +43,12 @@ class Editor:
                     
                     self.toprow.grid(row = 0, column = 0, sticky = 'NESW')
                     self.textentry.grid(row = 1, column = 0, sticky = 'NESW')
+                    
+                    self.frame.rowconfigure(1, weight = 1)
                 
                 def reload_text(self):
                     path = self.path.get()
-                    try:
-                        self.textentry.delete(0, tk.END)
-                    except tk.TclError:
-                        pass
+                    self.textentry.delete(0.0, tk.END)
                     self.textentry.insert(tk.END, self.editorobj.map.get_text(self.path.get()))
                     
                     self.tabobj.set_title(path)
@@ -99,6 +98,8 @@ class Editor:
         self.uiobjs.editor_pane_frame.grid(row = 0, column = 0, sticky = 'NESW')
         self.uiobjs.tabs_frame.grid(row = 1, column = 0, sticky = 'NESW')
         self.uiobjs.tabs_current_frame.grid(row = 2, column = 0, sticky = 'NESW')
+        
+        self.frame.rowconfigure(2, weight = 1)
     
     def load(self, map_name):
         self.map = Map(map_name)
@@ -128,7 +129,7 @@ class EditorTab:
     def show(self):
         if not self.editorobj.uiobjs.tabs_current == None:
             self.editorobj.uiobjs.tabs[self.editorobj.uiobjs.tabs_current].hide()
-        self.frame.pack(fill = tk.BOTH)
+        self.frame.pack(fill = tk.BOTH, expand = True)
         self.editorobj.uiobjs.tabs_current = self.index
     
     def hide(self):
