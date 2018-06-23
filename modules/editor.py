@@ -45,6 +45,7 @@ class Editor:
                     self.textentry.grid(row = 1, column = 0, sticky = 'NESW')
                     
                     self.frame.rowconfigure(1, weight = 1)
+                    self.frame.columnconfigure(0, weight = 1)
                 
                 def reload_text(self):
                     path = self.path.get()
@@ -100,12 +101,16 @@ class Editor:
         self.uiobjs.tabs_current_frame.grid(row = 2, column = 0, sticky = 'NESW')
         
         self.frame.rowconfigure(2, weight = 1)
+        self.frame.columnconfigure(0, weight = 1)
     
     def load(self, map_name):
         self.map = Map(map_name)
         self.editors.map = self.map
 
 class EditorTab:
+    '''
+    A tab for the editor
+    '''
     def __init__(self, name, editorobj, index):
         self.name = name
         self.editorobj = editorobj
