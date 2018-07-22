@@ -1,7 +1,7 @@
 {
     "graphics": {
         "PILrender": true,
-        "stacked model quality": 0
+        "stacked model quality": 1
     },
     "hud": {
         "chat": {

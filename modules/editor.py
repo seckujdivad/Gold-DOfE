@@ -25,6 +25,15 @@ class Editor:
         self.pagemethods = pagemethods
         
         class editors:
+            class _Template:
+                """
+                A template for making editors
+                """
+                def __init__(self, frame, editorobj, tabobj):
+                    self.frame = frame
+                    self.editorobj = editorobj
+                    self.tabobj = tabobj
+                    
             class Text:
                 '''
                 Edit a text file in the map directory
@@ -84,13 +93,15 @@ class Editor:
                     self.list_list.config(yscrollcommand = self.list_bar.set)
                     
                     self.button_copy = tk.Button(self.frame, text = 'Copy', command = self.copy_selection_to_clipboard, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Button))
+                    self.button_open = tk.Button(self.frame, text = 'Open with system', command = self.open_selection_with_system, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Button))
                     
                     self.list_bar.pack(side = tk.RIGHT, fill = tk.Y)
                     self.list_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
-                    self.list_frame.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.list_frame.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
                     self.button_copy.grid(row = 1, column = 0, sticky = 'NESW')
-                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 1, 2)
+                    self.button_open.grid(row = 1, column = 1, sticky = 'NESW')
+                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 2, 2)
                     self.frame.rowconfigure(1, weight = 0)
                     
                     self.tabobj.set_title(self.editorobj.map.name)
@@ -133,6 +144,12 @@ class Editor:
                     if not selection == ():
                         text = self.all_paths[selection[0]]
                         self.set_clipboard(text)
+                
+                def open_selection_with_system(self, event = None):
+                    selection = self.list_list.curselection()
+                    if not selection == ():
+                        text = self.all_paths[selection[0]]
+                        os.system('start "" "{}"'.format(os.path.join(self.editorobj.map.path, text)))
                 
                 def set_clipboard(self, text):
                     self.editorobj.uiobjs.pagemethods.uiobject.root.clipboard_clear()
