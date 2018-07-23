@@ -187,17 +187,20 @@ class Editor:
                     self.label_mousecoords = tk.Label(self.frame, text = 'X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
                     
                     #list of materials to set which one is used for the selected geometry
-                    self.matlist_frame = tk.Frame(self.frame)
-                    self.matlist_list = tk.Listbox(self.matlist_frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Listbox))
-                    self.matlist_bar = tk.Scrollbar(self.matlist_frame, command = self.matlist_list.yview)
-                    self.matlist_list.config(yscrollcommand = self.matlist_bar.set)
+                    self.polylist_frame = tk.Frame(self.frame)
+                    self.polylist_list = tk.Listbox(self.polylist_frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.polylist_bar = tk.Scrollbar(self.polylist_frame, command = self.polylist_list.yview)
+                    self.polylist_list.config(yscrollcommand = self.polylist_bar.set)
                     
-                    self.matlist_bar.pack(side = tk.RIGHT, fill = tk.Y)
-                    self.matlist_list.pack(side = tk.LEFT, fill = tk.BOTH)
+                    self.polylist_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.polylist_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     self.canvas.grid(column = 0, row = 0, sticky = 'NESW')
                     self.label_mousecoords.grid(column = 0, row = 1, sticky = 'NESW')
-                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 1, 2)
+                    self.polylist_frame.grid(column = 1, row = 0, rowspan = 2, sticky = 'NESW')
+                    #self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 2, 2)
+                    self.frame.rowconfigure(0, weight = 2)
+                    self.frame.columnconfigure(0, weight = 2)
                     
                     self.load_map_data()
                     
@@ -217,6 +220,7 @@ class Editor:
                         item['material data'] = self.editorobj.map.get_json(item['material'])
                         item['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(item['ngon'], item['coordinates']), fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
                         self.screen_data.append(item)
+                        self.polylist_list.insert(tk.END, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
                 
                 def clear_screen(self):
                     for item in self.screen_data:
@@ -254,13 +258,18 @@ class Editor:
                             
                             #update the index of the current selection to match the object selected
                             self.selection = self.screen_data.index(item)
+                            
+                            #select the correct item in the polygon list
+                            self.polylist_list.selection_clear(0, tk.END)
+                            self.polylist_list.selection_set(self.selection)
                     
             library = {'Text': Text,
                        'Tree': Tree,
-                       'Layout': Layout}
+                       'Layout': Layout} #all the types of tab
             
             @classmethod
             def create_new(self, name):
+                #make a new pane/tab
                 new_pane = EditorTab(name, self, len(self.uiobjs.tabs))
                 new_pane.show()
                 self.uiobjs.tabs.append(new_pane)
@@ -271,7 +280,7 @@ class Editor:
         class uiobjs:
             editor_pane_frame = tk.Frame(self.frame)
             editor_panes = []
-            for name in self.editors.library:
+            for name in self.editors.library: #make buttons to open new types of tab
                 editor_panes.append(tk.Button(editor_pane_frame, text = name, command = functools.partial(self.editors.create_new, name), **self.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button)))
             
             tabs_frame = tk.Frame(self.frame)
@@ -290,6 +299,7 @@ class Editor:
             i += 1
         self.pagemethods.uiobject.styling.set_weight(self.uiobjs.editor_pane_frame, len(self.uiobjs.editor_panes) - 1, 0)
         
+        #specify the positions of the UI elements
         self.uiobjs.editor_pane_frame.grid(row = 0, column = 0, sticky = 'NESW')
         self.uiobjs.tabs_frame.grid(row = 1, column = 0, sticky = 'NESW')
         self.uiobjs.tabs_current_frame.grid(row = 2, column = 0, sticky = 'NESW')
@@ -311,6 +321,7 @@ class EditorTab:
         self.index = index
         self.active = True
         
+        #construct UI
         self.header_frame = tk.Frame(self.editorobj.uiobjs.tabs_frame) #idk, the thing you click on to switch tabs
         self.header_button = tk.Button(self.header_frame, text = '####', command = self.show, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
         self.header_close = tk.Button(self.header_frame, text = 'X', command = self.destroy, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
@@ -326,6 +337,7 @@ class EditorTab:
         self.editor = self.editorobj.library[self.name](self.frame, self.editorobj, self)
     
     def show(self):
+        'Show the tab'
         if not self.editorobj.uiobjs.tabs_current == None:
             self.editorobj.uiobjs.tabs[self.editorobj.uiobjs.tabs_current].hide()
         self.frame.pack(fill = tk.BOTH, expand = True)
@@ -333,10 +345,12 @@ class EditorTab:
         self.active = True
     
     def hide(self):
+        'Hide the tab'
         self.frame.pack_forget()
         self.active = False
     
     def destroy(self):
+        'Completely destroy the tab (close it)'
         self.hide() #remove pane containing editor
         self.header_frame.pack_forget() #remove tab from the list of tabs on the screen
         self.editorobj.uiobjs.tabs[self.index] = None #remove this tab from the list of tabs in memory
@@ -349,4 +363,5 @@ class EditorTab:
                 item.show()
     
     def set_title(self, text):
+        'Set the title of the tab'
         self.header_button.config(text = '{}: {}'.format(self.name, text))
