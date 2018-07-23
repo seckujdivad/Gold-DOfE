@@ -293,6 +293,8 @@ class UI:
                     self.button_choose.config(command = self.open_map)
                     self.button_go_back.config(command = self.return_to_menu)
                     
+                    self.listbox_box.bind('<Return>', self.open_map)
+                    
                     self.frame.pack(fill = tk.BOTH, expand = True)
                 
                 @classmethod
@@ -301,7 +303,7 @@ class UI:
                     self.frame.pack_forget()
                 
                 @classmethod
-                def open_map(self):
+                def open_map(self, event = None):
                     index = self.listbox_box.curselection()
                     if type(index[0]) == int: #if there is a selection
                         map_name = self.listbox_box.get(index[0])
