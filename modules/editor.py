@@ -11,13 +11,26 @@ class Map:
         self.path = os.path.join(sys.path[0], 'server', 'maps', self.name)
         
     def get_text(self, path):
+        'Gets text from a file in the map folder'
         with open(os.path.join(self.path, path), 'r') as file:
             text = file.read()
         return text
     
     def write_text(self, path, text):
+        'Writes text to a file in the map folder'
         with open(os.path.join(self.path, path), 'w') as file:
             file.write(text)
+    
+    def get_json(self, path):
+        'Gets data from a json file in the map folder and reads it'
+        with open(os.path.join(self.path, path), 'r') as file:
+            data = json.load(file)
+        return data
+    
+    def write_json(self, path, data):
+        'Writes data to a json file in the map folder'
+        with open(os.path.join(self.path, path), 'w') as file:
+            json.dump(file, data)
 
 class Editor:
     def __init__(self, frame, pagemethods):
@@ -109,8 +122,7 @@ class Editor:
                     self.populate_list()
                     
                 def populate_list(self):
-                    with open(os.path.join(self.editorobj.map.path, 'editorcfg.json'), 'r') as file:
-                        cfg = json.load(file)
+                    cfg = self.editorobj.map.get_json('editorcfg.json')
                         
                     all_items, self.all_paths = self.index_dir('', 0, cfg['ignore'])
                     
@@ -155,8 +167,81 @@ class Editor:
                     self.editorobj.uiobjs.pagemethods.uiobject.root.clipboard_clear()
                     self.editorobj.uiobjs.pagemethods.uiobject.root.clipboard_append(text)
             
+            class Layout:
+                """
+                Edit the basic layout of the map
+                """
+                def __init__(self, frame, editorobj, tabobj):
+                    self.frame = frame
+                    self.editorobj = editorobj
+                    self.tabobj = tabobj
+                    
+                    self.tabobj.set_title('opening...')
+                    
+                    self.screen_data = []
+                    
+                    self.canvas = tk.Canvas(self.frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Canvas))
+                    self.label_mousecoords = tk.Label(self.frame, text = 'X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
+                    
+                    #list of materials to set which one is used for the selected geometry
+                    self.matlist_frame = tk.Frame(self.frame)
+                    self.matlist_list = tk.Listbox(self.matlist_frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.matlist_bar = tk.Scrollbar(self.matlist_frame, command = self.matlist_list.yview)
+                    self.matlist_list.config(yscrollcommand = self.matlist_bar.set)
+                    
+                    self.matlist_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.matlist_list.pack(side = tk.LEFT, fill = tk.BOTH)
+                    
+                    self.canvas.grid(column = 0, row = 0, sticky = 'NESW')
+                    self.label_mousecoords.grid(column = 0, row = 1, sticky = 'NESW')
+                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 1, 2)
+                    
+                    self.load_map_data()
+                    
+                    self.canvas.bind('<Motion>', self.mouse_coordinates)
+                    self.canvas.bind('<Button>', self.select_item)
+                    
+                    self.tabobj.set_title('editing...')
+                
+                def load_map_data(self):
+                    #open map data file
+                    self.map_data = self.editorobj.map.get_json('layout.json')
+                    
+                    #send map geometry to screen
+                    self.clear_screen()
+                    for item in self.map_data['geometry']:
+                        item = item.copy()
+                        item['material data'] = self.editorobj.map.get_json(item['material'])
+                        item['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(item['ngon']), fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
+                        self.screen_data.append(item)
+                
+                def clear_screen(self):
+                    for item in self.screen_data:
+                        self.canvas.delete(item['canvobj'])
+                    self.screen_data = []
+                
+                def unpack_coordinates(self, coords):
+                    output = []
+                    for x, y in coords:
+                        output.append(x)
+                        output.append(y)
+                    return output
+                
+                def mouse_coordinates(self, event):
+                    self.label_mousecoords.config(text = 'X: {:>4} Y: {:>4}'.format(event.x, event.y))
+                
+                def select_item(self, event):
+                    canvobj = self.canvas.find_closest(event.x, event.y)
+                    if not canvobj == ():
+                        canvobj = canvobj[0]
+                        for scan_item in self.screen_data:
+                            if scan_item['canvobj'] == canvobj:
+                                item = scan_item
+                        print(item)
+                    
             library = {'Text': Text,
-                       'Tree': Tree}
+                       'Tree': Tree,
+                       'Layout': Layout}
             
             @classmethod
             def create_new(self, name):

@@ -67,8 +67,9 @@ class Game:
                     self.engine.load_map(request.arguments['map name'])
 
 class Engine:
-    def __init__(self, game):
+    def __init__(self, game, playable = True):
         self.game = game
+        self.playable = playable #true - to be used to play, false - to be used to edit
         
         class map:
             class textures:
