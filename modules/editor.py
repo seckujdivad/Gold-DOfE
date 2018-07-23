@@ -216,6 +216,8 @@ class Editor:
                     self.canvas.bind('<Motion>', self.mouse_coordinates)
                     self.canvas.bind('<Button>', self.select_item)
                     self.polylist_list.bind('<Button>', self.on_material_select)
+                    self.polylist_list.bind('<Up>', self.on_material_select)
+                    self.polylist_list.bind('<Down>', self.on_material_select)
                     
                     self.tabobj.set_title('editing...')
                 
