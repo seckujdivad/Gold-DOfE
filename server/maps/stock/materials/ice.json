@@ -12,5 +12,6 @@
 	"damage": {
 		"player": 0
 	},
-	"display name": "Ice"
+	"display name": "Ice",
+	"hitbox": [[-50, -50], [-50, 50], [50, 50], [50, -50]]
 }

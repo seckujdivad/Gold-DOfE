@@ -3,6 +3,8 @@ import os
 import sys
 import functools
 import json
+import time
+import threading
 
 import modules.engine
 
@@ -206,6 +208,7 @@ class Editor:
                     
                     self.canvas.bind('<Motion>', self.mouse_coordinates)
                     self.canvas.bind('<Button>', self.select_item)
+                    self.polylist_list.bind('<Button>', self.on_material_select)
                     
                     self.tabobj.set_title('editing...')
                 
@@ -218,7 +221,7 @@ class Editor:
                     for item in self.map_data['geometry']:
                         item = item.copy()
                         item['material data'] = self.editorobj.map.get_json(item['material'])
-                        item['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(item['ngon'], item['coordinates']), fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
+                        item['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(item['material data']['hitbox'], item['coordinates']), fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
                         self.screen_data.append(item)
                         self.polylist_list.insert(tk.END, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
                 
@@ -248,20 +251,39 @@ class Editor:
                                 if scan_item['canvobj'] == canvobj:
                                     item = scan_item
                             
-                            #remove formatting from previous selection (if there was one)
-                            if not self.selection == None:
-                                current = self.screen_data[self.selection]
-                                self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['texture']['editor colour'], outline = current['material data']['texture']['editor colour'])
-                            
-                            #apply formatting to current selection
-                            self.canvas.itemconfigure(item['canvobj'], fill = modules.engine.colour.increase(item['material data']['texture']['editor colour'], [20, 20, 20]), outline = '#000000')
-                            
-                            #update the index of the current selection to match the object selected
-                            self.selection = self.screen_data.index(item)
-                            
-                            #select the correct item in the polygon list
-                            self.polylist_list.selection_clear(0, tk.END)
-                            self.polylist_list.selection_set(self.selection)
+                            self.select_index(self.screen_data.index(item))
+                                    
+                def select_index(self, index):
+                    item = self.screen_data[index]
+                    print(index, item)
+                    
+                    if not self.selection == index: #if the current selection is the same as the one being switched to, don't bother
+                        #remove formatting from previous selection (if there was one)
+                        if not self.selection == None:
+                            current = self.screen_data[self.selection]
+                            self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['texture']['editor colour'], outline = current['material data']['texture']['editor colour'])
+                        
+                        #apply formatting to current selection
+                        self.canvas.itemconfigure(item['canvobj'], fill = modules.engine.colour.increase(item['material data']['texture']['editor colour'], [20, 20, 20]), outline = '#000000')
+                        
+                        #update the index of the current selection to match the object selected
+                        self.selection = index
+                        
+                        #select the correct item in the polygon list
+                        self.polylist_list.selection_clear(0, tk.END)
+                        self.polylist_list.selection_set(self.selection)
+                        
+                def on_material_select(self, event = None):
+                    threading.Thread(target = self._on_material_select).start() #start in a separate thread
+                
+                def _on_material_select(self):
+                    '''
+                    THis function must be called in a separate thread because it is bound to click. This means that the selection in the listbox hasn't yet been updated. So that it uses the correct selection (instead of the old one), this function is called in a separate thread. This allows the tk mainloop thread to continue and update the selection ready for this thread
+                    '''
+                    time.sleep(0.1)
+                    selection = self.polylist_list.curselection()
+                    if not selection == ():
+                        self.select_index(selection[0])
                     
             library = {'Text': Text,
                        'Tree': Tree,
