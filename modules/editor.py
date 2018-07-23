@@ -4,6 +4,8 @@ import sys
 import functools
 import json
 
+import modules.engine
+
 class Map:
     def __init__(self, name):
         self.name = name
@@ -179,6 +181,7 @@ class Editor:
                     self.tabobj.set_title('opening...')
                     
                     self.screen_data = []
+                    self.selection = None
                     
                     self.canvas = tk.Canvas(self.frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Canvas))
                     self.label_mousecoords = tk.Label(self.frame, text = 'X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
@@ -212,7 +215,7 @@ class Editor:
                     for item in self.map_data['geometry']:
                         item = item.copy()
                         item['material data'] = self.editorobj.map.get_json(item['material'])
-                        item['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(item['ngon']), fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
+                        item['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(item['ngon'], item['coordinates']), fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
                         self.screen_data.append(item)
                 
                 def clear_screen(self):
@@ -220,11 +223,11 @@ class Editor:
                         self.canvas.delete(item['canvobj'])
                     self.screen_data = []
                 
-                def unpack_coordinates(self, coords):
+                def unpack_coordinates(self, coordinates, modifier):
                     output = []
-                    for x, y in coords:
-                        output.append(x)
-                        output.append(y)
+                    for x, y in coordinates:
+                        output.append(x + modifier[0])
+                        output.append(y + modifier[1])
                     return output
                 
                 def mouse_coordinates(self, event):
@@ -233,11 +236,24 @@ class Editor:
                 def select_item(self, event):
                     canvobj = self.canvas.find_closest(event.x, event.y)
                     if not canvobj == ():
-                        canvobj = canvobj[0]
-                        for scan_item in self.screen_data:
-                            if scan_item['canvobj'] == canvobj:
-                                item = scan_item
-                        print(item)
+                        if canvobj[0] in self.canvas.find_overlapping(event.x, event.y, event.x, event.y):
+                            canvobj = canvobj[0]
+                            
+                            #find the canvas object in screen_data
+                            for scan_item in self.screen_data:
+                                if scan_item['canvobj'] == canvobj:
+                                    item = scan_item
+                            
+                            #remove formatting from previous selection (if there was one)
+                            if not self.selection == None:
+                                current = self.screen_data[self.selection]
+                                self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['texture']['editor colour'], outline = current['material data']['texture']['editor colour'])
+                            
+                            #apply formatting to current selection
+                            self.canvas.itemconfigure(item['canvobj'], fill = modules.engine.colour.increase(item['material data']['texture']['editor colour'], [20, 20, 20]), outline = '#000000')
+                            
+                            #update the index of the current selection to match the object selected
+                            self.selection = self.screen_data.index(item)
                     
             library = {'Text': Text,
                        'Tree': Tree,
