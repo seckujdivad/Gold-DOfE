@@ -186,7 +186,10 @@ class Editor:
                     self.selection = None
                     
                     self.canvas = tk.Canvas(self.frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Canvas))
-                    self.label_mousecoords = tk.Label(self.frame, text = 'X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
+                    
+                    self.frame_info = tk.Frame(self.frame)
+                    self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
+                    self.label_polycoords = tk.Label(self.frame_info, text = 'Object - X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
                     
                     #list of materials to set which one is used for the selected geometry
                     self.polylist_frame = tk.Frame(self.frame)
@@ -198,11 +201,15 @@ class Editor:
                     self.polylist_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     self.canvas.grid(column = 0, row = 0, sticky = 'NESW')
-                    self.label_mousecoords.grid(column = 0, row = 1, sticky = 'NESW')
+                    self.frame_info.grid(column = 0, row = 1, sticky = 'NESW')
                     self.polylist_frame.grid(column = 1, row = 0, rowspan = 2, sticky = 'NESW')
                     #self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 2, 2)
                     self.frame.rowconfigure(0, weight = 2)
                     self.frame.columnconfigure(0, weight = 2)
+                    
+                    self.label_mousecoords.grid(column = 0, row = 0, sticky = 'NESW')
+                    self.label_polycoords.grid(column = 1, row = 0, sticky = 'NESW')
+                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame_info, 2, 1)
                     
                     self.load_map_data()
                     
@@ -238,7 +245,7 @@ class Editor:
                     return output
                 
                 def mouse_coordinates(self, event):
-                    self.label_mousecoords.config(text = 'X: {:>4} Y: {:>4}'.format(event.x, event.y))
+                    self.label_mousecoords.config(text = 'Mouse - X: {:>4} Y: {:>4}'.format(event.x, event.y))
                 
                 def select_item(self, event):
                     canvobj = self.canvas.find_closest(event.x, event.y)
@@ -273,14 +280,20 @@ class Editor:
                         self.polylist_list.selection_clear(0, tk.END)
                         self.polylist_list.selection_set(self.selection)
                         
+                        #change the coordinate text
+                        self.update_polycoord_display(*item['coordinates'])
+                 
+                def update_polycoord_display(self, x, y):
+                    self.label_polycoords.config(text = 'Object - X: {:>4} Y: {:>4}'.format(x, y))
+                        
                 def on_material_select(self, event = None):
                     threading.Thread(target = self._on_material_select).start() #start in a separate thread
                 
                 def _on_material_select(self):
                     '''
-                    THis function must be called in a separate thread because it is bound to click. This means that the selection in the listbox hasn't yet been updated. So that it uses the correct selection (instead of the old one), this function is called in a separate thread. This allows the tk mainloop thread to continue and update the selection ready for this thread
+                    This function must be called in a separate thread because it is bound to click. This means that the selection in the listbox hasn't yet been updated. So that it uses the correct selection (instead of the old one), this function is called in a separate thread. This allows the tk mainloop thread to continue and update the selection ready for this thread
                     '''
-                    time.sleep(0.1)
+                    time.sleep(0.05)
                     selection = self.polylist_list.curselection()
                     if not selection == ():
                         self.select_index(selection[0])
