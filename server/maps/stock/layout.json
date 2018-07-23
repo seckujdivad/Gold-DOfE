@@ -1,1 +1,7 @@
-{}
+{
+	"geometry": [{
+		"ngon": [[0, 0], [0, 100], [100, 100], [100, 0]],
+		"material": "materials/ice.json"
+	}],
+	"chunk sizes": [200, 200]
+}

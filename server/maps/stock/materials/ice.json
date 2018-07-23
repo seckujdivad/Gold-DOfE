@@ -1,12 +1,15 @@
 {
 	"texture": {
 		"animated": false,
-		"address": "textures/ice.png"
+		"address": "textures/ice.png",
+		"editor colour": "#C9CDFF"
 	},
 	"movement": {
 		"accelerate": 0.2,
 		"deccelerate": 0.1,
-		"cap": 10,
-		"damage": 0
+		"cap": 10
+	},
+	"damage": {
+		"player": 0
 	}
 }
