@@ -188,8 +188,11 @@ class Editor:
                     self.canvas = tk.Canvas(self.frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Canvas))
                     
                     self.frame_info = tk.Frame(self.frame)
-                    self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
-                    self.label_polycoords = tk.Label(self.frame_info, text = 'Object - X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
+                    self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
+                    self.label_polyx = tk.Label(self.frame_info, text = 'X:', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
+                    self.label_polyy = tk.Label(self.frame_info, text = 'Y:', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
+                    self.spinbox_polyx = tk.Spinbox(self.frame_info, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.spinbox_polyy = tk.Spinbox(self.frame_info, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Spinbox))
                     
                     #list of materials to set which one is used for the selected geometry
                     self.polylist_frame = tk.Frame(self.frame)
@@ -207,9 +210,13 @@ class Editor:
                     self.frame.rowconfigure(0, weight = 2)
                     self.frame.columnconfigure(0, weight = 2)
                     
-                    self.label_mousecoords.grid(column = 0, row = 0, sticky = 'NESW')
-                    self.label_polycoords.grid(column = 1, row = 0, sticky = 'NESW')
-                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame_info, 2, 1)
+                    self.label_mousecoords.grid(column = 0, row = 0, rowspan = 2, sticky = 'NESW')
+                    self.label_polyx.grid(column = 1, row = 0, sticky = 'NESW')
+                    self.spinbox_polyx.grid(column = 2, row = 0, sticky = 'NESW')
+                    self.label_polyy.grid(column = 1, row = 1, sticky = 'NESW')
+                    self.spinbox_polyy.grid(column = 2, row = 1, sticky = 'NESW')
+                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame_info, 3, 2)
+                    self.frame_info.columnconfigure(1, weight = 0)
                     
                     self.load_map_data()
                     
