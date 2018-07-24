@@ -127,6 +127,8 @@ class Editor:
                     self.ui_styling.set_weight(self.frame, 2, 2)
                     self.frame.rowconfigure(1, weight = 0)
                     
+                    self.frame.bind('<Control-C>', self.threaded_copy_selection_to_clipboard) #doesn't work yet; may fix (button is an alright workaround)
+                    
                     self.tabobj.set_title(self.editorobj.map.name)
                     
                     self.populate_list()
@@ -166,6 +168,9 @@ class Editor:
                     if not selection == ():
                         text = self.all_paths[selection[0]]
                         self.set_clipboard(text)
+                
+                def threaded_copy_selection_to_clipboard(self, event = None):
+                    threading.Thread(target = self.copy_selection_to_clipboard, name = 'Threaded copy selection to clipboard').start()
                 
                 def open_selection_with_system(self, event = None):
                     selection = self.list_list.curselection()
@@ -342,9 +347,11 @@ class Editor:
                         self.select_index(selection[0])
                 
                 def open_object_selection(self):
+                    'Open the object selection window to add a new object to the screen'
                     AddObject(self)
                 
                 def add_object(self, dict):
+                    'Add an object to the screen using a dictionary containing the coordinates and the material path'
                     dict['material data'] = self.editorobj.map.get_json(dict['material'])
                     dict['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(dict['material data']['hitbox'], dict['coordinates']), fill = dict['material data']['texture']['editor colour'], outline = dict['material data']['texture']['editor colour'])
                     self.screen_data.append(dict)
@@ -358,7 +365,7 @@ class Editor:
             
             @classmethod
             def create_new(self, name):
-                #make a new pane/tab
+                'Make a new pane/tab'
                 new_pane = EditorTab(name, self, len(self.uiobjs.tabs))
                 new_pane.show()
                 self.uiobjs.tabs.append(new_pane)
@@ -399,7 +406,8 @@ class Editor:
         self.frame.columnconfigure(0, weight = 1)
     
     def load(self, map_name):
-        self.map = Map(map_name)
+        'Specify the map file to be used. Must be called before the editor is interacted with'
+        self.map = Map(map_name) #this handles most of the interactions with the map files
         self.editors.map = self.map
 
 class EditorTab:
@@ -410,7 +418,7 @@ class EditorTab:
         self.name = name
         self.editorobj = editorobj
         self.index = index
-        self.active = True
+        self.active = True #when a new tab is made, it is shown by default
         
         self.ui_styling = self.editorobj.uiobjs.ui_styling
         
@@ -419,7 +427,7 @@ class EditorTab:
         self.header_button = tk.Button(self.header_frame, text = '####', command = self.show, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         self.header_close = tk.Button(self.header_frame, text = 'X', command = self.destroy, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         
-        self.set_title('######')
+        self.set_title('######') #set a blank title for the tab (ready for the editor to specify one)
         
         self.header_button.pack(side = tk.LEFT)
         self.header_close.pack(side = tk.LEFT)
@@ -431,16 +439,16 @@ class EditorTab:
     
     def show(self):
         'Show the tab'
-        if not self.editorobj.uiobjs.tabs_current == None:
+        if not self.editorobj.uiobjs.tabs_current == None: #hide the current tab if there is one
             self.editorobj.uiobjs.tabs[self.editorobj.uiobjs.tabs_current].hide()
-        self.frame.pack(fill = tk.BOTH, expand = True)
-        self.editorobj.uiobjs.tabs_current = self.index
-        self.active = True
+        self.frame.pack(fill = tk.BOTH, expand = True) #show the frame that contains all the tab objects
+        self.editorobj.uiobjs.tabs_current = self.index #set the current tab to this one
+        self.active = True #change mode
     
     def hide(self):
         'Hide the tab'
-        self.frame.pack_forget()
-        self.active = False
+        self.frame.pack_forget() #hide the frame that contains all the objects that make up the tab
+        self.active = False #change mode
     
     def destroy(self):
         'Completely destroy the tab (close it)'
@@ -460,6 +468,9 @@ class EditorTab:
         self.header_button.config(text = '{}: {}'.format(self.name, text))
 
 class AddObject:
+    '''
+    A window that allows you to add another material to the layout
+    '''
     def __init__(self, parent):
         self.parent = parent
         
@@ -471,7 +482,7 @@ class AddObject:
         threading.Thread(target = self.ui, name = 'Add object to editor UI thread').start() #don't hold the main thread
     
     def ui(self):
-        self.root = tk.Tk()
+        self.root = tk.Tk() #make a new window
         self.root.title('Editor - add object')
         
         #header label
@@ -486,7 +497,7 @@ class AddObject:
         self.list_bar.pack(side = tk.RIGHT, fill = tk.Y)
         self.list_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
         
-        self.populate_list()
+        self.populate_list() #add all materials to the list
         
         #buttons
         self.button_choose = tk.Button(self.root, text = 'Add', command = self.add_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
@@ -500,18 +511,20 @@ class AddObject:
         self.ui_styling.set_weight(self.root, 2, 2)
         self.root.rowconfigure(0, weight = 0)
         
-        self.root.mainloop()
+        self.root.mainloop() #mainloop for new UI window (so that button presses and keybinds are handled properly
     
     def populate_list(self):
+        #clear data (if there is any)
         self.list_list.delete(0, tk.END)
         self.paths = []
         
+        #iterate through default material directory
         for material in os.listdir(os.path.join(self.map.path, 'materials')):
-            data = self.map.get_json(os.path.join(self.map.path, 'materials', material))
-            self.list_list.insert(tk.END, data['display name'])
-            self.paths.append(os.path.join(self.map.path, 'materials', material))
+            data = self.map.get_json(os.path.join(self.map.path, 'materials', material)) #get the material file
+            self.list_list.insert(tk.END, data['display name']) #use the material display name instead of the path in the list
+            self.paths.append(os.path.join(self.map.path, 'materials', material)) #add the path to the list of paths so that it can be easily found when chosen
     
     def add_selection(self):
         selection = self.list_list.curselection()
-        if not selection == ():
-            self.parent.add_object({"coordinates": [0, 0], "material": self.paths[selection[0]]})
+        if not selection == (): #make sure that something has been selected
+            self.parent.add_object({"coordinates": [0, 0], "material": self.paths[selection[0]]}) #tell the layout editor to add in the material at 0, 0
