@@ -21,7 +21,7 @@
 		{
 			"coordinates": [
 				300,
-				150
+				200
 			],
 			"material": "materials\\ice.json"
 		}

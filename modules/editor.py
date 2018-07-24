@@ -262,6 +262,7 @@ class Editor:
                     self.polylist_list.bind('<Button>', self.on_material_select)
                     self.polylist_list.bind('<Up>', self.on_material_select)
                     self.polylist_list.bind('<Down>', self.on_material_select)
+                    self.canvas.bind('<Control-S>', self.save) #doesn't work yet
                     
                     self.tabobj.set_title('editing...')
                 
@@ -396,6 +397,7 @@ class Editor:
                         self.polylist_list.insert(tk.END, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
                 
                 def save(self):
+                    self.tabobj.set_title('saving...')
                     data = self.editorobj.map.get_json('layout.json')
                     
                     geomdata = []
@@ -405,14 +407,32 @@ class Editor:
                     data['geometry'] = geomdata
                     
                     self.editorobj.map.write_json('layout.json', data)
+                    
+                    self.tabobj.set_title('editing...')
                 
                 def reload(self):
+                    self.tabobj.set_title('reloading...')
+                    
                     self.clear_screen()
                     self.load_map_data()
                     
+                    self.tabobj.set_title('editing...')
+            
+            class MaterialEditor:
+                """
+                Edit materials and their properties
+                """
+                def __init__(self, frame, editorobj, tabobj):
+                    self.frame = frame
+                    self.editorobj = editorobj
+                    self.tabobj = tabobj
+                    
+                    self.ui_styling = self.editorobj.uiobjs.ui_styling
+                    
             library = {'Text': Text,
                        'Tree': Tree,
-                       'Layout': Layout} #all the types of tab
+                       'Layout': Layout,
+                       'Material Editor': MaterialEditor} #all the types of tab
             
             @classmethod
             def create_new(self, name):
