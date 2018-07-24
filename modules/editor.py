@@ -34,7 +34,7 @@ class Map:
     def write_json(self, path, data):
         'Writes data to a json file in the map folder'
         with open(os.path.join(self.path, path), 'w') as file:
-            json.dump(data, file)
+            json.dump(data, file, sort_keys=True, indent='\t')
 
 class Editor:
     def __init__(self, frame, pagemethods):
