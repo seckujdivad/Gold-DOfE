@@ -41,6 +41,8 @@ class Editor:
         self.frame = frame
         self.pagemethods = pagemethods
         
+        self.ui_styling = self.pagemethods.uiobject.styling
+        
         class editors:
             class _Template:
                 """
@@ -60,16 +62,18 @@ class Editor:
                     self.editorobj = editorobj
                     self.tabobj = tabobj
                     
+                    self.ui_styling = self.editorobj.uiobjs.ui_styling
+                    
                     self.toprow = tk.Frame(self.frame)
-                    self.path = tk.Entry(self.toprow, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Entry))
-                    self.save = tk.Button(self.toprow, text = 'Save', command = self.save_text, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
-                    self.reload = tk.Button(self.toprow, text = 'Reload', command = self.reload_text, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
+                    self.path = tk.Entry(self.toprow, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.save = tk.Button(self.toprow, text = 'Save', command = self.save_text, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.reload = tk.Button(self.toprow, text = 'Reload', command = self.reload_text, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     self.path.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     self.save.pack(side = tk.RIGHT, fill = tk.Y)
                     self.reload.pack(side = tk.RIGHT, fill = tk.Y)
                     
-                    self.textentry = tk.Text(self.frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Text))
+                    self.textentry = tk.Text(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Text))
                     
                     self.toprow.grid(row = 0, column = 0, sticky = 'NESW')
                     self.textentry.grid(row = 1, column = 0, sticky = 'NESW')
@@ -102,6 +106,8 @@ class Editor:
                     self.editorobj = editorobj
                     self.tabobj = tabobj
                     
+                    self.ui_styling = self.editorobj.uiobjs.ui_styling
+                    
                     self.all_paths = []
                     
                     self.list_frame = tk.Frame(self.frame)
@@ -109,8 +115,8 @@ class Editor:
                     self.list_bar = tk.Scrollbar(self.list_frame, command = self.list_list.yview)
                     self.list_list.config(yscrollcommand = self.list_bar.set)
                     
-                    self.button_copy = tk.Button(self.frame, text = 'Copy', command = self.copy_selection_to_clipboard, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Button))
-                    self.button_open = tk.Button(self.frame, text = 'Open with system', command = self.open_selection_with_system, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Button))
+                    self.button_copy = tk.Button(self.frame, text = 'Copy', command = self.copy_selection_to_clipboard, **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
+                    self.button_open = tk.Button(self.frame, text = 'Open with system', command = self.open_selection_with_system, **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
                     
                     self.list_bar.pack(side = tk.RIGHT, fill = tk.Y)
                     self.list_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
@@ -118,7 +124,7 @@ class Editor:
                     self.list_frame.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
                     self.button_copy.grid(row = 1, column = 0, sticky = 'NESW')
                     self.button_open.grid(row = 1, column = 1, sticky = 'NESW')
-                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 2, 2)
+                    self.ui_styling.set_weight(self.frame, 2, 2)
                     self.frame.rowconfigure(1, weight = 0)
                     
                     self.tabobj.set_title(self.editorobj.map.name)
@@ -180,37 +186,39 @@ class Editor:
                     self.editorobj = editorobj
                     self.tabobj = tabobj
                     
+                    self.ui_styling = self.editorobj.uiobjs.ui_styling
+                    
                     self.tabobj.set_title('opening...')
                     
                     self.screen_data = []
                     self.selection = None
                     
-                    self.canvas = tk.Canvas(self.frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Canvas))
+                    self.canvas = tk.Canvas(self.frame, **self.ui_styling.get(font_size = 'medium', object_type = tk.Canvas))
                     
                     #frame containing the bottom row of UI objects
                     self.frame_info = tk.Frame(self.frame)
                     
                     #label showing the position of the mouse
-                    self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: 0000 Y: 0000', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
+                    self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: 0000 Y: 0000', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     
                     #add object coordinate setting UI
                     self.polyvar_x = tk.StringVar()
                     self.polyvar_y = tk.StringVar()
                     
-                    self.label_polyx = tk.Label(self.frame_info, text = 'X:', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
-                    self.label_polyy = tk.Label(self.frame_info, text = 'Y:', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
+                    self.label_polyx = tk.Label(self.frame_info, text = 'X:', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.label_polyy = tk.Label(self.frame_info, text = 'Y:', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     
-                    self.spinbox_polyx = tk.Spinbox(self.frame_info, textvariable = self.polyvar_x, from_ = -10000, to = 10000, command = self.push_coordinates, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Spinbox))
-                    self.spinbox_polyy = tk.Spinbox(self.frame_info, textvariable = self.polyvar_y, from_ = -10000, to = 10000, command = self.push_coordinates, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.spinbox_polyx = tk.Spinbox(self.frame_info, textvariable = self.polyvar_x, from_ = -10000, to = 10000, command = self.push_coordinates, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.spinbox_polyy = tk.Spinbox(self.frame_info, textvariable = self.polyvar_y, from_ = -10000, to = 10000, command = self.push_coordinates, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
                     
                     self.push_coordinates()
                     
                     #button to add objects
-                    self.button_add = tk.Button(self.frame_info, text = 'Add', command = self.open_object_selection, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_add = tk.Button(self.frame_info, text = 'Add', command = self.open_object_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #list of materials to set which one is used for the selected geometry
                     self.polylist_frame = tk.Frame(self.frame)
-                    self.polylist_list = tk.Listbox(self.polylist_frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.polylist_list = tk.Listbox(self.polylist_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
                     self.polylist_bar = tk.Scrollbar(self.polylist_frame, command = self.polylist_list.yview)
                     self.polylist_list.config(yscrollcommand = self.polylist_bar.set)
                     
@@ -220,7 +228,6 @@ class Editor:
                     self.canvas.grid(column = 0, row = 0, sticky = 'NESW')
                     self.frame_info.grid(column = 0, row = 1, sticky = 'NESW')
                     self.polylist_frame.grid(column = 1, row = 0, rowspan = 2, sticky = 'NESW')
-                    #self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame, 2, 2)
                     self.frame.rowconfigure(0, weight = 2)
                     self.frame.columnconfigure(0, weight = 2)
                     
@@ -230,7 +237,7 @@ class Editor:
                     self.label_polyy.grid(column = 1, row = 1, sticky = 'NESW')
                     self.spinbox_polyy.grid(column = 2, row = 1, sticky = 'NESW')
                     self.button_add.grid(column = 3, row = 0, rowspan = 2, sticky = 'NESW')
-                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame_info, 4, 2)
+                    self.ui_styling.set_weight(self.frame_info, 4, 2)
                     self.frame_info.columnconfigure(1, weight = 0)
                     
                     self.load_map_data()
@@ -363,23 +370,25 @@ class Editor:
             editor_pane_frame = tk.Frame(self.frame)
             editor_panes = []
             for name in self.editors.library: #make buttons to open new types of tab
-                editor_panes.append(tk.Button(editor_pane_frame, text = name, command = functools.partial(self.editors.create_new, name), **self.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button)))
+                editor_panes.append(tk.Button(editor_pane_frame, text = name, command = functools.partial(self.editors.create_new, name), **self.ui_styling.get(font_size = 'small', object_type = tk.Button)))
             
             tabs_frame = tk.Frame(self.frame)
             tabs_current_frame = tk.Frame(self.frame)
             tabs = []
             tabs_current = None
+            ui_styling = None
         self.uiobjs = uiobjs
         self.uiobjs.frame = self.frame
         self.uiobjs.pagemethods = self.pagemethods
         self.editors.uiobjs = uiobjs
+        self.uiobjs.ui_styling = self.ui_styling
         
         #pack all items
         i = 0
         for button in self.uiobjs.editor_panes:
             button.grid(row = 0, column = i, sticky = 'NESW')
             i += 1
-        self.pagemethods.uiobject.styling.set_weight(self.uiobjs.editor_pane_frame, len(self.uiobjs.editor_panes) - 1, 0)
+        self.ui_styling.set_weight(self.uiobjs.editor_pane_frame, len(self.uiobjs.editor_panes) - 1, 0)
         
         #specify the positions of the UI elements
         self.uiobjs.editor_pane_frame.grid(row = 0, column = 0, sticky = 'NESW')
@@ -403,10 +412,12 @@ class EditorTab:
         self.index = index
         self.active = True
         
+        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        
         #construct UI
         self.header_frame = tk.Frame(self.editorobj.uiobjs.tabs_frame) #idk, the thing you click on to switch tabs
-        self.header_button = tk.Button(self.header_frame, text = '####', command = self.show, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
-        self.header_close = tk.Button(self.header_frame, text = 'X', command = self.destroy, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
+        self.header_button = tk.Button(self.header_frame, text = '####', command = self.show, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+        self.header_close = tk.Button(self.header_frame, text = 'X', command = self.destroy, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         
         self.set_title('######')
         
@@ -452,13 +463,31 @@ class AddObject:
     def __init__(self, parent):
         self.parent = parent
         
+        self.ui_styling = self.parent.ui_styling
+        
         threading.Thread(target = self.ui, name = 'Add object to editor UI thread').start() #don't hold the main thread
     
     def ui(self):
         self.root = tk.Tk()
         self.root.title('Editor - add object')
         
+        #header label
+        self.label_header = tk.Label(self.root, text = 'Choose a material', **self.ui_styling.get(font_size = 'medium', object_type = tk.Label))
+        
+        #material list
+        
+        self.populate_list()
+        
+        #selection button
+        
+        #format all
+        self.label_header.grid(column = 0, row = 0, sticky = 'NESW')
+        self.ui_styling.set_weight(self.root, 1, 1)
+        
         self.root.mainloop()
+    
+    def populate_list(self):
+        pass
     
     def add_selection(self):
         self.parent.add_object({})
