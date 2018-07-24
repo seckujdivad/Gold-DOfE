@@ -218,8 +218,10 @@ class Editor:
                     
                     self.push_coordinates()
                     
-                    #button to add objects
+                    #some more buttons
                     self.button_add = tk.Button(self.frame_info, text = 'Add', command = self.open_object_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_remove = tk.Button(self.frame_info, text = 'Remove', command = self.remove_object, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_save = tk.Button(self.frame_info, text = 'Save', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #list of materials to set which one is used for the selected geometry
                     self.polylist_frame = tk.Frame(self.frame)
@@ -241,8 +243,10 @@ class Editor:
                     self.spinbox_polyx.grid(column = 2, row = 0, sticky = 'NESW')
                     self.label_polyy.grid(column = 1, row = 1, sticky = 'NESW')
                     self.spinbox_polyy.grid(column = 2, row = 1, sticky = 'NESW')
-                    self.button_add.grid(column = 3, row = 0, rowspan = 2, sticky = 'NESW')
-                    self.ui_styling.set_weight(self.frame_info, 4, 2)
+                    self.button_add.grid(column = 3, row = 0, sticky = 'NESW')
+                    self.button_remove.grid(column = 3, row = 1, sticky = 'NESW')
+                    self.button_save.grid(column = 4, row = 0, rowspan = 2, sticky = 'NESW')
+                    self.ui_styling.set_weight(self.frame_info, 5, 2)
                     self.frame_info.columnconfigure(1, weight = 0)
                     
                     self.load_map_data()
@@ -358,6 +362,33 @@ class Editor:
                     
                     #add item to object list
                     self.polylist_list.insert(tk.END, '{} at {}, {}'.format(dict['material data']['display name'], dict['coordinates'][0], dict['coordinates'][1]))
+                
+                def remove_object(self):
+                    if not self.selection == None:
+                        item = self.screen_data[self.selection]
+                        
+                        index = self.selection
+                        self.select_none()
+                        
+                        self.canvas.delete(item['canvobj'])
+                        self.screen_data.pop(index)
+                        
+                        self.repopulate_poly_list()
+                
+                def select_none(self):
+                    if not self.selection == None:
+                        item = self.screen_data[self.selection]
+                        self.canvas.itemconfigure(item['canvobj'], fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
+                        self.update_polycoord_display('----', '----')
+                        self.selection = None
+                        self.repopulate_poly_list()
+                
+                def repopulate_poly_list(self):
+                    self.polylist_list.delete(0, tk.END)
+                    
+                    for item in self.screen_data:
+                        self.polylist_list.insert(tk.END, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
+                        
                     
             library = {'Text': Text,
                        'Tree': Tree,
