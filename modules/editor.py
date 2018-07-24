@@ -563,7 +563,7 @@ class AddObject:
         for material in os.listdir(os.path.join(self.map.path, 'materials')):
             data = self.map.get_json(os.path.join(self.map.path, 'materials', material)) #get the material file
             self.list_list.insert(tk.END, data['display name']) #use the material display name instead of the path in the list
-            self.paths.append(os.path.join(self.map.path, 'materials', material)) #add the path to the list of paths so that it can be easily found when chosen
+            self.paths.append(os.path.join('materials', material)) #add the path to the list of paths so that it can be easily found when chosen
     
     def add_selection(self):
         selection = self.list_list.curselection()
