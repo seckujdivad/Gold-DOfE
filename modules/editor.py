@@ -466,6 +466,8 @@ class AddObject:
         self.ui_styling = self.parent.ui_styling
         self.map = self.parent.editorobj.map
         
+        self.paths = []
+        
         threading.Thread(target = self.ui, name = 'Add object to editor UI thread').start() #don't hold the main thread
     
     def ui(self):
@@ -487,7 +489,7 @@ class AddObject:
         self.populate_list()
         
         #buttons
-        self.button_choose = tk.Button(self.root, text = 'Add', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+        self.button_choose = tk.Button(self.root, text = 'Add', command = self.add_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         self.button_refresh = tk.Button(self.root, text = 'Refresh', command = self.populate_list, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         
         #format all
@@ -502,10 +504,14 @@ class AddObject:
     
     def populate_list(self):
         self.list_list.delete(0, tk.END)
+        self.paths = []
         
         for material in os.listdir(os.path.join(self.map.path, 'materials')):
             data = self.map.get_json(os.path.join(self.map.path, 'materials', material))
             self.list_list.insert(tk.END, data['display name'])
+            self.paths.append(os.path.join(self.map.path, 'materials', material))
     
     def add_selection(self):
-        self.parent.add_object({})
+        selection = self.list_list.curselection()
+        if not selection == ():
+            self.parent.add_object({"coordinates": [0, 0], "material": self.paths[selection[0]]})
