@@ -233,6 +233,8 @@ class Editor:
                     
                     self.canvas.bind('<Motion>', self.mouse_coordinates)
                     self.canvas.bind('<Button>', self.select_item)
+                    self.spinbox_polyx.bind('<Return>', self.push_coordinates)
+                    self.spinbox_polyy.bind('<Return>', self.push_coordinates)
                     self.polylist_list.bind('<Button>', self.on_material_select)
                     self.polylist_list.bind('<Up>', self.on_material_select)
                     self.polylist_list.bind('<Down>', self.on_material_select)
