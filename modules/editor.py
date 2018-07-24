@@ -53,6 +53,8 @@ class Editor:
                     self.editorobj = editorobj
                     self.tabobj = tabobj
                     
+                    self.ui_styling = self.editorobj.uiobjs.ui_styling
+                    
             class Text:
                 '''
                 Edit a text file in the map directory
@@ -222,6 +224,7 @@ class Editor:
                     self.button_add = tk.Button(self.frame_info, text = 'Add', command = self.open_object_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     self.button_remove = tk.Button(self.frame_info, text = 'Remove', command = self.remove_object, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     self.button_save = tk.Button(self.frame_info, text = 'Save', command = self.save, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_refresh = tk.Button(self.frame_info, text = 'Reload', command = self.reload, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #list of materials to set which one is used for the selected geometry
                     self.polylist_frame = tk.Frame(self.frame)
@@ -245,7 +248,8 @@ class Editor:
                     self.spinbox_polyy.grid(column = 2, row = 1, sticky = 'NESW')
                     self.button_add.grid(column = 3, row = 0, sticky = 'NESW')
                     self.button_remove.grid(column = 3, row = 1, sticky = 'NESW')
-                    self.button_save.grid(column = 4, row = 0, rowspan = 2, sticky = 'NESW')
+                    self.button_save.grid(column = 4, row = 0, sticky = 'NESW')
+                    self.button_refresh.grid(column = 4, row = 1, sticky = 'NESW')
                     self.ui_styling.set_weight(self.frame_info, 5, 2)
                     self.frame_info.columnconfigure(1, weight = 0)
                     
@@ -270,6 +274,8 @@ class Editor:
                     for item in self.map_data['geometry']:
                         item = item.copy()
                         self.add_object(item)
+                        
+                    self.repopulate_poly_list()
                 
                 def clear_screen(self):
                     for item in self.screen_data:
@@ -399,6 +405,10 @@ class Editor:
                     data['geometry'] = geomdata
                     
                     self.editorobj.map.write_json('layout.json', data)
+                
+                def reload(self):
+                    self.clear_screen()
+                    self.load_map_data()
                     
             library = {'Text': Text,
                        'Tree': Tree,
