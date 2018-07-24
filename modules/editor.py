@@ -429,6 +429,60 @@ class Editor:
                     
                     self.ui_styling = self.editorobj.uiobjs.ui_styling
                     
+                    ## make ui elements
+                    # material chooser
+                    self.choose_frame = tk.Frame(self.frame)
+                    self.choose_list = tk.Listbox(self.choose_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.choose_bar = tk.Scrollbar(self.choose_frame, command = self.choose_list.yview)
+                    self.choose_list.config(yscrollcommand = self.choose_bar.set)
+                    
+                    self.choose_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.choose_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    #input name for new material
+                    self.entry_nmatname = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_nmatdispname = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.button_nmatname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    
+                    #choose an entity to set damage for
+                    self.dmg_frame = tk.Frame(self.frame)
+                    self.dmg_list = tk.Listbox(self.dmg_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.dmg_bar = tk.Scrollbar(self.dmg_frame, command = self.dmg_list.yview)
+                    self.dmg_list.config(yscrollcommand = self.dmg_bar.set)
+                    
+                    self.dmg_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.dmg_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    #specify damage for the entity
+                    self.label_dmg = tk.Label(self.frame, text = 'Damage/s', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.spinbox_dmg = tk.Spinbox(self.frame, from_ = -10000, to = 10000, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    
+                    #add a new entity name to the list
+                    self.entry_nentname = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.button_nentname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    
+                    #choose a texture from the library
+                    self.tex_frame = tk.Frame(self.frame)
+                    self.tex_list = tk.Listbox(self.tex_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.tex_bar = tk.Scrollbar(self.tex_frame, command = self.tex_list.yview)
+                    self.tex_list.config(yscrollcommand = self.tex_bar.set)
+                    
+                    self.tex_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.tex_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    #choose a colour for the editor
+                    self.entry_colour = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    
+                    #specify the movement speeds over the material
+                    self.entry_accel = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_decel = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_cap = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    
+                    #save the material
+                    self.button_nmatname = tk.Button(self.frame, text = 'Save', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    
+                    ## pack ui elements
+                    
             library = {'Text': Text,
                        'Tree': Tree,
                        'Layout': Layout,
