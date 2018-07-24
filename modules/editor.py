@@ -187,12 +187,23 @@ class Editor:
                     
                     self.canvas = tk.Canvas(self.frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'medium', object_type = tk.Canvas))
                     
+                    #frame containing the bottom row of UI objects
                     self.frame_info = tk.Frame(self.frame)
+                    
+                    #label showing the position of the mouse
                     self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
+                    
+                    #add object coordinate setting UI
+                    self.polyvar_x = tk.StringVar()
+                    self.polyvar_y = tk.StringVar()
+                    
                     self.label_polyx = tk.Label(self.frame_info, text = 'X:', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
                     self.label_polyy = tk.Label(self.frame_info, text = 'Y:', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
-                    self.spinbox_polyx = tk.Spinbox(self.frame_info, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Spinbox))
-                    self.spinbox_polyy = tk.Spinbox(self.frame_info, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    
+                    self.spinbox_polyx = tk.Spinbox(self.frame_info, textvariable = self.polyvar_x, from_ = -10000, to = 10000, command = self.push_coordinates, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.spinbox_polyy = tk.Spinbox(self.frame_info, textvariable = self.polyvar_y, from_ = -10000, to = 10000, command = self.push_coordinates, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    
+                    self.push_coordinates()
                     
                     #list of materials to set which one is used for the selected geometry
                     self.polylist_frame = tk.Frame(self.frame)
@@ -239,6 +250,8 @@ class Editor:
                         item['material data'] = self.editorobj.map.get_json(item['material'])
                         item['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(item['material data']['hitbox'], item['coordinates']), fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
                         self.screen_data.append(item)
+                        
+                        #add item to object list
                         self.polylist_list.insert(tk.END, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
                 
                 def clear_screen(self):
@@ -271,7 +284,6 @@ class Editor:
                                     
                 def select_index(self, index):
                     item = self.screen_data[index]
-                    print(index, item)
                     
                     if not self.selection == index: #if the current selection is the same as the one being switched to, don't bother
                         #remove formatting from previous selection (if there was one)
@@ -293,7 +305,19 @@ class Editor:
                         self.update_polycoord_display(*item['coordinates'])
                  
                 def update_polycoord_display(self, x, y):
-                    self.label_polycoords.config(text = 'Object - X: {:>4} Y: {:>4}'.format(x, y))
+                    self.polyvar_x.set(x)
+                    self.polyvar_y.set(y)
+                
+                def push_coordinates(self, event = None):
+                    if self.selection == None:
+                        self.update_polycoord_display('----', '----')
+                    else:
+                        item = self.screen_data[self.selection]
+                        item['coordinates'] = [int(self.polyvar_x.get()), int(self.polyvar_y.get())]
+                        self.canvas.coords(item['canvobj'], *self.unpack_coordinates(item['material data']['hitbox'], item['coordinates']))
+                        
+                        self.polylist_list.delete(self.selection)
+                        self.polylist_list.insert(self.selection, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
                         
                 def on_material_select(self, event = None):
                     threading.Thread(target = self._on_material_select).start() #start in a separate thread
