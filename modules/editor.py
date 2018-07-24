@@ -205,6 +205,9 @@ class Editor:
                     
                     self.push_coordinates()
                     
+                    #button to add objects
+                    self.button_add = tk.Button(self.frame_info, text = 'Add', command = self.open_object_selection, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Button))
+                    
                     #list of materials to set which one is used for the selected geometry
                     self.polylist_frame = tk.Frame(self.frame)
                     self.polylist_list = tk.Listbox(self.polylist_frame, **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Listbox))
@@ -226,7 +229,8 @@ class Editor:
                     self.spinbox_polyx.grid(column = 2, row = 0, sticky = 'NESW')
                     self.label_polyy.grid(column = 1, row = 1, sticky = 'NESW')
                     self.spinbox_polyy.grid(column = 2, row = 1, sticky = 'NESW')
-                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame_info, 3, 2)
+                    self.button_add.grid(column = 3, row = 0, rowspan = 2, sticky = 'NESW')
+                    self.editorobj.uiobjs.pagemethods.uiobject.styling.set_weight(self.frame_info, 4, 2)
                     self.frame_info.columnconfigure(1, weight = 0)
                     
                     self.load_map_data()
@@ -329,6 +333,17 @@ class Editor:
                     selection = self.polylist_list.curselection()
                     if not selection == ():
                         self.select_index(selection[0])
+                
+                def open_object_selection(self):
+                    AddObject(self)
+                
+                def add_object(self, dict):
+                    dict['material data'] = self.editorobj.map.get_json(dict['material'])
+                    dict['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(dict['material data']['hitbox'], dict['coordinates']), fill = dict['material data']['texture']['editor colour'], outline = dict['material data']['texture']['editor colour'])
+                    self.screen_data.append(dict)
+                    
+                    #add item to object list
+                    self.polylist_list.insert(tk.END, '{} at {}, {}'.format(dict['material data']['display name'], dict['coordinates'][0], dict['coordinates'][1]))
                     
             library = {'Text': Text,
                        'Tree': Tree,
@@ -432,3 +447,18 @@ class EditorTab:
     def set_title(self, text):
         'Set the title of the tab'
         self.header_button.config(text = '{}: {}'.format(self.name, text))
+
+class AddObject:
+    def __init__(self, parent):
+        self.parent = parent
+        
+        threading.Thread(target = self.ui, name = 'Add object to editor UI thread').start() #don't hold the main thread
+    
+    def ui(self):
+        self.root = tk.Tk()
+        self.root.title('Editor - add object')
+        
+        self.root.mainloop()
+    
+    def add_selection(self):
+        self.parent.add_object({})
