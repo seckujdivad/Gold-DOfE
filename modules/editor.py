@@ -191,7 +191,7 @@ class Editor:
                     self.frame_info = tk.Frame(self.frame)
                     
                     #label showing the position of the mouse
-                    self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: ---- Y: ----', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
+                    self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: 0000 Y: 0000', **self.editorobj.uiobjs.pagemethods.uiobject.styling.get(font_size = 'small', object_type = tk.Label))
                     
                     #add object coordinate setting UI
                     self.polyvar_x = tk.StringVar()
@@ -247,12 +247,7 @@ class Editor:
                     self.clear_screen()
                     for item in self.map_data['geometry']:
                         item = item.copy()
-                        item['material data'] = self.editorobj.map.get_json(item['material'])
-                        item['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(item['material data']['hitbox'], item['coordinates']), fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
-                        self.screen_data.append(item)
-                        
-                        #add item to object list
-                        self.polylist_list.insert(tk.END, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
+                        self.add_object(item)
                 
                 def clear_screen(self):
                     for item in self.screen_data:
@@ -267,7 +262,9 @@ class Editor:
                     return output
                 
                 def mouse_coordinates(self, event):
-                    self.label_mousecoords.config(text = 'Mouse - X: {:>4} Y: {:>4}'.format(event.x, event.y))
+                    x = '{:>4}'.format(event.x)
+                    y = '{:>4}'.format(event.y)
+                    self.label_mousecoords.config(text = 'Mouse - X: {} Y: {}'.format(x.replace(' ', '0'), y.replace(' ', '0')))
                 
                 def select_item(self, event):
                     canvobj = self.canvas.find_closest(event.x, event.y)
