@@ -477,7 +477,7 @@ class AddObject:
         
         #material list
         self.list_frame = tk.Frame(self.root)
-        self.list_list = tk.Listbox(self.list_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+        self.list_list = tk.Listbox(self.list_frame, height = 20, width = 50, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
         self.list_bar = tk.Scrollbar(self.list_frame, command = self.list_list.yview)
         self.list_list.config(yscrollcommand = self.list_bar.set)
         
@@ -486,17 +486,23 @@ class AddObject:
         
         self.populate_list()
         
-        #selection button
+        #buttons
+        self.button_choose = tk.Button(self.root, text = 'Add', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+        self.button_refresh = tk.Button(self.root, text = 'Refresh', command = self.populate_list, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         
         #format all
-        self.label_header.grid(column = 0, row = 0, sticky = 'NESW')
-        self.list_frame.grid(column = 0, row = 1, sticky = 'NESW')
-        self.ui_styling.set_weight(self.root, 1, 2)
+        self.label_header.grid(column = 0, row = 0, columnspan = 2, sticky = 'NESW')
+        self.list_frame.grid(column = 0, row = 1, columnspan = 2, sticky = 'NESW')
+        self.button_choose.grid(column = 0, row = 2, sticky = 'NESW')
+        self.button_refresh.grid(column = 1, row = 2, sticky = 'NESW')
+        self.ui_styling.set_weight(self.root, 2, 2)
         self.root.rowconfigure(0, weight = 0)
         
         self.root.mainloop()
     
     def populate_list(self):
+        self.list_list.delete(0, tk.END)
+        
         for material in os.listdir(os.path.join(self.map.path, 'materials')):
             data = self.map.get_json(os.path.join(self.map.path, 'materials', material))
             self.list_list.insert(tk.END, data['display name'])
