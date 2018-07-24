@@ -493,6 +493,11 @@ class EditorTab:
         
         self.ui_styling = self.editorobj.uiobjs.ui_styling
         
+        self.colour_idle = 'SystemButtonFace'
+        self.colour_active = 'snow3'
+        self.colour_close = 'red'
+        self.colour_close_text = 'black'
+        
         #construct UI
         self.header_frame = tk.Frame(self.editorobj.uiobjs.tabs_frame) #idk, the thing you click on to switch tabs
         self.header_button = tk.Button(self.header_frame, text = '####', command = self.show, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
@@ -514,11 +519,21 @@ class EditorTab:
             self.editorobj.uiobjs.tabs[self.editorobj.uiobjs.tabs_current].hide()
         self.frame.pack(fill = tk.BOTH, expand = True) #show the frame that contains all the tab objects
         self.editorobj.uiobjs.tabs_current = self.index #set the current tab to this one
+        
+        self.header_frame.config(bg = self.colour_active)
+        self.header_button.config(bg = self.colour_active)
+        self.header_close.config(bg = self.colour_close, fg = self.colour_close_text)
+        
         self.active = True #change mode
     
     def hide(self):
         'Hide the tab'
         self.frame.pack_forget() #hide the frame that contains all the objects that make up the tab
+        
+        self.header_frame.config(bg = self.colour_idle)
+        self.header_button.config(bg = self.colour_idle)
+        self.header_close.config(bg = self.colour_close, fg = self.colour_close_text)
+        
         self.active = False #change mode
     
     def destroy(self):
