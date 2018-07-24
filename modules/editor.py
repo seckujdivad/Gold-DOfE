@@ -464,6 +464,7 @@ class AddObject:
         self.parent = parent
         
         self.ui_styling = self.parent.ui_styling
+        self.map = self.parent.editorobj.map
         
         threading.Thread(target = self.ui, name = 'Add object to editor UI thread').start() #don't hold the main thread
     
@@ -475,6 +476,13 @@ class AddObject:
         self.label_header = tk.Label(self.root, text = 'Choose a material', **self.ui_styling.get(font_size = 'medium', object_type = tk.Label))
         
         #material list
+        self.list_frame = tk.Frame(self.root)
+        self.list_list = tk.Listbox(self.list_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+        self.list_bar = tk.Scrollbar(self.list_frame, command = self.list_list.yview)
+        self.list_list.config(yscrollcommand = self.list_bar.set)
+        
+        self.list_bar.pack(side = tk.RIGHT, fill = tk.Y)
+        self.list_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
         
         self.populate_list()
         
@@ -482,12 +490,16 @@ class AddObject:
         
         #format all
         self.label_header.grid(column = 0, row = 0, sticky = 'NESW')
-        self.ui_styling.set_weight(self.root, 1, 1)
+        self.list_frame.grid(column = 0, row = 1, sticky = 'NESW')
+        self.ui_styling.set_weight(self.root, 1, 2)
+        self.root.rowconfigure(0, weight = 0)
         
         self.root.mainloop()
     
     def populate_list(self):
-        pass
+        for material in os.listdir(os.path.join(self.map.path, 'materials')):
+            data = self.map.get_json(os.path.join(self.map.path, 'materials', material))
+            self.list_list.insert(tk.END, data['display name'])
     
     def add_selection(self):
         self.parent.add_object({})
