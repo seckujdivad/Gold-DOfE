@@ -34,7 +34,7 @@ class Map:
     def write_json(self, path, data):
         'Writes data to a json file in the map folder'
         with open(os.path.join(self.path, path), 'w') as file:
-            json.dump(file, data)
+            json.dump(data, file)
 
 class Editor:
     def __init__(self, frame, pagemethods):
@@ -221,7 +221,7 @@ class Editor:
                     #some more buttons
                     self.button_add = tk.Button(self.frame_info, text = 'Add', command = self.open_object_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     self.button_remove = tk.Button(self.frame_info, text = 'Remove', command = self.remove_object, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
-                    self.button_save = tk.Button(self.frame_info, text = 'Save', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_save = tk.Button(self.frame_info, text = 'Save', command = self.save, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #list of materials to set which one is used for the selected geometry
                     self.polylist_frame = tk.Frame(self.frame)
@@ -388,7 +388,17 @@ class Editor:
                     
                     for item in self.screen_data:
                         self.polylist_list.insert(tk.END, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
-                        
+                
+                def save(self):
+                    data = self.editorobj.map.get_json('layout.json')
+                    
+                    geomdata = []
+                    for item in self.screen_data:
+                        geomdata.append({'coordinates': item['coordinates'],
+                                         'material': item['material']})
+                    data['geometry'] = geomdata
+                    
+                    self.editorobj.map.write_json('layout.json', data)
                     
             library = {'Text': Text,
                        'Tree': Tree,
