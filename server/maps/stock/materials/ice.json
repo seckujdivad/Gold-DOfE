@@ -4,13 +4,13 @@
 		"address": "textures/ice.png",
 		"editor colour": "#C9CDFF"
 	},
-	"movement": {
-		"accelerate": 0.2,
-		"deccelerate": 0.1,
-		"cap": 10
-	},
-	"damage": {
-		"player": 0
+	"entities": {
+		"player": {
+			"damage": 0,
+			"accelerate": 0.2,
+			"decelerate": 0.1,
+			"velcap": 10
+		}
 	},
 	"display name": "Ice",
 	"hitbox": [[-50, -50], [-50, 50], [50, 50], [50, -50]]
