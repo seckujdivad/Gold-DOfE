@@ -538,6 +538,9 @@ class Editor:
                         self.frame.columnconfigure(i, weight = 1)
                     self.frame.rowconfigure(0, weight = 1)
                     
+                    self.choose_list.bind('<Button>', self.choose_material)
+                    self.ent_list.bind('<Button>', self.choose_entity)
+                    
                     class lists:
                         materials = []
                         textures = []
@@ -558,12 +561,47 @@ class Editor:
                             self.tex_list.insert(tk.END, item)
                             self.lists.textures.append(item)
                     
-                    self.selection = None
+                    self.material_selection = None
+                    self.selected_material_data = None
                     self.vars.damage.set('----')
                     self.vars.accel.set('0')
                     self.vars.decel.set('0')
                     self.vars.velcap.set('0')
                     self.vars.editor_colour.set('#FFFFFF')
+                
+                def choose_material(self, event = None):
+                    threading.Thread(target = self._choose_material).start()
+                
+                def _choose_material(self):
+                    time.sleep(0.05)
+                    
+                    selection = self.choose_list.curselection()
+                    if not selection == ():
+                        self.material_selection = selection[0]
+                        print(self.lists.materials[self.material_selection])
+                        self.selected_material_data = self.editorobj.map.get_json(os.path.join('materials', self.lists.materials[self.material_selection]))
+                        
+                        self.ent_list.delete(0, tk.END)
+                        for key in self.selected_material_data['entities']:
+                            self.ent_list.insert(tk.END, key)
+                            self.lists.entities.append(key)
+                
+                def choose_entity(self, event = None):
+                    threading.Thread(target = self._choose_entity).start()
+                
+                def _choose_entity(self):
+                    time.sleep(0.05)
+                    
+                    selection = self.ent_list.curselection()
+                    if not selection == ():
+                        self.entity_selection = selection[0]
+                        
+                        entity_name = self.lists.entities[self.entity_selection]
+                        
+                        self.vars.damage.set(str(self.selected_material_data['entities'][entity_name]['damage']))
+                        self.vars.accel.set(str(self.selected_material_data['entities'][entity_name]['accelerate']))
+                        self.vars.decel.set(str(self.selected_material_data['entities'][entity_name]['decelerate']))
+                        self.vars.velcap.set(str(self.selected_material_data['entities'][entity_name]['velcap']))
                     
             library = {'Text': Text,
                        'Tree': Tree,
