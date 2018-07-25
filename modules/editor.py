@@ -429,6 +429,17 @@ class Editor:
                     
                     self.ui_styling = self.editorobj.uiobjs.ui_styling
                     
+                    class vars:
+                        damage = tk.StringVar()
+                        accel = tk.StringVar()
+                        decel = tk.StringVar()
+                        velcap = tk.StringVar()
+                        new_file_name = tk.StringVar()
+                        new_display_name = tk.StringVar()
+                        editor_colour = tk.StringVar()
+                        new_entity_name = tk.StringVar()
+                    self.vars = vars
+                    
                     ## make ui elements
                     # material chooser
                     self.choose_frame = tk.Frame(self.frame)
@@ -440,12 +451,12 @@ class Editor:
                     self.choose_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     #input name for new material
-                    self.entry_nmatname = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
-                    self.entry_nmatdispname = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_nmatname = tk.Entry(self.frame, textvariable = self.vars.new_file_name, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_nmatdispname = tk.Entry(self.frame, textvariable = self.vars.new_display_name, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     self.button_nmatname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #refresh material list
-                    self.button_nmatrefresh = tk.Button(self.frame, text = 'Refresh', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_nmatrefresh = tk.Button(self.frame, text = 'Refresh', command = self.refresh, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #choose an entity to set damage for
                     self.ent_frame = tk.Frame(self.frame)
@@ -457,20 +468,20 @@ class Editor:
                     self.ent_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     #add a new entity name to the list
-                    self.entry_nentname = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_nentname = tk.Entry(self.frame, textvariable = self.vars.new_entity_name, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     self.button_nentname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #specify the effect that the material has on entities on it
                     self.frame_entprops = tk.Frame(self.frame)
                     
                     self.label_dmg = tk.Label(self.frame_entprops, text = 'Damage/s', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.spinbox_dmg = tk.Spinbox(self.frame_entprops, from_ = -10000, to = 10000, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.spinbox_dmg = tk.Spinbox(self.frame_entprops, textvariable = self.vars.damage, from_ = -10000, to = 10000, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
                     self.label_accel = tk.Label(self.frame_entprops, text = 'Acceleration', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.entry_accel = tk.Entry(self.frame_entprops, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_accel = tk.Entry(self.frame_entprops, textvariable = self.vars.accel, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     self.label_decel = tk.Label(self.frame_entprops, text = 'Deceleration', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.entry_decel = tk.Entry(self.frame_entprops, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_decel = tk.Entry(self.frame_entprops, textvariable = self.vars.decel, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     self.label_cap = tk.Label(self.frame_entprops, text = 'Max speed', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.entry_cap = tk.Entry(self.frame_entprops, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_cap = tk.Entry(self.frame_entprops, textvariable = self.vars.velcap, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
                     self.label_dmg.grid(column = 0, row = 0, sticky = 'NESW')
                     self.spinbox_dmg.grid(column = 1, row = 0, sticky = 'NESW')
@@ -494,7 +505,7 @@ class Editor:
                     
                     #choose a colour for the editor
                     self.label_colour = tk.Label(self.frame, text = 'Editor colour', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.entry_colour = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_colour = tk.Entry(self.frame, textvariable = self.vars.editor_colour, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
                     #save the material
                     self.button_save = tk.Button(self.frame, text = 'Save', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
@@ -526,6 +537,28 @@ class Editor:
                     for i in range(8):
                         self.frame.columnconfigure(i, weight = 1)
                     self.frame.rowconfigure(0, weight = 1)
+                    
+                    class lists:
+                        materials = []
+                        textures = []
+                        entities = []
+                    self.lists = lists
+                    
+                    self.vars.damage.set('----')
+                    
+                    self.refresh()
+                
+                def refresh(self):
+                    self.choose_list.delete(0, tk.END)
+                    for item in os.listdir(os.path.join(self.editorobj.map.path, 'materials')):
+                        self.choose_list.insert(tk.END, item)
+                        self.lists.materials.append(item)
+                        
+                    self.tex_list.delete(0, tk.END)
+                    for item in os.listdir(os.path.join(self.editorobj.map.path, 'textures')):
+                        if item.endswith('.png'): #only pngs are currently supported
+                            self.tex_list.insert(tk.END, item)
+                            self.lists.textures.append(item)
                     
             library = {'Text': Text,
                        'Tree': Tree,
