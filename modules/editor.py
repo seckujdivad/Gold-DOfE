@@ -544,8 +544,6 @@ class Editor:
                         entities = []
                     self.lists = lists
                     
-                    self.vars.damage.set('----')
-                    
                     self.refresh()
                 
                 def refresh(self):
@@ -559,6 +557,13 @@ class Editor:
                         if item.endswith('.png'): #only pngs are currently supported
                             self.tex_list.insert(tk.END, item)
                             self.lists.textures.append(item)
+                    
+                    self.selection = None
+                    self.vars.damage.set('----')
+                    self.vars.accel.set('0')
+                    self.vars.decel.set('0')
+                    self.vars.velcap.set('0')
+                    self.vars.editor_colour.set('#FFFFFF')
                     
             library = {'Text': Text,
                        'Tree': Tree,
