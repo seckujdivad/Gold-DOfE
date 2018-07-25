@@ -444,22 +444,44 @@ class Editor:
                     self.entry_nmatdispname = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     self.button_nmatname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
+                    #refresh material list
+                    self.button_nmatrefresh = tk.Button(self.frame, text = 'Refresh', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    
                     #choose an entity to set damage for
-                    self.dmg_frame = tk.Frame(self.frame)
-                    self.dmg_list = tk.Listbox(self.dmg_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
-                    self.dmg_bar = tk.Scrollbar(self.dmg_frame, command = self.dmg_list.yview)
-                    self.dmg_list.config(yscrollcommand = self.dmg_bar.set)
+                    self.ent_frame = tk.Frame(self.frame)
+                    self.ent_list = tk.Listbox(self.ent_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.ent_bar = tk.Scrollbar(self.ent_frame, command = self.ent_list.yview)
+                    self.ent_list.config(yscrollcommand = self.ent_bar.set)
                     
-                    self.dmg_bar.pack(side = tk.RIGHT, fill = tk.Y)
-                    self.dmg_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
-                    
-                    #specify damage for the entity
-                    self.label_dmg = tk.Label(self.frame, text = 'Damage/s', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.spinbox_dmg = tk.Spinbox(self.frame, from_ = -10000, to = 10000, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.ent_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.ent_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     #add a new entity name to the list
                     self.entry_nentname = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     self.button_nentname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    
+                    #specify the effect that the material has on entities on it
+                    self.frame_entprops = tk.Frame(self.frame)
+                    
+                    self.label_dmg = tk.Label(self.frame_entprops, text = 'Damage/s', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.spinbox_dmg = tk.Spinbox(self.frame_entprops, from_ = -10000, to = 10000, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.label_accel = tk.Label(self.frame_entprops, text = 'Acceleration', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.entry_accel = tk.Entry(self.frame_entprops, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.label_decel = tk.Label(self.frame_entprops, text = 'Deceleration', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.entry_decel = tk.Entry(self.frame_entprops, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.label_cap = tk.Label(self.frame_entprops, text = 'Max speed', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.entry_cap = tk.Entry(self.frame_entprops, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    
+                    self.label_dmg.grid(column = 0, row = 0, sticky = 'NESW')
+                    self.spinbox_dmg.grid(column = 1, row = 0, sticky = 'NESW')
+                    self.label_accel.grid(column = 0, row = 1, sticky = 'NESW')
+                    self.entry_accel.grid(column = 1, row = 1, sticky = 'NESW')
+                    self.label_decel.grid(column = 0, row = 2, sticky = 'NESW')
+                    self.entry_decel.grid(column = 1, row = 2, sticky = 'NESW')
+                    self.label_cap.grid(column = 0, row = 3, sticky = 'NESW')
+                    self.entry_cap.grid(column = 1, row = 3, sticky = 'NESW')
+                    self.frame_entprops.columnconfigure(0, weight = 1)
+                    self.frame_entprops.columnconfigure(1, weight = 1)
                     
                     #choose a texture from the library
                     self.tex_frame = tk.Frame(self.frame)
@@ -471,17 +493,39 @@ class Editor:
                     self.tex_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     #choose a colour for the editor
+                    self.label_colour = tk.Label(self.frame, text = 'Editor colour', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     self.entry_colour = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
-                    #specify the movement speeds over the material
-                    self.entry_accel = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
-                    self.entry_decel = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
-                    self.entry_cap = tk.Entry(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
-                    
                     #save the material
-                    self.button_nmatname = tk.Button(self.frame, text = 'Save', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_save = tk.Button(self.frame, text = 'Save', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     ## pack ui elements
+                    #first column
+                    self.choose_frame.grid(column = 0, row = 0, columnspan = 2, rowspan = 2, sticky = 'NESW')
+                    self.entry_nmatdispname.grid(column = 0, row = 2, sticky = 'NESW')
+                    self.entry_nmatname.grid(column = 0, row = 3, sticky = 'NESW')
+                    self.button_nmatname.grid(column = 1, row = 2, rowspan = 2, sticky = 'NESW')
+                    self.button_nmatrefresh.grid(column = 0, row = 4, columnspan = 2, sticky = 'NESW')
+                    
+                    #second column
+                    self.ent_frame.grid(column = 2, row = 0, rowspan = 5, sticky = 'NESW')
+                    
+                    #third column
+                    self.frame_entprops.grid(column = 3, row = 0, columnspan = 2, rowspan = 4, sticky = 'NESW')
+                    self.entry_nentname.grid(column = 3, row = 4, sticky = 'NESW')
+                    self.button_nentname.grid(column = 4, row = 4, sticky = 'NESW')
+                    
+                    #fourth column
+                    self.tex_frame.grid(column = 5, row = 0, columnspan = 2, rowspan = 4, sticky = 'NESW')
+                    self.label_colour.grid(column = 5, row = 4, sticky = 'NESW')
+                    self.entry_colour.grid(column = 6, row = 4, sticky = 'NESW')
+                    
+                    #bottom row
+                    self.button_save.grid(column = 0, columnspan = 7, row = 5, sticky = 'NESW')
+                    
+                    for i in range(8):
+                        self.frame.columnconfigure(i, weight = 1)
+                    self.frame.rowconfigure(0, weight = 1)
                     
             library = {'Text': Text,
                        'Tree': Tree,
