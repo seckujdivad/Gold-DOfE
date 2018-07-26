@@ -613,6 +613,11 @@ class Editor:
                             self.lists.entities.append(key)
                         
                         self.update_tex_display(selected_material_data['texture']['address'], selected_material_data['texture']['editor colour'])
+                        
+                        self.vars.damage.set('----')
+                        self.vars.accel.set('0')
+                        self.vars.decel.set('0')
+                        self.vars.velcap.set('0')
                 
                 def choose_entity(self, event = None):
                     threading.Thread(target = self._choose_entity).start()
@@ -622,6 +627,16 @@ class Editor:
                     
                     selection = self.ent_list.curselection()
                     if not selection == ():
+                        selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
+                        
+                        if not self.vars.damage.get() == '----':
+                            entity_name = self.lists.entities[self.entity_selection]
+                            
+                            selected_material_data['entities'][entity_name]['damage'] = float(self.vars.damage.get())
+                            selected_material_data['entities'][entity_name]['accelerate'] = float(self.vars.accel.get())
+                            selected_material_data['entities'][entity_name]['decelerate'] = float(self.vars.decel.get())
+                            selected_material_data['entities'][entity_name]['velcap'] = float(self.vars.velcap.get())
+                        
                         self.entity_selection = selection[0]
                         
                         entity_name = self.lists.entities[self.entity_selection]
