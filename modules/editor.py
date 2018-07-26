@@ -440,6 +440,15 @@ class Editor:
                         new_entity_name = tk.StringVar()
                     self.vars = vars
                     
+                    #choose the correct rendering method
+                    with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+                        data = json.load(file)
+                    
+                    if data['graphics']['PILrender']:
+                        self.rendermethod = __import__('PIL.ImageTk').ImageTk.PhotoImage
+                    else:
+                        self.rendermethod = tk.PhotoImage
+                    
                     ## make ui elements
                     # material chooser
                     self.choose_frame = tk.Frame(self.frame)
@@ -505,6 +514,7 @@ class Editor:
                     
                     #show the user the texture that they have selected
                     self.label_tex = tk.Label(self.frame, text = 'Texture: ----', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.canvas_tex = tk.Canvas(self.frame, width = 128, height = 64)
                     
                     #choose a colour for the editor
                     self.label_colour = tk.Label(self.frame, text = 'Editor colour', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
@@ -530,7 +540,8 @@ class Editor:
                     self.button_nentname.grid(column = 4, row = 4, sticky = 'NESW')
                     
                     #fourth column
-                    self.tex_frame.grid(column = 5, row = 0, columnspan = 2, rowspan = 3, sticky = 'NESW')
+                    self.tex_frame.grid(column = 5, row = 0, columnspan = 2, rowspan = 2, sticky = 'NESW')
+                    self.canvas_tex.grid(column = 5, row = 2, columnspan = 2, sticky = 'NESW')
                     self.label_tex.grid(column = 5, row = 3, columnspan = 2, sticky = 'NSW')
                     self.label_colour.grid(column = 5, row = 4, sticky = 'NESW')
                     self.entry_colour.grid(column = 6, row = 4, sticky = 'NESW')
@@ -570,6 +581,7 @@ class Editor:
                     self.selected_material_data = None
                     self.entity_selection = None
                     self.texture_selection = None
+                    self.texture_object = None
                     self.vars.damage.set('----')
                     self.vars.accel.set('0')
                     self.vars.decel.set('0')
@@ -594,6 +606,9 @@ class Editor:
                             self.lists.entities.append(key)
                             
                         self.label_tex.config(text = 'Texture: {}'.format(self.selected_material_data['texture']['address']))
+                        
+                        self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', self.selected_material_data['texture']['address']))
+                        self.canvas_tex.create_image(32, 32, image = self.texture_object)
                 
                 def choose_entity(self, event = None):
                     threading.Thread(target = self._choose_entity).start()
@@ -624,6 +639,9 @@ class Editor:
                         
                         texture_name = self.lists.textures[self.texture_selection]
                         self.label_tex.config(text = 'Texture: {}'.format(texture_name))
+                        
+                        self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', texture_name))
+                        self.canvas_tex.create_image(32, 32, image = self.texture_object)
                     
             library = {'Text': Text,
                        'Tree': Tree,

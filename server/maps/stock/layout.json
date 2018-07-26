@@ -24,6 +24,13 @@
 				200
 			],
 			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				300,
+				300
+			],
+			"material": "materials\\stone.json"
 		}
 	]
 }
