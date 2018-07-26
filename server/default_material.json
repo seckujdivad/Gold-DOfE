@@ -1,0 +1,17 @@
+{
+	"texture": {
+		"animated": false,
+		"address": null,
+		"editor colour": "#FFFFFF"
+	},
+	"entities": {
+		"player": {
+			"damage": 0,
+			"accelerate": 0,
+			"decelerate": 0,
+			"velcap": 0
+		}
+	},
+	"display name": null,
+	"hitbox": [[-32, -32], [-32, 32], [32, 32], [32, -32]]
+}

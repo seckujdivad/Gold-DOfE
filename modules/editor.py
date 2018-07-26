@@ -467,7 +467,7 @@ class Editor:
                     self.entry_nmatdispname.pack(side = tk.BOTTOM, fill = tk.BOTH, expand = True)
                     self.entry_nmatname.pack(side = tk.BOTTOM, fill = tk.BOTH, expand = True)
                     
-                    self.button_nmatname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_nmatname = tk.Button(self.frame, text = 'Create', command = self.create_new_material, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #refresh material list
                     self.button_nmatrefresh = tk.Button(self.frame, text = 'Refresh', command = self.refresh, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
@@ -526,7 +526,7 @@ class Editor:
                     self.entry_colour = tk.Entry(self.frame, textvariable = self.vars.editor_colour, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
                     #save the material
-                    self.button_save = tk.Button(self.frame, text = 'Save', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_save = tk.Button(self.frame, text = 'Save all changes', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     ## pack ui elements
                     #first column
@@ -561,6 +561,8 @@ class Editor:
                     self.ent_list.bind('<Button>', self.choose_entity)
                     self.tex_list.bind('<Button>', self.choose_texture)
                     self.entry_colour.bind('<Return>', self.choose_colour)
+                    self.entry_nmatname.bind('<Return>', self.create_new_material)
+                    self.entry_nmatdispname.bind('<Return>', self.create_new_material)
                     
                     self.refresh()
                 
@@ -684,12 +686,28 @@ class Editor:
                     
                     self.editorcol_object = self.canvas_tex.create_rectangle(64, 0, 128, 64, fill = colour, outline = colour)
                     
-                    self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', address))
-                    self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
-                    
-                    self.label_tex.config(text = 'Texture: {}'.format(address))
+                    if address == None:
+                        self.label_tex.config(text = 'Texture: <none>')
+                    else:
+                        self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', address))
+                        self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
                         
+                        self.label_tex.config(text = 'Texture: {}'.format(address))
+                    
                     self.vars.editor_colour.set(colour)
+                
+                def create_new_material(self, event = None):
+                    mat_name = self.vars.new_file_name.get()
+                    mat_dispname = self.vars.new_display_name.get()
+                    
+                    if mat_name != '' and mat_dispname != '':
+                        with open(os.path.join(sys.path[0], 'server', 'default_material.json'), 'r') as file:
+                            data = json.load(file)
+                        data['display name'] = mat_dispname
+                        
+                        self.editorobj.map.write_json(os.path.join('materials', mat_name), data)
+                        
+                        self.refresh()
                     
             library = {'Text': Text,
                        'Tree': Tree,
