@@ -460,8 +460,13 @@ class Editor:
                     self.choose_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     #input name for new material
-                    self.entry_nmatname = tk.Entry(self.frame, textvariable = self.vars.new_file_name, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
-                    self.entry_nmatdispname = tk.Entry(self.frame, textvariable = self.vars.new_display_name, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.frame_nmatname = tk.Frame(self.frame)
+                    self.entry_nmatname = tk.Entry(self.frame_nmatname, textvariable = self.vars.new_file_name, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.entry_nmatdispname = tk.Entry(self.frame_nmatname, textvariable = self.vars.new_display_name, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    
+                    self.entry_nmatdispname.pack(side = tk.BOTTOM, fill = tk.BOTH, expand = True)
+                    self.entry_nmatname.pack(side = tk.BOTTOM, fill = tk.BOTH, expand = True)
+                    
                     self.button_nmatname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #refresh material list
@@ -526,9 +531,8 @@ class Editor:
                     ## pack ui elements
                     #first column
                     self.choose_frame.grid(column = 0, row = 0, columnspan = 2, rowspan = 2, sticky = 'NESW')
-                    self.entry_nmatdispname.grid(column = 0, row = 2, sticky = 'NESW')
-                    self.entry_nmatname.grid(column = 0, row = 3, sticky = 'NESW')
-                    self.button_nmatname.grid(column = 1, row = 2, rowspan = 2, sticky = 'NESW')
+                    self.frame_nmatname.grid(column = 0, row = 2, columnspan = 2, sticky = 'NESW')
+                    self.button_nmatname.grid(column = 0, row = 3, columnspan = 2, sticky = 'NESW')
                     self.button_nmatrefresh.grid(column = 0, row = 4, columnspan = 2, sticky = 'NESW')
                     
                     #second column
