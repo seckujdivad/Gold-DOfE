@@ -588,6 +588,8 @@ class Editor:
                         for key in self.selected_material_data['entities']:
                             self.ent_list.insert(tk.END, key)
                             self.lists.entities.append(key)
+                            
+                        self.label_tex.config(text = 'Texture: {}'.format(self.selected_material_data['texture']['address']))
                 
                 def choose_entity(self, event = None):
                     threading.Thread(target = self._choose_entity).start()

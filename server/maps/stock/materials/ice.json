@@ -1,7 +1,7 @@
 {
 	"texture": {
 		"animated": false,
-		"address": "textures/ice.png",
+		"address": "ice.png",
 		"editor colour": "#C9CDFF"
 	},
 	"entities": {
