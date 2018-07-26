@@ -556,6 +556,7 @@ class Editor:
                     self.choose_list.bind('<Button>', self.choose_material)
                     self.ent_list.bind('<Button>', self.choose_entity)
                     self.tex_list.bind('<Button>', self.choose_texture)
+                    self.entry_colour.bind('<Return>', self.choose_colour)
                     
                     class lists:
                         materials = []
@@ -599,7 +600,6 @@ class Editor:
                     selection = self.choose_list.curselection()
                     if not selection == ():
                         self.material_selection = selection[0]
-                        print(self.lists.materials[self.material_selection])
                         self.selected_material_data = self.editorobj.map.get_json(os.path.join('materials', self.lists.materials[self.material_selection]))
                         
                         self.ent_list.delete(0, tk.END)
@@ -656,6 +656,14 @@ class Editor:
                         
                         self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', texture_name))
                         self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
+                
+                def choose_colour(self, event = None):
+                    colour = self.vars.editor_colour.get()
+                    
+                    if not self.editorcol_object == None:
+                        self.canvas_tex.delete(self.editorcol_object)
+                    
+                    self.editorcol_object = self.canvas_tex.create_rectangle(64, 0, 128, 64, fill = colour, outline = colour)
                     
             library = {'Text': Text,
                        'Tree': Tree,
