@@ -566,6 +566,8 @@ class Editor:
                     
                     self.material_selection = None
                     self.selected_material_data = None
+                    self.entity_selection = None
+                    self.texture_selection = None
                     self.vars.damage.set('----')
                     self.vars.accel.set('0')
                     self.vars.decel.set('0')
@@ -607,6 +609,19 @@ class Editor:
                         self.vars.accel.set(str(self.selected_material_data['entities'][entity_name]['accelerate']))
                         self.vars.decel.set(str(self.selected_material_data['entities'][entity_name]['decelerate']))
                         self.vars.velcap.set(str(self.selected_material_data['entities'][entity_name]['velcap']))
+                
+                def choose_texture(self, event = None):
+                    threading.Thread(target = self._choose_texture).start()
+                
+                def _choose_texture(self):
+                    time.sleep(0.05)
+                    
+                    selection = self.tex_list.curselection()
+                    if not selection == ():
+                        self.texture_selection = selection[0]
+                        
+                        texture_name = self.lists.textures[self.texture_selection]
+                        self.label_tex.config(text = 'Texture: {}'.format(texture_name))
                     
             library = {'Text': Text,
                        'Tree': Tree,
