@@ -2,9 +2,8 @@
 	"background": {
 		"base": "textures/background/base.png",
 		"overlay": "textures/background/overlay.png",
-		"scatters": ["models/cloud"],
+		"scatters": ["entities/cloud"],
 		"scatternum": 10
 	},
-	"player": "models/player",
 	"layout": "layout.json"
 }
