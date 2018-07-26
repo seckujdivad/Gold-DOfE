@@ -1,0 +1,17 @@
+{
+	"texture": {
+		"animated": false,
+		"address": "stone.png",
+		"editor colour": "#ADADAD"
+	},
+	"entities": {
+		"player": {
+			"damage": 0,
+			"accelerate": 2,
+			"decelerate": 1,
+			"velcap": 6
+		}
+	},
+	"display name": "Stone",
+	"hitbox": [[-32, -32], [-32, 32], [32, 32], [32, -32]]
+}
