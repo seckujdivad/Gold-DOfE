@@ -526,7 +526,7 @@ class Editor:
                     self.entry_colour = tk.Entry(self.frame, textvariable = self.vars.editor_colour, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
                     #save the material
-                    self.button_save = tk.Button(self.frame, text = 'Save all changes', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_save = tk.Button(self.frame, text = 'Save all changes', command = self.save_all, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     ## pack ui elements
                     #first column
@@ -725,6 +725,10 @@ class Editor:
                         
                         self.lists.entities.append(entity_name)
                         self.ent_list.insert(tk.END, entity_name)
+                
+                def save_all(self, event = None):
+                    for name in self.material_dicts:
+                        self.editorobj.map.write_json(os.path.join('materials', name), self.material_dicts[name])
                     
             library = {'Text': Text,
                        'Tree': Tree,
