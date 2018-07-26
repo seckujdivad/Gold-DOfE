@@ -582,6 +582,8 @@ class Editor:
                     self.entity_selection = None
                     self.texture_selection = None
                     self.texture_object = None
+                    self.canvtexture_object = None
+                    self.editorcol_object = None
                     self.vars.damage.set('----')
                     self.vars.accel.set('0')
                     self.vars.decel.set('0')
@@ -607,8 +609,17 @@ class Editor:
                             
                         self.label_tex.config(text = 'Texture: {}'.format(self.selected_material_data['texture']['address']))
                         
+                        self.vars.editor_colour.set(self.selected_material_data['texture']['editor colour'])
+                        
+                        if not self.editorcol_object == None:
+                            self.canvas_tex.delete(self.editorcol_object)
+                        if not self.canvtexture_object == None:
+                            self.canvas_tex.delete(self.canvtexture_object)
+                        
+                        self.editorcol_object = self.canvas_tex.create_rectangle(64, 0, 128, 64, fill = self.selected_material_data['texture']['editor colour'], outline = self.selected_material_data['texture']['editor colour'])
+                        
                         self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', self.selected_material_data['texture']['address']))
-                        self.canvas_tex.create_image(32, 32, image = self.texture_object)
+                        self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
                 
                 def choose_entity(self, event = None):
                     threading.Thread(target = self._choose_entity).start()
@@ -640,8 +651,11 @@ class Editor:
                         texture_name = self.lists.textures[self.texture_selection]
                         self.label_tex.config(text = 'Texture: {}'.format(texture_name))
                         
+                        if not self.canvtexture_object == None:
+                            self.canvas_tex.delete(self.canvtexture_object)
+                        
                         self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', texture_name))
-                        self.canvas_tex.create_image(32, 32, image = self.texture_object)
+                        self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
                     
             library = {'Text': Text,
                        'Tree': Tree,
