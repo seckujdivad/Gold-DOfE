@@ -483,7 +483,7 @@ class Editor:
                     
                     #add a new entity name to the list
                     self.entry_nentname = tk.Entry(self.frame, textvariable = self.vars.new_entity_name, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
-                    self.button_nentname = tk.Button(self.frame, text = 'Create', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_nentname = tk.Button(self.frame, text = 'Create', command = self.create_new_entity, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #specify the effect that the material has on entities on it
                     self.frame_entprops = tk.Frame(self.frame)
@@ -563,6 +563,7 @@ class Editor:
                     self.entry_colour.bind('<Return>', self.choose_colour)
                     self.entry_nmatname.bind('<Return>', self.create_new_material)
                     self.entry_nmatdispname.bind('<Return>', self.create_new_material)
+                    self.entry_nentname.bind('<Return>', self.create_new_entity)
                     
                     self.refresh()
                 
@@ -708,6 +709,22 @@ class Editor:
                         self.editorobj.map.write_json(os.path.join('materials', mat_name), data)
                         
                         self.refresh()
+                        
+                        self.vars.new_file_name.set('')
+                        self.vars.new_display_name.set('')
+                
+                def create_new_entity(self, event = None):
+                    entity_name = self.vars.new_entity_name.get()
+                    
+                    if entity_name != '' and self.material_selection != None:
+                        selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
+                        
+                        with open(os.path.join(sys.path[0], 'server', 'default_movement.json'), 'r') as file:
+                            data = json.load(file)
+                        selected_material_data['entities'][entity_name] = data
+                        
+                        self.lists.entities.append(entity_name)
+                        self.ent_list.insert(tk.END, entity_name)
                     
             library = {'Text': Text,
                        'Tree': Tree,
