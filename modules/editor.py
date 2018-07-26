@@ -503,6 +503,7 @@ class Editor:
                     self.tex_bar.pack(side = tk.RIGHT, fill = tk.Y)
                     self.tex_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
+                    #show the user the texture that they have selected
                     self.label_tex = tk.Label(self.frame, text = 'Texture: ----', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     
                     #choose a colour for the editor
@@ -543,6 +544,7 @@ class Editor:
                     
                     self.choose_list.bind('<Button>', self.choose_material)
                     self.ent_list.bind('<Button>', self.choose_entity)
+                    self.tex_list.bind('<Button>', self.choose_texture)
                     
                     class lists:
                         materials = []
