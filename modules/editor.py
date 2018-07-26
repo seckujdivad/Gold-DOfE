@@ -558,15 +558,15 @@ class Editor:
                     self.tex_list.bind('<Button>', self.choose_texture)
                     self.entry_colour.bind('<Return>', self.choose_colour)
                     
+                    self.refresh()
+                
+                def refresh(self):
                     class lists:
                         materials = []
                         textures = []
                         entities = []
                     self.lists = lists
-                    
-                    self.refresh()
                 
-                def refresh(self):
                     self.choose_list.delete(0, tk.END)
                     for item in os.listdir(os.path.join(self.editorobj.map.path, 'materials')):
                         self.choose_list.insert(tk.END, item)
@@ -578,8 +578,9 @@ class Editor:
                             self.tex_list.insert(tk.END, item)
                             self.lists.textures.append(item)
                     
+                    self.ent_list.delete(0, tk.END)
+                    
                     self.material_selection = None
-                    self.selected_material_data = None
                     self.entity_selection = None
                     self.texture_selection = None
                     self.texture_object = None
@@ -590,6 +591,8 @@ class Editor:
                     self.vars.decel.set('0')
                     self.vars.velcap.set('0')
                     self.vars.editor_colour.set('#FFFFFF')
+                    
+                    self.material_dicts = {}
                 
                 def choose_material(self, event = None):
                     threading.Thread(target = self._choose_material).start()
@@ -600,26 +603,16 @@ class Editor:
                     selection = self.choose_list.curselection()
                     if not selection == ():
                         self.material_selection = selection[0]
-                        self.selected_material_data = self.editorobj.map.get_json(os.path.join('materials', self.lists.materials[self.material_selection]))
+                        if not self.lists.materials[self.material_selection] in self.material_dicts:
+                            self.material_dicts[self.lists.materials[self.material_selection]] = self.editorobj.map.get_json(os.path.join('materials', self.lists.materials[self.material_selection]))
+                        selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
                         
                         self.ent_list.delete(0, tk.END)
-                        for key in self.selected_material_data['entities']:
+                        for key in selected_material_data['entities']:
                             self.ent_list.insert(tk.END, key)
                             self.lists.entities.append(key)
-                            
-                        self.label_tex.config(text = 'Texture: {}'.format(self.selected_material_data['texture']['address']))
                         
-                        self.vars.editor_colour.set(self.selected_material_data['texture']['editor colour'])
-                        
-                        if not self.editorcol_object == None:
-                            self.canvas_tex.delete(self.editorcol_object)
-                        if not self.canvtexture_object == None:
-                            self.canvas_tex.delete(self.canvtexture_object)
-                        
-                        self.editorcol_object = self.canvas_tex.create_rectangle(64, 0, 128, 64, fill = self.selected_material_data['texture']['editor colour'], outline = self.selected_material_data['texture']['editor colour'])
-                        
-                        self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', self.selected_material_data['texture']['address']))
-                        self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
+                        self.update_tex_display(selected_material_data['texture']['address'], selected_material_data['texture']['editor colour'])
                 
                 def choose_entity(self, event = None):
                     threading.Thread(target = self._choose_entity).start()
@@ -633,10 +626,12 @@ class Editor:
                         
                         entity_name = self.lists.entities[self.entity_selection]
                         
-                        self.vars.damage.set(str(self.selected_material_data['entities'][entity_name]['damage']))
-                        self.vars.accel.set(str(self.selected_material_data['entities'][entity_name]['accelerate']))
-                        self.vars.decel.set(str(self.selected_material_data['entities'][entity_name]['decelerate']))
-                        self.vars.velcap.set(str(self.selected_material_data['entities'][entity_name]['velcap']))
+                        selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
+                        
+                        self.vars.damage.set(str(selected_material_data['entities'][entity_name]['damage']))
+                        self.vars.accel.set(str(selected_material_data['entities'][entity_name]['accelerate']))
+                        self.vars.decel.set(str(selected_material_data['entities'][entity_name]['decelerate']))
+                        self.vars.velcap.set(str(selected_material_data['entities'][entity_name]['velcap']))
                 
                 def choose_texture(self, event = None):
                     threading.Thread(target = self._choose_texture).start()
@@ -648,22 +643,34 @@ class Editor:
                     if not selection == ():
                         self.texture_selection = selection[0]
                         
-                        texture_name = self.lists.textures[self.texture_selection]
-                        self.label_tex.config(text = 'Texture: {}'.format(texture_name))
+                        selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
+                        selected_material_data['texture']['address'] = self.lists.textures[self.texture_selection]
                         
-                        if not self.canvtexture_object == None:
-                            self.canvas_tex.delete(self.canvtexture_object)
-                        
-                        self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', texture_name))
-                        self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
+                        self.update_tex_display(selected_material_data['texture']['address'], selected_material_data['texture']['editor colour'])
                 
                 def choose_colour(self, event = None):
                     colour = self.vars.editor_colour.get()
                     
+                    selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
+                    selected_material_data['texture']['editor colour'] = colour
+                    
+                    self.update_tex_display(selected_material_data['texture']['address'], selected_material_data['texture']['editor colour'])
+                
+                def update_tex_display(self, address, colour):
+                    #delete old objects from the canvas
                     if not self.editorcol_object == None:
                         self.canvas_tex.delete(self.editorcol_object)
+                    if not self.canvtexture_object == None:
+                        self.canvas_tex.delete(self.canvtexture_object)
                     
                     self.editorcol_object = self.canvas_tex.create_rectangle(64, 0, 128, 64, fill = colour, outline = colour)
+                    
+                    self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', address))
+                    self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
+                    
+                    self.label_tex.config(text = 'Texture: {}'.format(address))
+                        
+                    self.vars.editor_colour.set(colour)
                     
             library = {'Text': Text,
                        'Tree': Tree,
