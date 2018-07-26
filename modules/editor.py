@@ -483,13 +483,13 @@ class Editor:
                     self.label_cap = tk.Label(self.frame_entprops, text = 'Max speed', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     self.spinbox_cap = tk.Spinbox(self.frame_entprops, textvariable = self.vars.velcap, from_ = 0, to = 10000, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
                     
-                    self.label_dmg.grid(column = 0, row = 0, sticky = 'NESW')
+                    self.label_dmg.grid(column = 0, row = 0, sticky = 'NSW')
                     self.spinbox_dmg.grid(column = 1, row = 0, sticky = 'NESW')
-                    self.label_accel.grid(column = 0, row = 1, sticky = 'NESW')
+                    self.label_accel.grid(column = 0, row = 1, sticky = 'NSW')
                     self.spinbox_accel.grid(column = 1, row = 1, sticky = 'NESW')
-                    self.label_decel.grid(column = 0, row = 2, sticky = 'NESW')
+                    self.label_decel.grid(column = 0, row = 2, sticky = 'NSW')
                     self.spinbox_decel.grid(column = 1, row = 2, sticky = 'NESW')
-                    self.label_cap.grid(column = 0, row = 3, sticky = 'NESW')
+                    self.label_cap.grid(column = 0, row = 3, sticky = 'NSW')
                     self.spinbox_cap.grid(column = 1, row = 3, sticky = 'NESW')
                     self.frame_entprops.columnconfigure(0, weight = 1)
                     self.frame_entprops.columnconfigure(1, weight = 1)
@@ -502,6 +502,8 @@ class Editor:
                     
                     self.tex_bar.pack(side = tk.RIGHT, fill = tk.Y)
                     self.tex_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    self.label_tex = tk.Label(self.frame, text = 'Texture: ----', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     
                     #choose a colour for the editor
                     self.label_colour = tk.Label(self.frame, text = 'Editor colour', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
@@ -527,7 +529,8 @@ class Editor:
                     self.button_nentname.grid(column = 4, row = 4, sticky = 'NESW')
                     
                     #fourth column
-                    self.tex_frame.grid(column = 5, row = 0, columnspan = 2, rowspan = 4, sticky = 'NESW')
+                    self.tex_frame.grid(column = 5, row = 0, columnspan = 2, rowspan = 3, sticky = 'NESW')
+                    self.label_tex.grid(column = 5, row = 3, columnspan = 2, sticky = 'NSW')
                     self.label_colour.grid(column = 5, row = 4, sticky = 'NESW')
                     self.entry_colour.grid(column = 6, row = 4, sticky = 'NESW')
                     
