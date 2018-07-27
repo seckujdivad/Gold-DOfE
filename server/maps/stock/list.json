@@ -5,5 +5,9 @@
 		"scatters": ["entities/cloud"],
 		"scatternum": 10
 	},
-	"layout": "layout.json"
+	"layout": "layout.json",
+	"entity models": {
+		"player": ["player"],
+		"cloud": ["cloud"]
+	}
 }
