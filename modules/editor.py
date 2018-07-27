@@ -625,6 +625,8 @@ class Editor:
                         self.vars.accel.set('0')
                         self.vars.decel.set('0')
                         self.vars.velcap.set('0')
+                        
+                        self.tabobj.set_title(self.lists.materials[self.material_selection])
                 
                 def choose_entity(self, event = None):
                     threading.Thread(target = self._choose_entity).start()
