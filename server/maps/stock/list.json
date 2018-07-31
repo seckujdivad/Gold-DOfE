@@ -2,7 +2,7 @@
 	"background": {
 		"base": "textures/background/base.png",
 		"overlay": "textures/background/overlay.png",
-		"scatters": ["entities/cloud"],
+		"scatters": ["cloud"],
 		"scatternum": 10
 	},
 	"layout": "layout.json",

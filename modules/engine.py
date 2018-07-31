@@ -22,6 +22,8 @@ class Game:
             name = 'localhost'
         self.server = server
         
+        self.vars = {}
+        
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             self.settingsdict = json.load(file)
         
@@ -38,7 +40,7 @@ class Game:
         self.client.recv_binds.append(self.recv_handler)
         self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'map'))
         
-        self.running = True        
+        self.running = True
         threading.Thread(target = self.main, daemon = True).start()
     
     def main(self):
@@ -56,8 +58,6 @@ class Game:
         
         if request.command == 'say':
             self.message_pipe.send(['chat', request.arguments['text']])
-        elif request.command == 'load map':
-            self.engine.load_map(request.arguments['map name'])
         elif request.command == 'disconnect':
             if self.running == True:
                 print('connection to server interrupted')
@@ -65,6 +65,9 @@ class Game:
             if request.subcommand == 'map':
                 if not self.engine.map.name == request.arguments['map name']:
                     self.engine.load_map(request.arguments['map name'])
+                self.vars[request.subcommand] = request.arguments['map name']
+            else:
+                self.vars[request.subcommand] = request.arguments['value']
 
 class Engine:
     def __init__(self, game, playable = True):

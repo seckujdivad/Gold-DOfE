@@ -4,6 +4,7 @@ import threading
 import json
 import os
 import sys
+import random
 
 import modules.servercmds
 
@@ -14,6 +15,8 @@ class Server:
             port = port_
             connections = []
             map = None
+            mapdata = None
+            conn_data = {} #individual spaces for connections to store data to be publically accessible
         self.serverdata = serverdata
         
         self.output_pipe, pipe = mp.Pipe()
@@ -49,6 +52,10 @@ class Server:
     def connection_handler(self, address, connection):
         self.output_pipe.send('New connection from {}'.format(address[0]))
         
+        self.serverdata.conn_data[address[0]] = {'model': random.choice(self.serverdata.mapdata['entity models']['player']),
+                                                 'connection': connection,
+                                                 'active': True}
+        
         cont = True
         while cont:
             try:
@@ -63,6 +70,10 @@ class Server:
             elif req.command == 'var update r':
                 if req.subcommand == 'map':
                     self.send(connection, Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map}))
+                elif req.subcommand == 'player model':
+                    if self.serverdata.map != None:
+                        self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[address[0]]['model']}))
+        self.serverdata.conn_data[address[0]]['active'] = False
     
     def handle_command(self, command, source = 'internal'):
         if command == '' or command.startswith(' '):
@@ -126,6 +137,13 @@ say: send a message to all players'''
     
     def load_map(self, mapname):
         self.serverdata.map = mapname
+        
+        with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'list.json'), 'r') as file:
+            self.serverdata.mapdata = json.load(file)
+        
+        for address in self.serverdata.conn_data:
+            self.serverdata.conn_data[address]['model'] = random.choice(self.serverdata.mapdata['entity models']['player'])
+        
         req = Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
     

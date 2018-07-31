@@ -1,0 +1,8 @@
+{
+	"type": "stack",
+	"textures": "stack",
+	"offsets": [0, -0.8],
+	"rotations": 32,
+	"offscreen": [-100, -100],
+	"numlayers": [5, 10, 50, 100]
+}
