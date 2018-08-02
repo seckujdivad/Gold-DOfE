@@ -758,6 +758,7 @@ class Editor:
             tabs = []
             tabs_current = None
             ui_styling = None
+            return_to_menu_button = tk.Button(editor_pane_frame, text = 'Back', command = functools.partial(self.pagemethods.uiobject.load, self.pagemethods.uiobject.uiobjects.editor_choose_file), **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         self.uiobjs = uiobjs
         self.uiobjs.frame = self.frame
         self.uiobjs.pagemethods = self.pagemethods
@@ -767,9 +768,9 @@ class Editor:
         #pack all items
         i = 0
         for button in self.uiobjs.editor_panes:
-            button.grid(row = 0, column = i, sticky = 'NESW')
+            button.pack(side = tk.LEFT, fill = tk.Y)
             i += 1
-        self.ui_styling.set_weight(self.uiobjs.editor_pane_frame, len(self.uiobjs.editor_panes) - 1, 0)
+        self.uiobjs.return_to_menu_button.pack(side = tk.RIGHT, fill = tk.Y)
         
         #specify the positions of the UI elements
         self.uiobjs.editor_pane_frame.grid(row = 0, column = 0, sticky = 'NESW')
@@ -783,6 +784,9 @@ class Editor:
         'Specify the map file to be used. Must be called before the editor is interacted with'
         self.map = Map(map_name) #this handles most of the interactions with the map files
         self.editors.map = self.map
+    
+    def close(self):
+        pass
 
 class EditorTab:
     '''
