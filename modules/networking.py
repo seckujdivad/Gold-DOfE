@@ -119,6 +119,12 @@ say: send a message to all players'''
                         output = 'Error while kicking \'{}\''.format(argstring)
                 else:
                     output = 'No permissions'
+            elif name == 'sv_quit':
+                if source == 'internal':
+                    self.quit()
+                    output = 'Server is now offline'
+                else:
+                    output = 'No permissions'
             else:
                 output = 'Command not found, try \'help\''
         elif name == 'exec':
@@ -169,6 +175,9 @@ say: send a message to all players'''
     def send_all(self, data):
         for address, connection in self.serverdata.connections:
             self.send(connection, data)
+    
+    def quit(self):
+        self.connection.close()
 
 class Client:
     def __init__(self, host_, port_):
