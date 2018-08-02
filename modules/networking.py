@@ -16,7 +16,7 @@ class Server:
             connections = []
             map = None
             mapdata = None
-            conn_data = {} #individual spaces for connections to store data to be publically accessible
+            conn_data = [] #individual spaces for connections to store data to be publically accessible
         self.serverdata = serverdata
         
         self.output_pipe, pipe = mp.Pipe()
@@ -37,24 +37,29 @@ class Server:
         threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
         
     def acceptance_thread(self):
+        conn_id = 0
         while True:
             self.output_pipe.send('Ready for incoming connections')
             
             conn, addr = self.connection.accept()
-            threading.Thread(target = self.connection_handler, args = [addr, conn], daemon = True).start()
+            threading.Thread(target = self.connection_handler, args = [addr, conn, conn_id], daemon = True).start()
             self.serverdata.connections.append([addr, conn])
             
             for script in self.settingsdata['scripts']['userconnect']:
                 with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
                     text = file.read()
                 self.output_pipe.send(self.run_script(text))
+            
+            conn_id += 1
     
-    def connection_handler(self, address, connection):
+    def connection_handler(self, address, connection, conn_id):
         self.output_pipe.send('New connection from {}'.format(address[0]))
         
-        self.serverdata.conn_data[address[0]] = {'model': random.choice(self.serverdata.mapdata['entity models']['player']),
-                                                 'connection': connection,
-                                                 'active': True}
+        self.serverdata.conn_data[conn_id] = {'model': random.choice(self.serverdata.mapdata['entity models']['player']),
+                                              'connection': connection,
+                                              'active': True,
+                                              'address': address,
+                                              'id': conn_id}
         
         cont = True
         while cont:
@@ -72,8 +77,8 @@ class Server:
                     self.send(connection, Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map}))
                 elif req.subcommand == 'player model':
                     if self.serverdata.map != None:
-                        self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[address[0]]['model']}))
-        self.serverdata.conn_data[address[0]]['active'] = False
+                        self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[conn_id]['model']}))
+        self.serverdata.conn_data[conn_id]['active'] = False
     
     def handle_command(self, command, source = 'internal'):
         if command == '' or command.startswith(' '):
@@ -141,8 +146,8 @@ say: send a message to all players'''
         with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'list.json'), 'r') as file:
             self.serverdata.mapdata = json.load(file)
         
-        for address in self.serverdata.conn_data:
-            self.serverdata.conn_data[address]['model'] = random.choice(self.serverdata.mapdata['entity models']['player'])
+        for data in self.serverdata.conn_data:
+            data['model'] = random.choice(self.serverdata.mapdata['entity models']['player'])
         
         req = Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
