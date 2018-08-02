@@ -9,5 +9,6 @@
 	"entity models": {
 		"player": ["player"],
 		"cloud": ["cloud"]
-	}
+	},
+	"player entity": "player"
 }
