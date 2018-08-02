@@ -125,6 +125,7 @@ class UI:
                         self.pilrender_flipswitch.on_option_press(1, run_binds = False)
                     self.mdlquality_flipswitch.on_option_press(settingsdict['graphics']['stacked model quality'], run_binds = False)
                     self.chatalign_flipswitch.on_option_press(settingsdict['hud']['chat']['position'], run_binds = False)
+                    self.chatcol_var.set(settingsdict['hud']['chat']['colour'])
                 
                 @classmethod
                 def on_close(self):
@@ -142,6 +143,7 @@ class UI:
                     settingsdict['graphics']['PILrender'] = [True, False][self.pilrender_flipswitch.state]
                     settingsdict['graphics']['stacked model quality'] = self.mdlquality_flipswitch.state
                     settingsdict['hud']['chat']['position'] = self.chatalign_flipswitch.state
+                    settingsdict['hud']['chat']['colour'] = self.chatcol_var.get()
                     
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
                        json.dump(settingsdict, file, sort_keys=True, indent=4)
@@ -168,6 +170,9 @@ class UI:
                                                                                               {'text': 'Top right', 'command': print},
                                                                                               {'text': 'Bottom left', 'command': print},
                                                                                               {'text': 'Bottom right', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                chatcol_label = tk.Label(frame, text = 'Chat colour', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                chatcol_var = tk.StringVar()
+                chatcol_entry = tk.Entry(frame, textvariable = chatcol_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
                 
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
@@ -181,9 +186,11 @@ class UI:
                 cat_hud_label.grid(row = 3, column = 0, columnspan = 2, sticky = 'NESW')
                 chatalign_label.grid(row = 4, column = 0, sticky = 'NESW')
                 chatalign_flipswitch.grid(row = 4, column = 1, sticky = 'NESW')
+                chatcol_label.grid(row = 5, column = 0, sticky = 'NESW')
+                chatcol_entry.grid(row = 5, column = 1, sticky = 'NESW')
                 
-                button_close.grid(row = 5, column = 0, sticky = 'NESW')
-                button_cancel.grid(row = 5, column = 1, sticky = 'NESW')
+                button_close.grid(row = 6, column = 0, sticky = 'NESW')
+                button_cancel.grid(row = 6, column = 1, sticky = 'NESW')
                 
                 self.styling.set_weight(frame, 2, 6, dorows = False)
             
