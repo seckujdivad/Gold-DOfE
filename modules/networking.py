@@ -55,11 +55,11 @@ class Server:
     def connection_handler(self, address, connection, conn_id):
         self.output_pipe.send('New connection from {}'.format(address[0]))
         
-        self.serverdata.conn_data[conn_id] = {'model': random.choice(self.serverdata.mapdata['entity models']['player']),
+        self.serverdata.conn_data.append({'model': random.choice(self.serverdata.mapdata['entity models']['player']),
                                               'connection': connection,
                                               'active': True,
                                               'address': address,
-                                              'id': conn_id}
+                                              'id': conn_id})
         
         cont = True
         while cont:
@@ -67,7 +67,7 @@ class Server:
                 data = connection.recv(2048)
                 req = Request(json.loads(data.decode()))
             except ConnectionResetError or ConnectionAbortedError:
-                req = Request(command = 'disconnect')
+                req = Request(command = 'disconnect', arguments = {'clean': False}) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
                 cont = False
                 
             if req.command == 'disconnect':
