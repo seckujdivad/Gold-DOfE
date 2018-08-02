@@ -22,6 +22,12 @@
                 "name": "Laptop",
                 "port": "normal"
             },
+			{
+				"address": "david-juckes-desktop",
+				"internal": false,
+				"name": "PC",
+				"port": "normal"
+			},
             {
                 "address": "localhost",
                 "internal": true,
