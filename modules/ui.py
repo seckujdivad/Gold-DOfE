@@ -128,6 +128,7 @@ class UI:
                     self.chatcol_var.set(settingsdict['hud']['chat']['colour'])
                     self.chatsize_var.set(settingsdict['hud']['chat']['fontsize'])
                     self.chatfont_var.set(settingsdict['hud']['chat']['font'])
+                    self.username_var.set(settingsdict['user']['name'])
                 
                 @classmethod
                 def on_close(self):
@@ -148,6 +149,7 @@ class UI:
                     settingsdict['hud']['chat']['colour'] = self.chatcol_var.get()
                     settingsdict['hud']['chat']['fontsize'] = self.chatsize_var.get()
                     settingsdict['hud']['chat']['font'] = self.chatfont_var.get()
+                    settingsdict['user']['name'] = self.username_var.get()
                     
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
                        json.dump(settingsdict, file, sort_keys=True, indent=4)
@@ -156,8 +158,6 @@ class UI:
                 
                 frame = tk.Frame(main.page_frame)
                 
-                '''username_label
-                username_entry'''
                 cat_graphics_label = tk.Label(frame, text = 'Graphics', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 pilrender_label = tk.Label(frame, text = 'PIL rendering', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 pilrender_flipswitch = TkFlipSwitch(frame, options = [{'text': 'On', 'command': print},
@@ -184,6 +184,11 @@ class UI:
                 chatsize_var = tk.IntVar()
                 chatsize_spinbox = tk.Spinbox(frame, from_ = 0, to = 128, textvariable = chatsize_var, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
                 
+                cat_user_label = tk.Label(frame, text = 'User', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                username_label = tk.Label(frame, text = 'Username', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                username_var = tk.StringVar()
+                username_entry = tk.Entry(frame, textvariable = username_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
+                
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
@@ -203,8 +208,12 @@ class UI:
                 chatsize_label.grid(row = 7, column = 0, sticky = 'NESW')
                 chatsize_spinbox.grid(row = 7, column = 1, sticky = 'NESW')
                 
-                button_close.grid(row = 8, column = 0, sticky = 'NESW')
-                button_cancel.grid(row = 8, column = 1, sticky = 'NESW')
+                cat_user_label.grid(row = 8, column = 0, columnspan = 2, sticky = 'NESW')
+                username_label.grid(row = 9, column = 0, sticky = 'NESW')
+                username_entry.grid(row = 9, column = 1, sticky = 'NESW')
+                
+                button_close.grid(row = 10, column = 0, sticky = 'NESW')
+                button_cancel.grid(row = 10, column = 1, sticky = 'NESW')
                 
                 self.styling.set_weight(frame, 2, 6, dorows = False)
             
