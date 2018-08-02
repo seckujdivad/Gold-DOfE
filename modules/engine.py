@@ -134,7 +134,8 @@ class Engine:
         self.inputs.mainloop(self.game.canvas)
     
     def load_map(self, name):
-        if os.path.isdir(os.path.join(sys.path[0], 'server', 'maps', name)):
+        self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)
+        if os.path.isdir(self.map.path):
             #check user cfg
             with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
                 self.map.settingscfg = json.load(file)
@@ -152,32 +153,32 @@ class Engine:
             
             #open map cfg
             self.map.name = name
-            with open(os.path.join(sys.path[0], 'server', 'maps', name, 'list.json'), 'r') as file:
+            with open(os.path.join(self.map.path, 'list.json'), 'r') as file:
                 self.map.cfg = json.load(file)
             self.game.message_pipe.send(['map load', 'Loaded map cfg'])
             
-            #render base and overlay
-            self.map.textures.base = self.map.rendermethod(file = os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['background']['base']))
+            #load base and overlay into memory
+            self.map.textures.base = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['base']))
             self.game.message_pipe.send(['map load', 'Loaded base texture'])
-            self.map.textures.overlay = self.map.rendermethod(file = os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['background']['overlay']))
+            self.map.textures.overlay = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['overlay']))
             self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
             
-            #add base layer
+            #render base layer
             self.map.textures.obj_base = self.game.canvas.create_image(400, 300, image = self.map.textures.base)
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
             
-            #add scatters
+            #render scatters
             self.map.textures.obj_scatter = []
             for i in range(int(self.map.cfg['background']['scatternum'] / len(self.map.cfg['background']['scatters']))):
                 for scatter in self.map.cfg['background']['scatters']:
-                    scattermdl = Model(os.path.join(sys.path[0], 'server', 'maps', name, scatter), self.map.rendermethod, self.game.canvas)
+                    scattermdl = Model(random.choice(self.map.cfg['entity models'][scatter]), self.map.path, self.map.rendermethod, self.game.canvas)
                     scattermdl.setpos(random.randint(0, 800), random.randint(0, 600))
                     self.map.textures.obj_scatter.append(scattermdl)
             self.game.message_pipe.send(['map load', 'Loaded scatters'])
             
             #load player
             self.game.message_pipe.send(['map load', 'Creating player model...'])
-            self.map.player = Player(os.path.join(sys.path[0], 'server', 'maps', name, self.map.cfg['player']), self)
+            self.map.player = Player(random.choice(self.map.cfg['entity models'][self.map.cfg['player entity']]), self.map.path, self)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
             self.inputs.binds['Left'] = [self.map.player.rotate_right]
@@ -186,7 +187,7 @@ class Engine:
             self.inputs.binds['Down'] = [self.map.player.move_backward]
             self.game.message_pipe.send(['map load', 'Added keybinds'])
             
-            #add overlay
+            #render overlay
             self.map.textures.obj_overlay = self.game.canvas.create_image(400, 300, image = self.map.textures.overlay)
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
     
@@ -209,9 +210,10 @@ class Water:
     pass
 
 class Player:
-    def __init__(self, path, engine):
-        self.path = path
+    def __init__(self, ent_name, map_path, engine):
+        self.ent_name = ent_name
         self.engine = engine
+        self.map_path = map_path
         
         class pos:
             x = 0
@@ -227,7 +229,7 @@ class Player:
         
         self.setpos_queue, pipe = mp.Pipe()
         
-        self.model = Model(path, self.engine.map.rendermethod, self.engine.game.canvas)
+        self.model = Model(ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvas)
         
         threading.Thread(target = self._setpos_queue, args = [pipe]).start()
         threading.Thread(target = self._speedcalc).start()
@@ -298,8 +300,10 @@ class Player:
         self.addvelocity(0 - self.pos.movement.forwardincrement, self.pos.rotation)
 
 class Model:
-    def __init__(self, path, imageloader, canvas):
-        self.path = path
+    def __init__(self, ent_name, map_path, imageloader, canvas):
+        self.ent_name = ent_name
+        self.map_path = map_path
+        self.ent_path = os.path.join(self.map_path, 'models', self.ent_name)
         self.imageloader = imageloader
         self.canvas = canvas
         
@@ -327,7 +331,7 @@ class Model:
         if not self.imageloader == tk.PhotoImage:
             self.preimgloader = __import__('PIL.Image').Image.open
         
-        with open(os.path.join(self.path, 'list.json'), 'r') as file:
+        with open(os.path.join(self.ent_path, 'list.json'), 'r') as file:
             self.config = json.load(file)
         
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
@@ -336,14 +340,14 @@ class Model:
         #load textures
         self.graphics.displaytype = self.config['type']
         if self.graphics.displaytype == 'flat':
-            self.graphics.flat.texture = self.imageloader(file = os.path.join(self.path, self.config['texture']))
+            self.graphics.flat.texture = self.imageloader(file = os.path.join(self.ent_path, self.config['texture']))
         elif self.graphics.displaytype == 'stack':
             if type(self.config['textures']) == list:
                 for img in self.config['textures']:
-                    self.graphics.stack.textures.append(self.imageloader(file = os.path.join(self.path, img)))
+                    self.graphics.stack.textures.append(self.imageloader(file = os.path.join(self.ent_path, img)))
             else:
-                for img in os.listdir(os.path.join(self.path, 'stack')):
-                    self.graphics.stack.textures.append(self.preimgloader(os.path.join(self.path, 'stack', img)))
+                for img in os.listdir(os.path.join(self.ent_path, self.ent_name, 'stack')):
+                    self.graphics.stack.textures.append(self.preimgloader(os.path.join(self.ent_path, 'stack', img)))
             
             self.graphics.stack.numlayers = self.config['numlayers'][self.userconfig['graphics']['stacked model quality']]
             
