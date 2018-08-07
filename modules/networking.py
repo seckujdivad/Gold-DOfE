@@ -94,9 +94,15 @@ class Server:
         if name == 'help':
             output = '''Commands:
 map: load a map by name
+say: send a message to all players
+exec: exexute a script by name stored in the server/scripts directory
+echo: output the text given to the console
+clear: clear the console
+
+sv_:
 sv_conns: list of connections to the server
 sv_kick_addr: kick a player by address
-say: send a message to all players'''
+sv_quit: destroy the server'''
         elif name == 'map':
             if source == 'internal':
                 try:
@@ -133,6 +139,8 @@ say: send a message to all players'''
             output = self.run_script(text)
         elif name == 'echo':
             output = argstring
+        elif name == 'clear':
+            output = '$$clear$$'
         else:
             output = 'Command not found, try \'help\''
         return output

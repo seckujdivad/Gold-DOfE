@@ -47,8 +47,7 @@ class ServerCommandLineUI:
         self.listbox_box.see(tk.END)
         
         data_out = self.command_handler(data)
-        for line in data_out.split('\n'):
-            self.listbox_box.insert(tk.END, line)
+        self.display_incoming_data(data_out)
         self.listbox_box.see(tk.END)
     
     def set_title_status(self, status = ''):
@@ -60,9 +59,18 @@ class ServerCommandLineUI:
     def listen_to_pipe(self):
         while True:
             data = self.pipe.recv()
-            for line in data.split('\n'):
+            self.display_incoming_data(data)
+            
+    def display_incoming_data(self, data):
+        for line in data.split('\n'):
+            print(line, len(line))
+            if line.startswith('$$') and line.endswith('$$') and len(line) > 4: #check if this is a command for the console window
+                cmd = line[2:len(line) - 2]
+                if cmd == 'clear':
+                    self.listbox_box.delete(0, tk.END)
+            else:
                 self.listbox_box.insert(tk.END, line)
-            self.listbox_box.see(tk.END)
+        self.listbox_box.see(tk.END)
     
     class styling:
         class fonts:
