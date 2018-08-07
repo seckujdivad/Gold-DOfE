@@ -1,3 +1,4 @@
+from tkinter import messagebox
 import tkinter as tk
 import threading
 import time
@@ -115,6 +116,7 @@ class UI:
                     self.button_close.config(command = self.choose_accept) #can't use functools with classmethods inside of classes that haven't been created yet
                     self.button_cancel.config(command = self.choose_cancel)
                     self.button_reset_default.config(command = self.choose_reset_default)
+                    self.button_match_requirements.config(command = self.meet_requirements)
                     
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     
@@ -169,6 +171,13 @@ class UI:
                     self.chatfont_var.set(settingsdict['hud']['chat']['font'])
                     self.username_var.set(settingsdict['user']['name'])
                 
+                @classmethod
+                def meet_requirements(self):
+                    messagebox.showinfo('Installing packages...', 'Installation of all required packages will now start in the console')
+                    print('Running pip using "requirements.txt...')
+                    os.system('py -m pip install -r "{}"'.format(os.path.join(sys.path[0], 'requirements.txt')))
+                    print('All installations are now finished!')
+                
                 frame = tk.Frame(main.page_frame)
                 
                 settings_frame = tk.Frame(frame)
@@ -207,6 +216,7 @@ class UI:
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_reset_default = tk.Button(frame, text = 'Reset to default', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_match_requirements = tk.Button(frame, text = 'Click to install required packages...', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 cat_graphics_label.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
                 pilrender_label.grid(row = 1, column = 0, sticky = 'NESW')
@@ -229,9 +239,10 @@ class UI:
                 username_entry.grid(row = 9, column = 1, sticky = 'NESW')
                 
                 settings_frame.grid(row = 0, column = 0, columnspan = 3, sticky = 'NESW')
-                button_close.grid(row = 1, column = 0, sticky = 'NESW')
-                button_cancel.grid(row = 1, column = 1, sticky = 'NESW')
-                button_reset_default.grid(row = 1, column = 2, sticky = 'NESW')
+                button_match_requirements.grid(row = 1, column = 0, columnspan = 3, sticky = 'NESW')
+                button_close.grid(row = 2, column = 0, sticky = 'NESW')
+                button_cancel.grid(row = 2, column = 1, sticky = 'NESW')
+                button_reset_default.grid(row = 2, column = 2, sticky = 'NESW')
                 
                 self.styling.set_weight(settings_frame, 2, 10, dorows = False)
                 frame.columnconfigure(0, weight = 1)
