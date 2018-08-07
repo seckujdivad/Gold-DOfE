@@ -295,15 +295,39 @@ class UI:
                 button_connect = tk.Button(frame, text = 'Connect', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_back = tk.Button(frame, text = 'Return to menu', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
+                addserver_frame = tk.Frame(frame)
+                addserver_choose_button = tk.Button(addserver_frame, text = 'Add server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                addserver_name_label = tk.Label(addserver_frame, text = 'Name', **self.styling.get(font_size = 'small', object_type = tk.Label))
+                addserver_name_entry = tk.Entry(addserver_frame, **self.styling.get(font_size = 'small', object_type = tk.Entry))
+                addserver_address_label = tk.Label(addserver_frame, text = 'Address', **self.styling.get(font_size = 'small', object_type = tk.Label))
+                addserver_address_entry = tk.Entry(addserver_frame, **self.styling.get(font_size = 'small', object_type = tk.Entry))
+                addserver_port_label = tk.Label(addserver_frame, text = 'Port', **self.styling.get(font_size = 'small', object_type = tk.Label))
+                addserver_port_entry = tk.Entry(addserver_frame, **self.styling.get(font_size = 'small', object_type = tk.Entry))
+                addserver_islocal_flipswitch = TkFlipSwitch(addserver_frame, options = [{'text': 'Local machine only', 'command': print},
+                                                                                        {'text': 'Open to LAN', 'command': print}], **self.styling.get(font_size = 'small', object_type = tk.Button))
+                
                 serverlist_bar.pack(side = tk.RIGHT, fill = tk.Y)
                 serverlist_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                 
                 serverlist_frame.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
                 button_back.grid(row = 1, column = 0, sticky = 'NESW')
                 button_connect.grid(row = 1, column = 1, sticky = 'NESW')
+                addserver_frame.grid(row = 2, column = 0, columnspan = 2, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 2, 2)
+                addserver_name_label.grid(row = 0, column = 0, sticky = 'NESW')
+                addserver_name_entry.grid(row = 0, column = 1, sticky = 'NESW')
+                addserver_address_label.grid(row = 1, column = 0, sticky = 'NESW')
+                addserver_address_entry.grid(row = 1, column = 1, sticky = 'NESW')
+                addserver_port_label.grid(row = 2, column = 0, sticky = 'NESW')
+                addserver_port_entry.grid(row = 2, column = 1, sticky = 'NESW')
+                addserver_islocal_flipswitch.grid(row = 3, column = 0, columnspan = 2, sticky = 'NESW')
+                addserver_choose_button.grid(row = 0, column = 2, rowspan = 4, sticky = 'NESW')
+                
+                self.styling.set_weight(frame, 2, 3)
                 frame.rowconfigure(1, weight = 0)
+                frame.rowconfigure(2, weight = 0)
+                
+                self.styling.set_weight(addserver_frame, 3, 4)
                 
             class game:
                 config = {'name': 'Game'}
