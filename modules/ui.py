@@ -73,7 +73,7 @@ class UI:
                     if not pilrender_msg:
                         pilrender_msg = 'False (WARNING! - disables sprite rotation)'
                         
-                    text_ = 'Name: {}, PIL rendering: {} \nInstall PIL/Pillow through "get_packages.bat"'.format(settingsdict['user']['name'], pilrender_msg)
+                    text_ = 'Name: {}, PIL rendering: {} \nGo to settings to make sure all packages have been installed'.format(settingsdict['user']['name'], pilrender_msg)
                     self.label_userdata.config(text = text_)
                 
                 @classmethod
@@ -173,7 +173,7 @@ class UI:
                 
                 @classmethod
                 def meet_requirements(self):
-                    messagebox.showinfo('Installing packages...', 'Installation of all required packages will now start in the console')
+                    messagebox.showinfo('Installing packages...', 'Installation of all required packages will now start in the console\n\nThe "install packages" button will always remain in settings because the requirements may change over time')
                     print('Running pip using "requirements.txt...')
                     os.system('py -m pip install -r "{}"'.format(os.path.join(sys.path[0], 'requirements.txt')))
                     print('All installations are now finished!')
@@ -216,7 +216,7 @@ class UI:
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_reset_default = tk.Button(frame, text = 'Reset to default', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_match_requirements = tk.Button(frame, text = 'Click to install required packages...', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_match_requirements = tk.Button(frame, text = 'Click to install any required packages...', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 cat_graphics_label.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
                 pilrender_label.grid(row = 1, column = 0, sticky = 'NESW')
