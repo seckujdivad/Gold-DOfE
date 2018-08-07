@@ -114,21 +114,11 @@ class UI:
                 def on_load(self):
                     self.button_close.config(command = self.choose_accept) #can't use functools with classmethods inside of classes that haven't been created yet
                     self.button_cancel.config(command = self.choose_cancel)
+                    self.button_reset_default.config(command = self.choose_reset_default)
                     
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     
-                    with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
-                        settingsdict = json.load(file)
-                    if settingsdict['graphics']['PILrender']:
-                        self.pilrender_flipswitch.on_option_press(0, run_binds = False)
-                    else:
-                        self.pilrender_flipswitch.on_option_press(1, run_binds = False)
-                    self.mdlquality_flipswitch.on_option_press(settingsdict['graphics']['stacked model quality'], run_binds = False)
-                    self.chatalign_flipswitch.on_option_press(settingsdict['hud']['chat']['position'], run_binds = False)
-                    self.chatcol_var.set(settingsdict['hud']['chat']['colour'])
-                    self.chatsize_var.set(settingsdict['hud']['chat']['fontsize'])
-                    self.chatfont_var.set(settingsdict['hud']['chat']['font'])
-                    self.username_var.set(settingsdict['user']['name'])
+                    self.fetch_settings(os.path.join(sys.path[0], 'user', 'config.json'))
                 
                 @classmethod
                 def on_close(self):
@@ -140,7 +130,17 @@ class UI:
                 
                 @classmethod
                 def choose_accept(self):
-                    with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+                    self.push_settings(os.path.join(sys.path[0], 'user', 'config.json'))
+                       
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
+                
+                @classmethod
+                def choose_reset_default(self):
+                    self.fetch_settings(os.path.join(sys.path[0], 'user', 'default_config.json'))
+                
+                @classmethod
+                def push_settings(self, path):
+                    with open(path, 'r') as file:
                         settingsdict = json.load(file)
                         
                     settingsdict['graphics']['PILrender'] = [True, False][self.pilrender_flipswitch.state]
@@ -153,44 +153,60 @@ class UI:
                     
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
                        json.dump(settingsdict, file, sort_keys=True, indent=4)
-                       
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
+                
+                @classmethod
+                def fetch_settings(self, path):
+                    with open(path, 'r') as file:
+                        settingsdict = json.load(file)
+                    if settingsdict['graphics']['PILrender']:
+                        self.pilrender_flipswitch.on_option_press(0, run_binds = False)
+                    else:
+                        self.pilrender_flipswitch.on_option_press(1, run_binds = False)
+                    self.mdlquality_flipswitch.on_option_press(settingsdict['graphics']['stacked model quality'], run_binds = False)
+                    self.chatalign_flipswitch.on_option_press(settingsdict['hud']['chat']['position'], run_binds = False)
+                    self.chatcol_var.set(settingsdict['hud']['chat']['colour'])
+                    self.chatsize_var.set(settingsdict['hud']['chat']['fontsize'])
+                    self.chatfont_var.set(settingsdict['hud']['chat']['font'])
+                    self.username_var.set(settingsdict['user']['name'])
                 
                 frame = tk.Frame(main.page_frame)
                 
-                cat_graphics_label = tk.Label(frame, text = 'Graphics', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                pilrender_label = tk.Label(frame, text = 'PIL rendering', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                pilrender_flipswitch = TkFlipSwitch(frame, options = [{'text': 'On', 'command': print},
-                                                                      {'text': 'Off', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                mdlquality_label = tk.Label(frame, text = 'Model quality', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                mdlquality_flipswitch = TkFlipSwitch(frame, options = [{'text': 'Low', 'command': print},
-                                                                       {'text': 'Medium', 'command': print},
-                                                                       {'text': 'High', 'command': print},
-                                                                       {'text': 'Full', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                settings_frame = tk.Frame(frame)
                 
-                cat_hud_label = tk.Label(frame, text = 'HUD', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                chatalign_label = tk.Label(frame, text = 'Chat alignment', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                chatalign_flipswitch = TkFlipSwitch(frame, options = [{'text': 'Top left', 'command': print},
-                                                                                              {'text': 'Top right', 'command': print},
-                                                                                              {'text': 'Bottom left', 'command': print},
-                                                                                              {'text': 'Bottom right', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                chatcol_label = tk.Label(frame, text = 'Chat colour', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                cat_graphics_label = tk.Label(settings_frame, text = 'Graphics', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                pilrender_label = tk.Label(settings_frame, text = 'PIL rendering', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                pilrender_flipswitch = TkFlipSwitch(settings_frame, options = [{'text': 'On', 'command': print},
+                                                                               {'text': 'Off', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                mdlquality_label = tk.Label(settings_frame, text = 'Model quality', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                mdlquality_flipswitch = TkFlipSwitch(settings_frame, options = [{'text': 'Low', 'command': print},
+                                                                                {'text': 'Medium', 'command': print},
+                                                                                {'text': 'High', 'command': print},
+                                                                                {'text': 'Full', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                
+                cat_hud_label = tk.Label(settings_frame, text = 'HUD', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                chatalign_label = tk.Label(settings_frame, text = 'Chat alignment', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                chatalign_flipswitch = TkFlipSwitch(settings_frame, options = [{'text': 'Top left', 'command': print},
+                                                                               {'text': 'Top right', 'command': print},
+                                                                               {'text': 'Bottom left', 'command': print},
+                                                                               {'text': 'Bottom right', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                chatcol_label = tk.Label(settings_frame, text = 'Chat colour', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 chatcol_var = tk.StringVar()
-                chatcol_entry = tk.Entry(frame, textvariable = chatcol_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
-                chatfont_label = tk.Label(frame, text = 'Chat font', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                chatcol_entry = tk.Entry(settings_frame, textvariable = chatcol_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
+                chatfont_label = tk.Label(settings_frame, text = 'Chat font', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 chatfont_var = tk.StringVar()
-                chatfont_entry = tk.Entry(frame, textvariable = chatfont_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
-                chatsize_label = tk.Label(frame, text = 'Chat size', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                chatfont_entry = tk.Entry(settings_frame, textvariable = chatfont_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
+                chatsize_label = tk.Label(settings_frame, text = 'Chat size', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 chatsize_var = tk.IntVar()
-                chatsize_spinbox = tk.Spinbox(frame, from_ = 0, to = 128, textvariable = chatsize_var, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
+                chatsize_spinbox = tk.Spinbox(settings_frame, from_ = 0, to = 128, textvariable = chatsize_var, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
                 
-                cat_user_label = tk.Label(frame, text = 'User', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                username_label = tk.Label(frame, text = 'Username', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                cat_user_label = tk.Label(settings_frame, text = 'User', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                username_label = tk.Label(settings_frame, text = 'Username', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 username_var = tk.StringVar()
-                username_entry = tk.Entry(frame, textvariable = username_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
+                username_entry = tk.Entry(settings_frame, textvariable = username_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
                 
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_reset_default = tk.Button(frame, text = 'Reset to default', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 cat_graphics_label.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
                 pilrender_label.grid(row = 1, column = 0, sticky = 'NESW')
@@ -212,10 +228,16 @@ class UI:
                 username_label.grid(row = 9, column = 0, sticky = 'NESW')
                 username_entry.grid(row = 9, column = 1, sticky = 'NESW')
                 
-                button_close.grid(row = 10, column = 0, sticky = 'NESW')
-                button_cancel.grid(row = 10, column = 1, sticky = 'NESW')
+                settings_frame.grid(row = 0, column = 0, columnspan = 3, sticky = 'NESW')
+                button_close.grid(row = 1, column = 0, sticky = 'NESW')
+                button_cancel.grid(row = 1, column = 1, sticky = 'NESW')
+                button_reset_default.grid(row = 1, column = 2, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 2, 6, dorows = False)
+                self.styling.set_weight(settings_frame, 2, 10, dorows = False)
+                frame.columnconfigure(0, weight = 1)
+                frame.columnconfigure(1, weight = 1)
+                frame.columnconfigure(2, weight = 1)
+                frame.rowconfigure(0, weight = 1)
             
             class connect_server:
                 config = {'name': 'Connect'}
