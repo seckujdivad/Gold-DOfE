@@ -98,6 +98,7 @@ say: send a message to all players
 exec: exexute a script by name stored in the server/scripts directory
 echo: output the text given to the console
 clear: clear the console
+close_window: close the console
 
 sv_:
 sv_conns: list of connections to the server
@@ -141,6 +142,8 @@ sv_quit: destroy the server'''
             output = argstring
         elif name == 'clear':
             output = '$$clear$$'
+        elif name == 'close_window':
+            output = '$$close_window$$'
         else:
             output = 'Command not found, try \'help\''
         return output

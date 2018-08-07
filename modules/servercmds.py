@@ -63,11 +63,13 @@ class ServerCommandLineUI:
             
     def display_incoming_data(self, data):
         for line in data.split('\n'):
-            print(line, len(line))
             if line.startswith('$$') and line.endswith('$$') and len(line) > 4: #check if this is a command for the console window
                 cmd = line[2:len(line) - 2]
                 if cmd == 'clear':
                     self.listbox_box.delete(0, tk.END)
+                elif cmd == 'close_window':
+                    self.root.destroy()
+                    self.pipe.close()
             else:
                 self.listbox_box.insert(tk.END, line)
         self.listbox_box.see(tk.END)
