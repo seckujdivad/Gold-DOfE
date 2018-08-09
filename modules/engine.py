@@ -50,7 +50,7 @@ class Game:
     def close(self):
         self.running = False
         self.client.disconnect()
-        self.engine.inputs.stop()
+        self.engine.keybindhandler.kill()
         self.engine.unload_current_map()
     
     def recv_handler(self, request):
@@ -505,8 +505,8 @@ class KeyBind:
         threading.Thread(target = self._keyhandlerd).start()
     
     def _keyhandlerd(self): #daemon to handle key inputs
-        keypress_funcid = root.bind('<KeyPress>', self._onkeypress)
-        keyrelease_funcid = root.bind('<KeyRelease>', self._onkeyrelease)
+        keypress_funcid = self.root.bind('<KeyPress>', self._onkeypress)
+        keyrelease_funcid = self.root.bind('<KeyRelease>', self._onkeyrelease)
         
         while self._isactive:
             start = time.time()
@@ -524,10 +524,10 @@ class KeyBind:
         self.root.unbind('<KeyRelease>', keyrelease_funcid)
     
     def _onkeypress(self, event):
-        self.keystates[event.keysym] = True
+        self._keystates[event.keysym] = True
     
     def _onkeyrelease(self, event):
-        self.keystates[event.keysym] = False
+        self._keystates[event.keysym] = False
     
     def bind(self, keysym, function):
         if keysym in self.binds:
