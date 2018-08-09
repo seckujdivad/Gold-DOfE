@@ -137,10 +137,15 @@ class Engine:
             self.map.player = Player(random.choice(self.map.cfg['entity models'][self.map.cfg['player entity']]), self.map.path, self)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
-            self.keybindhandler.bind('Left', self.map.player.rotate_right)
-            self.keybindhandler.bind('Right', self.map.player.rotate_left)
-            self.keybindhandler.bind('Up', self.map.player.move_forward)
-            self.keybindhandler.bind('Down', self.map.player.move_backward)
+            
+            #load keybinds
+            with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
+                keybind_data = json.load(file)
+            self.keybindhandler.bind(keybind_data['movement']['left'], self.map.player.move_left)
+            self.keybindhandler.bind(keybind_data['movement']['right'], self.map.player.move_right)
+            self.keybindhandler.bind(keybind_data['movement']['up'], self.map.player.move_up)
+            self.keybindhandler.bind(keybind_data['movement']['down'], self.map.player.move_down)
+            
             self.game.message_pipe.send(['map load', 'Added keybinds'])
             
             #render overlay
@@ -175,7 +180,7 @@ class Player:
             y = 0
             rotation = 0
             class movement:
-                base_increment = 0.1
+                base_increment = 10
         self.pos = pos
         
         self.setpos_queue, pipe = mp.Pipe()
@@ -209,20 +214,19 @@ class Player:
         event.set()
     
     def move_up(self):
-        print('riseup')
-        self.pos.y -= self.pos.base_increment
+        self.pos.y -= self.pos.movement.base_increment
         self.setpos()
     
     def move_down(self):
-        self.pos.y += self.pos.base_increment
+        self.pos.y += self.pos.movement.base_increment
         self.setpos()
     
     def move_left(self):
-        self.pos.x -= self.pos.base_increment
+        self.pos.x -= self.pos.movement.base_increment
         self.setpos()
     
     def move_right(self):
-        self.pos.x += self.pos.base_increment
+        self.pos.x += self.pos.movement.base_increment
         self.setpos()
 
 class Model:
@@ -472,9 +476,9 @@ class KeyBind:
         
         self.binds = {}
         self._keystates = {}
-        self._isactive = None #stores whether or not the keyboard
+        self._isactive = True #stores whether or not the keyboard
         
-        threading.Thread(target = self._keyhandlerd).start()
+        threading.Thread(target = self._keyhandlerd, name = 'Keyboard input handler daemon').start()
     
     def _keyhandlerd(self): #daemon to handle key inputs
         keypress_funcid = self.root.bind('<KeyPress>', self._onkeypress)
@@ -496,13 +500,16 @@ class KeyBind:
         self.root.unbind('<KeyRelease>', keyrelease_funcid)
     
     def _onkeypress(self, event):
-        self._keystates[event.keysym] = True
+        self._keystates[event.keysym.lower()] = True
     
     def _onkeyrelease(self, event):
-        self._keystates[event.keysym] = False
+        self._keystates[event.keysym.lower()] = False
     
     def bind(self, keysym, function):
-        if keysym in self.binds:
+        'Keysym can be a string or a list of strings'
+        if type(keysym) == list:
+            [self.bind(key, function) for key in keysym]
+        elif keysym in self.binds:
             self.binds[keysym].append(function)
         else:
             self.binds[keysym] = [function]
