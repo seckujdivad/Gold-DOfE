@@ -87,50 +87,7 @@ class Engine:
             player = None
         self.map = map
         
-        class inputs:
-            keystates = {}
-            delay = 0.1
-            binds = {}
-            cont = None
-            
-            @classmethod
-            def mainloop(self, canvas):
-                self.cont = True
-                self.keystates = {}
-                self.binds = {}
-            
-                root = canvas.nametowidget('.')
-                root.bind('<KeyPress>', self.onkeypress)
-                root.bind('<KeyRelease>', self.onkeyrelease)
-                threading.Thread(target = self.mainthread).start()
-            
-            @classmethod
-            def mainthread(self):
-                while self.cont:
-                    start = time.time()
-                    keysnapshot = self.keystates.copy() #so that the interated dictionary doesn't change state
-                    for keysym in keysnapshot:
-                        if keysnapshot[keysym]:
-                            if keysym in self.binds:
-                                for bind in self.binds[keysym]:
-                                    bind()
-                    delay = self.delay - (time.time() - start)
-                    if delay > 0:
-                        time.sleep(delay)
-            
-            @classmethod
-            def onkeypress(self, event):
-                self.keystates[event.keysym] = True
-            
-            @classmethod
-            def onkeyrelease(self, event):
-                self.keystates[event.keysym] = False
-                
-            @classmethod
-            def stop(self):
-                self.cont = False
-        self.inputs = inputs
-        self.inputs.mainloop(self.game.canvas)
+        self.keybindhandler = KeyBind(self.game.canvas.nametowidget('.'))
     
     def load_map(self, name):
         self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)
@@ -180,10 +137,10 @@ class Engine:
             self.map.player = Player(random.choice(self.map.cfg['entity models'][self.map.cfg['player entity']]), self.map.path, self)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
-            self.inputs.binds['Left'] = [self.map.player.rotate_right]
-            self.inputs.binds['Right'] = [self.map.player.rotate_left]
-            self.inputs.binds['Up'] = [self.map.player.move_forward]
-            self.inputs.binds['Down'] = [self.map.player.move_backward]
+            self.keybindhandler.bind('Left', self.map.player.rotate_right)
+            self.keybindhandler.bind('Right', self.map.player.rotate_left)
+            self.keybindhandler.bind('Up', self.map.player.move_forward)
+            self.keybindhandler.bind('Down', self.map.player.move_backward)
             self.game.message_pipe.send(['map load', 'Added keybinds'])
             
             #render overlay
@@ -204,6 +161,8 @@ class Engine:
         if not self.map.player == None:
             self.map.player.model.destroy()
         self.game.message_pipe.send(['map load', 'Cleared old map assets'])
+        
+        self.keybindhandler.unbind_all()
 
 class Water:
     pass
@@ -533,3 +492,61 @@ class colour:
         output = [min(255, colour_values[0] * multipliers[0]), min(255, colour_values[1] * multipliers[1]), min(255, colour_values[2] * multipliers[2])]
         output = [max(0, output[0]), max(0, output[1]), max(0, output[2])]
         return '#{}{}{}'.format(hex(output[0])[2:], hex(output[1])[2:], hex(output[2])[2:])
+
+class KeyBind:
+    '''
+    Easily bind a function to a key being pressed. It works better than the internal tkinter keybinding because the internal method will act like holding down a key in a text box (i.e. function is called once, then a slight delay, then it is called lots of times). Using this method, the function can be called every 0.1 seconds (or however long the delay is) from when the key is pressed until the key is released.
+    '''
+    def __init__(self, root, delay = 0.1):
+        self.root = root
+        self.delay = delay
+        
+        self.binds = {}
+        self._keystates = {}
+        self._isactive = None #stores whether or not the keyboard
+        
+        threading.Thread(target = self._keyhandlerd).start()
+    
+    def _keyhandlerd(self): #daemon to handle key inputs
+        keypress_funcid = root.bind('<KeyPress>', self._onkeypress)
+        keyrelease_funcid = root.bind('<KeyRelease>', self._onkeyrelease)
+        
+        while self._isactive:
+            start = time.time()
+            keypress_snapshot = self._keystates.copy() #so that the interacted dictionary doesn't change state (due to key presses or releases) when it is being iterated through
+            for keysym in keypress_snapshot:
+                if keypress_snapshot[keysym]:
+                    if keysym in self.binds:
+                        for bind in self.binds[keysym]:
+                            bind()
+            delay = self.delay - (time.time() - start)
+            if delay > 0:
+                time.sleep(delay)
+        
+        self.root.unbind('<KeyPress>', keypress_funcid)
+        self.root.unbind('<KeyRelease>', keyrelease_funcid)
+    
+    def _onkeypress(self, event):
+        self.keystates[event.keysym] = True
+    
+    def _onkeyrelease(self, event):
+        self.keystates[event.keysym] = False
+    
+    def bind(self, keysym, function):
+        if keysym in self.binds:
+            self.binds[keysym].append(function)
+        else:
+            self.binds[keysym] = [function]
+    
+    def unbind(self, keysym, function = None):
+        if keysym in self.binds:
+            if function == None or len(self.binds[keysym]) == 1:
+                self.binds.pop(keysym)
+            else:
+                self.binds[keysym].delete(function)
+    
+    def unbind_all(self):
+        self.binds = {}
+        
+    def kill(self):
+        self._isactive = False
