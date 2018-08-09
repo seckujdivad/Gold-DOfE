@@ -232,6 +232,7 @@ class Editor:
                     self.polylist_bar = tk.Scrollbar(self.polylist_frame, command = self.polylist_list.yview)
                     self.polylist_list.config(yscrollcommand = self.polylist_bar.set)
                     
+                    #specify layout
                     self.polylist_bar.pack(side = tk.RIGHT, fill = tk.Y)
                     self.polylist_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
@@ -370,14 +371,18 @@ class Editor:
                     'Open the object selection window to add a new object to the screen'
                     AddObject(self)
                 
-                def add_object(self, dict):
+                def add_object(self, dict, layer = 'highest'):
                     'Add an object to the screen using a dictionary containing the coordinates and the material path'
+                    if not layer in ['highest', 'lowest']:
+                        raise ValueError('"layer" must be either "highest" or "lowest", not "{}"'.format(layer))
                     dict['material data'] = self.editorobj.map.get_json(dict['material'])
                     dict['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(dict['material data']['hitbox'], dict['coordinates']), fill = dict['material data']['texture']['editor colour'], outline = dict['material data']['texture']['editor colour'])
-                    self.screen_data.append(dict)
-                    
-                    #add item to object list
-                    self.polylist_list.insert(tk.END, '{} at {}, {}'.format(dict['material data']['display name'], dict['coordinates'][0], dict['coordinates'][1]))
+                    if layer == 'highest':
+                        self.screen_data.append(dict)
+                        self.polylist_list.insert(tk.END, '{} at {}, {}'.format(dict['material data']['display name'], dict['coordinates'][0], dict['coordinates'][1]))
+                    else:
+                        self.screen_data.insert(0, dict)
+                        self.polylist_list.insert(0, '{} at {}, {}'.format(dict['material data']['display name'], dict['coordinates'][0], dict['coordinates'][1]))
                 
                 def remove_object(self, event = None):
                     if not self.selection == None:
@@ -903,14 +908,16 @@ class AddObject:
         
         #buttons
         self.button_choose = tk.Button(self.root, text = 'Add', command = self.add_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+        self.button_tile = tk.Button(self.root, text = 'Tile', command = self.tile_background, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         self.button_refresh = tk.Button(self.root, text = 'Refresh', command = self.populate_list, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         
         #format all
-        self.label_header.grid(column = 0, row = 0, columnspan = 2, sticky = 'NESW')
-        self.list_frame.grid(column = 0, row = 1, columnspan = 2, sticky = 'NESW')
+        self.label_header.grid(column = 0, row = 0, columnspan = 3, sticky = 'NESW')
+        self.list_frame.grid(column = 0, row = 1, columnspan = 3, sticky = 'NESW')
         self.button_choose.grid(column = 0, row = 2, sticky = 'NESW')
-        self.button_refresh.grid(column = 1, row = 2, sticky = 'NESW')
-        self.ui_styling.set_weight(self.root, 2, 2)
+        self.button_tile.grid(column = 1, row = 2, sticky = 'NESW')
+        self.button_refresh.grid(column = 2, row = 2, sticky = 'NESW')
+        self.ui_styling.set_weight(self.root, 3, 2)
         self.root.rowconfigure(0, weight = 0)
         
         self.root.mainloop() #mainloop for new UI window (so that button presses and keybinds are handled properly
@@ -930,3 +937,10 @@ class AddObject:
         selection = self.list_list.curselection()
         if not selection == (): #make sure that something has been selected
             self.parent.add_object({"coordinates": [0, 0], "material": self.paths[selection[0]]}) #tell the layout editor to add in the material at 0, 0
+    
+    def tile_background(self):
+        selection = self.list_list.curselection()
+        if not selection == (): #make sure that something has been selected
+            for x in range(32, 800, 64):
+                for y in range(32, 600, 64):
+                    self.parent.add_object({"coordinates": [x, y], "material": self.paths[selection[0]]}, layer = 'lowest') #tell the layout editor to add in the material at 0, 0
