@@ -255,6 +255,12 @@ class Editor:
                     
                     self.load_map_data()
                     
+                    #set the canvas to get focus when moused over and lose it when the mouse pointer goes away
+                    #this means that it will receive key inputs (like ctrl+s) when the mouse is over it
+                    self.canvas.bind('<Enter>', lambda event: self.canvas.focus_set())
+                    self.canvas.bind('<Leave>', lambda event: self.canvas.nametowidget('.').focus_set())
+                    
+                    #set up keybinds
                     self.canvas.bind('<Motion>', self.mouse_coordinates)
                     self.canvas.bind('<Button>', self.select_item)
                     self.spinbox_polyx.bind('<Return>', self.push_coordinates)
@@ -262,7 +268,10 @@ class Editor:
                     self.polylist_list.bind('<Button>', self.on_material_select)
                     self.polylist_list.bind('<Up>', self.on_material_select)
                     self.polylist_list.bind('<Down>', self.on_material_select)
-                    self.canvas.bind('<Control-S>', self.save) #doesn't work yet
+                    self.canvas.bind('<Control-s>', self.save)
+                    self.canvas.bind('<Control-r>', self.reload)
+                    self.canvas.bind('<Delete>', self.remove_object)
+                    self.canvas.bind('<BackSpace>', self.remove_object)
                     
                     self.tabobj.set_title('editing...')
                 
@@ -370,7 +379,7 @@ class Editor:
                     #add item to object list
                     self.polylist_list.insert(tk.END, '{} at {}, {}'.format(dict['material data']['display name'], dict['coordinates'][0], dict['coordinates'][1]))
                 
-                def remove_object(self):
+                def remove_object(self, event = None):
                     if not self.selection == None:
                         item = self.screen_data[self.selection]
                         
@@ -396,7 +405,7 @@ class Editor:
                     for item in self.screen_data:
                         self.polylist_list.insert(tk.END, '{} at {}, {}'.format(item['material data']['display name'], item['coordinates'][0], item['coordinates'][1]))
                 
-                def save(self):
+                def save(self, event = None):
                     self.tabobj.set_title('saving...')
                     data = self.editorobj.map.get_json('layout.json')
                     
@@ -410,7 +419,7 @@ class Editor:
                     
                     self.tabobj.set_title('editing...')
                 
-                def reload(self):
+                def reload(self, event = None):
                     self.tabobj.set_title('reloading...')
                     
                     self.clear_screen()
