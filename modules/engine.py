@@ -70,9 +70,8 @@ class Game:
                 self.vars[request.subcommand] = request.arguments['value']
 
 class Engine:
-    def __init__(self, game, playable = True):
+    def __init__(self, game):
         self.game = game
-        self.playable = playable #true - to be used to play, false - to be used to edit
         
         class map:
             class textures:
