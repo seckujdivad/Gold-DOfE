@@ -126,7 +126,7 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
             
             #render base layer
-            self.map.textures.obj_base = self.game.canvas.create_image(400, 300, image = self.map.textures.base)
+            self.map.textures.obj_base = self.game.canvas.create_image(402, 302, image = self.map.textures.base)
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
             
             #open layout
@@ -173,7 +173,7 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Added keybinds'])
             
             #render overlay
-            self.map.textures.obj_overlay = self.game.canvas.create_image(400, 300, image = self.map.textures.overlay)
+            self.map.textures.obj_overlay = self.game.canvas.create_image(402, 302, image = self.map.textures.overlay)
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
     
     def unload_current_map(self):
