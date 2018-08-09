@@ -579,6 +579,14 @@ class KeyBind:
     
     def unbind_all(self):
         self.binds = {}
+    
+    def get_state(self, keysym):
+        if type(keysym) == list:
+            [self.get_state(key) for key in keysym]
+        elif keysym.lower() in self._keystates:
+            return self._keystates[keysym.lower()]
+        else:
+            return False
         
     def kill(self):
         self._isactive = False
