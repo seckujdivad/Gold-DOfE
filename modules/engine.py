@@ -174,12 +174,8 @@ class Player:
             x = 0
             y = 0
             rotation = 0
-            class velocity:
-                magnitude = 0
-                direction = 0
             class movement:
-                rotationincrement = 10
-                forwardincrement = 0.1
+                base_increment = 0.1
         self.pos = pos
         
         self.setpos_queue, pipe = mp.Pipe()
@@ -187,7 +183,6 @@ class Player:
         self.model = Model(ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvas)
         
         threading.Thread(target = self._setpos_queue, args = [pipe]).start()
-        threading.Thread(target = self._speedcalc).start()
         
         self.setpos(100, 100)
     
@@ -213,46 +208,22 @@ class Player:
         self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
         event.set()
     
-    def _speedcalc(self):
-        while True:
-            if self.pos.velocity.magnitude > 0:
-                self.pos.x += math.cos(math.radians(self.pos.velocity.direction)) * self.pos.velocity.magnitude
-                self.pos.y += math.sin(math.radians(self.pos.velocity.direction)) * self.pos.velocity.magnitude
-                self.setpos()
-            time.sleep(0.1)
-    
-    def addvelocity(self, magnitude, direction):
-        resultantx = (math.cos(math.radians(direction)) * magnitude) + (math.cos(math.radians(self.pos.velocity.direction)) * self.pos.velocity.magnitude)
-        resultanty = (math.sin(math.radians(direction)) * magnitude) + (math.sin(math.radians(self.pos.velocity.direction)) * self.pos.velocity.magnitude)
-        self.pos.velocity.magnitude = math.hypot(resultantx, resultanty)
-        if resultanty == 0:
-            if resultantx > 0:
-                self.pos.velocity.direction = 90
-            elif resultantx < 0:
-                self.pos.velocity.direction = 270
-            else:
-                self.pos.velocity.direction = 0
-        elif resultantx == 0:
-            if resultanty > 0:
-                self.pos.velocity.direction = 180
-            else:
-                self.pos.velocity.direction = 0
-        else:
-            self.pos.velocity.direction = math.degrees(math.atan(resultanty / resultantx))
-    
-    def rotate_left(self):
-        self.pos.rotation -= self.pos.movement.rotationincrement
+    def move_up(self):
+        print('riseup')
+        self.pos.y -= self.pos.base_increment
         self.setpos()
     
-    def rotate_right(self):
-        self.pos.rotation += self.pos.movement.rotationincrement
+    def move_down(self):
+        self.pos.y += self.pos.base_increment
         self.setpos()
     
-    def move_forward(self):
-        self.addvelocity(self.pos.movement.forwardincrement, self.pos.rotation)
-     
-    def move_backward(self):
-        self.addvelocity(0 - self.pos.movement.forwardincrement, self.pos.rotation)
+    def move_left(self):
+        self.pos.x -= self.pos.base_increment
+        self.setpos()
+    
+    def move_right(self):
+        self.pos.x += self.pos.base_increment
+        self.setpos()
 
 class Model:
     def __init__(self, ent_name, map_path, imageloader, canvas):
@@ -449,8 +420,9 @@ class CanvasMessages:
     def graphics_handler(self):
         while self.running:
             todelete = []
-            for i in range(len(self.messages)):
-                message = self.messages[i]
+            msgs = self.messages.copy()
+            for i in range(len(msgs)):
+                message = msgs[i]
                 x, y = self.calc_coords(i)
                 self.canvas.coords(message['obj'], x, y)
                 if time.time() - message['timestamp'] > self.graphical_properties.persist:
