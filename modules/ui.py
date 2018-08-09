@@ -360,10 +360,10 @@ class UI:
                 
                 frame = tk.Frame(main.page_frame)
                 
-                canvas = tk.Canvas(frame, **self.styling.get(font_size = 'medium', object_type = tk.Canvas))
+                canvas = tk.Canvas(frame, width = 800, height = 600, **self.styling.get(font_size = 'medium', object_type = tk.Canvas))
                 button_exit = tk.Button(frame, text = 'Exit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
-                canvas.grid(row = 0, column = 0, sticky = 'NESW')
+                canvas.grid(row = 0, column = 0)
                 button_exit.grid(row = 1, column = 0, sticky = 'NESW')
                 
                 self.styling.set_weight(frame, 1, 2)
