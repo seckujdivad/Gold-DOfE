@@ -6,29 +6,764 @@
 	"geometry": [
 		{
 			"coordinates": [
-				100,
-				100
-			],
-			"material": "materials/ice.json"
-		},
-		{
-			"coordinates": [
-				100,
-				300
-			],
-			"material": "materials/ice.json"
-		},
-		{
-			"coordinates": [
-				300,
-				200
-			],
-			"material": "materials\\ice.json"
-		},
-		{
-			"coordinates": [
 				300,
 				300
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				32,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				96,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				160,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				544
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				32
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				96
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				160
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				224
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				288
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				352
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				416
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				480
+			],
+			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				544
 			],
 			"material": "materials\\stone.json"
 		}
