@@ -81,8 +81,14 @@ class Engine:
                 obj_base = None
                 obj_overlay = None
                 obj_scatter = []
+            class layout:
+                data = {}
+                objs = []
+            class materials:
+                data = {}
+                textures = {}
             name = None
-            cfg = None
+            cfg = {}
             rendermethod = None
             player = None
         self.map = map
@@ -122,6 +128,24 @@ class Engine:
             #render base layer
             self.map.textures.obj_base = self.game.canvas.create_image(400, 300, image = self.map.textures.base)
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
+            
+            #open layout
+            with open(os.path.join(self.map.path, 'layout.json'), 'r') as file:
+                self.map.layout.data = json.load(file)
+            self.game.message_pipe.send(['map load', 'Loaded layout data'])
+            
+            #load materials
+            for texture_name in os.listdir(os.path.join(self.map.path, 'textures')):
+                if texture_name.endswith('.png'):
+                    self.map.materials.textures[texture_name] = self.map.rendermethod(file = os.path.join(self.map.path, 'textures', texture_name))
+            self.game.message_pipe.send(['map load', 'Loaded material textures'])
+            
+            #render layout panels
+            for panel in self.map.layout.data['geometry']:
+                with open(os.path.join(self.map.path, panel['material']), 'r') as file:
+                    self.map.materials.data[panel['material']] = json.load(file)
+                self.map.layout.objs.append(self.game.canvas.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[self.map.materials.data[panel['material']]['texture']['address']]))
+            self.game.message_pipe.send(['map load', 'Rendered layout panels'])
             
             #render scatters
             self.map.textures.obj_scatter = []
