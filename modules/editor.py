@@ -272,7 +272,9 @@ class Editor:
                     self.canvas.bind('<Control-s>', self.save)
                     self.canvas.bind('<Control-r>', self.reload)
                     self.canvas.bind('<Delete>', self.remove_object)
+                    self.polylist_list.bind('<Delete>', self.remove_object)
                     self.canvas.bind('<BackSpace>', self.remove_object)
+                    self.polylist_list.bind('<BackSpace>', self.remove_object)
                     
                     self.tabobj.set_title('editing...')
                 
@@ -941,6 +943,6 @@ class AddObject:
     def tile_background(self):
         selection = self.list_list.curselection()
         if not selection == (): #make sure that something has been selected
-            for x in range(32, 800, 64):
-                for y in range(32, 600, 64):
+            for x in range(32, 864, 64):
+                for y in range(32, 664, 64):
                     self.parent.add_object({"coordinates": [x, y], "material": self.paths[selection[0]]}, layer = 'lowest') #tell the layout editor to add in the material at 0, 0
