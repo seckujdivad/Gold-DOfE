@@ -192,6 +192,33 @@ class Engine:
         self.game.message_pipe.send(['map load', 'Cleared old map assets'])
         
         self.keybindhandler.unbind_all()
+    
+    def find_materials_underneath(self, x, y):
+        output = []
+        for panel in self.map.layout.data['geometry']:
+            relative_coords = [x - panel['coordinates'][0], y - panel['coordinates'][1]]
+            mat_data = self.map.materials.data[panel['material']]
+            hitbox = mat_data['hitbox']
+            if self.is_inside_hitbox(relative_coords[0], relative_coords[1], hitbox):
+                output.append([panel, mat_data])
+        return output
+    
+    def is_inside_hitbox(self, x, y, hitbox):
+        nhitbox = []
+        for hx, hy in hitbox:
+            nhitbox.append([hx - x, hy - y])
+        return self.origin_is_inside_hitbox(nhitbox)
+    
+    def origin_is_inside_hitbox(self, hitbox):
+        'Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)'
+        has_smaller = False
+        has_bigger = False
+        for hx, hy in hitbox:
+            if hx > 0 and hy > 0:
+                has_bigger = True
+            if hx < 0 and hy < 0:
+                has_smaller = True
+        return has_smaller and has_bigger
 
 class Player:
     def __init__(self, ent_name, map_path, engine):
@@ -217,7 +244,12 @@ class Player:
     
     def setpos(self, x = None, y = None, rotation = None):
         self.setpos_queue.send([time.time(), x, y, rotation])
-    
+        data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
+        outstr = ''
+        for panel, mat in data:
+            outstr += '{:<10}'.format(mat['display name'])
+        print(outstr)
+        
     def _setpos_queue(self, pipe):
         while True:
             timestamp, x, y, rotation = pipe.recv()
