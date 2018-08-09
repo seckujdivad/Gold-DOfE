@@ -164,9 +164,6 @@ class Engine:
         
         self.keybindhandler.unbind_all()
 
-class Water:
-    pass
-
 class Player:
     def __init__(self, ent_name, map_path, engine):
         self.ent_name = ent_name
