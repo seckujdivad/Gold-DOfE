@@ -80,6 +80,8 @@ class Game:
                     if len(new_ent_list) < len(positions):
                         for i in range(len(positions) - len(new_ent_list)):
                             new_ent_list.append(Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player entity']]), self.engine.map.path, self.engine, is_player = False))
+                            if not self.engine.map.textures.obj_overlay == None:
+                                self.canvas.tag_raise(self.engine.map.textures.obj_overlay)
                         self.engine.map.other_players.entities = new_ent_list
                 
                 for index in range(len(positions)):
