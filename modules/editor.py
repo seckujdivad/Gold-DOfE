@@ -221,7 +221,7 @@ class Editor:
                     self.push_coordinates()
                     
                     #some more buttons
-                    self.button_add = tk.Button(self.frame_info, text = 'Add', command = self.open_object_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+                    self.button_add = tk.Button(self.frame_info, text = 'Add/Modify', command = self.open_object_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     self.button_remove = tk.Button(self.frame_info, text = 'Remove', command = self.remove_object, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     self.button_save = tk.Button(self.frame_info, text = 'Save', command = self.save, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     self.button_refresh = tk.Button(self.frame_info, text = 'Reload', command = self.reload, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
@@ -323,24 +323,23 @@ class Editor:
                 def select_index(self, index):
                     item = self.screen_data[index]
                     
-                    if not self.selection == index: #if the current selection is the same as the one being switched to, don't bother
-                        #remove formatting from previous selection (if there was one)
-                        if not self.selection == None:
-                            current = self.screen_data[self.selection]
-                            self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['texture']['editor colour'], outline = current['material data']['texture']['editor colour'])
-                        
-                        #apply formatting to current selection
-                        self.canvas.itemconfigure(item['canvobj'], fill = modules.engine.colour.increase(item['material data']['texture']['editor colour'], [20, 20, 20]), outline = '#000000')
-                        
-                        #update the index of the current selection to match the object selected
-                        self.selection = index
-                        
-                        #select the correct item in the polygon list
-                        self.polylist_list.selection_clear(0, tk.END)
-                        self.polylist_list.selection_set(self.selection)
-                        
-                        #change the coordinate text
-                        self.update_polycoord_display(*item['coordinates'])
+                    #remove formatting from previous selection (if there was one)
+                    if not self.selection == None:
+                        current = self.screen_data[self.selection]
+                        self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['texture']['editor colour'], outline = current['material data']['texture']['editor colour'])
+                    
+                    #apply formatting to current selection
+                    self.canvas.itemconfigure(item['canvobj'], fill = modules.engine.colour.increase(item['material data']['texture']['editor colour'], [20, 20, 20]), outline = '#000000')
+                    
+                    #update the index of the current selection to match the object selected
+                    self.selection = index
+                    
+                    #select the correct item in the polygon list
+                    self.polylist_list.selection_clear(0, tk.END)
+                    self.polylist_list.selection_set(self.selection)
+                    
+                    #change the coordinate text
+                    self.update_polycoord_display(*item['coordinates'])
                  
                 def update_polycoord_display(self, x, y):
                     self.polyvar_x.set(x)
@@ -433,6 +432,13 @@ class Editor:
                     self.load_map_data()
                     
                     self.tabobj.set_title('editing...')
+                
+                def set_selection_material(self, material_path):
+                    if not self.selection == None:
+                        self.screen_data[self.selection]['material'] = material_path
+                        self.screen_data[self.selection]['material data'] = self.editorobj.map.get_json(self.screen_data[self.selection]['material'])
+                        
+                        self.select_index(self.selection)
             
             class MaterialEditor:
                 """
@@ -912,14 +918,16 @@ class AddObject:
         self.button_choose = tk.Button(self.root, text = 'Add', command = self.add_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         self.button_tile = tk.Button(self.root, text = 'Tile', command = self.tile_background, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         self.button_refresh = tk.Button(self.root, text = 'Refresh', command = self.populate_list, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+        self.button_set = tk.Button(self.root, text = 'Set selection', command = self.set_selection, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         
         #format all
-        self.label_header.grid(column = 0, row = 0, columnspan = 3, sticky = 'NESW')
-        self.list_frame.grid(column = 0, row = 1, columnspan = 3, sticky = 'NESW')
+        self.label_header.grid(column = 0, row = 0, columnspan = 4, sticky = 'NESW')
+        self.list_frame.grid(column = 0, row = 1, columnspan = 4, sticky = 'NESW')
         self.button_choose.grid(column = 0, row = 2, sticky = 'NESW')
         self.button_tile.grid(column = 1, row = 2, sticky = 'NESW')
         self.button_refresh.grid(column = 2, row = 2, sticky = 'NESW')
-        self.ui_styling.set_weight(self.root, 3, 2)
+        self.button_set.grid(column = 3, row = 2, sticky = 'NESW')
+        self.ui_styling.set_weight(self.root, 4, 2)
         self.root.rowconfigure(0, weight = 0)
         
         self.root.mainloop() #mainloop for new UI window (so that button presses and keybinds are handled properly
@@ -946,3 +954,8 @@ class AddObject:
             for x in range(32, 864, 64):
                 for y in range(32, 664, 64):
                     self.parent.add_object({"coordinates": [x, y], "material": self.paths[selection[0]]}, layer = 'lowest') #tell the layout editor to add in the material at 0, 0
+    
+    def set_selection(self):
+        selection = self.list_list.curselection()
+        if not selection == (): #make sure that something has been selected
+            self.parent.set_selection_material(self.paths[selection[0]])
