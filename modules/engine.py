@@ -114,8 +114,10 @@ class Engine:
             rendermethod = None
             player = None
             healthbar = None
+            invdisp = None
         self.map = map
         
+        #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas.nametowidget('.'))
     
     def load_map(self, name):
@@ -209,6 +211,23 @@ class Engine:
             #make healthbar
             self.map.healthbar = DisplayBar(self.game.canvas, 100, [10, 10, 100, 20], 'gray', 'red')
             self.map.healthbar.set_value(100)
+            
+            #make inventory display
+            self.map.invdisp = InventoryBar(self.game.canvas, [400, 550], os.path.join(self.map.path, 'textures'), os.path.join(self.map.path, 'items'), self.map.rendermethod)
+            self.map.invdisp.select_index(0)
+            
+            #set up binds for inventory display
+            with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
+                keybinds_data = json.load(file)
+            self.keybindhandler.bind(keybinds_data['inventory']['slot0'], lambda: self.map.invdisp.select_index(0))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot1'], lambda: self.map.invdisp.select_index(1))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot2'], lambda: self.map.invdisp.select_index(2))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot3'], lambda: self.map.invdisp.select_index(3))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot4'], lambda: self.map.invdisp.select_index(4))
+            
+            #set values for health bar and inventory bar
+            self.map.healthbar.set_value(100)
+            self.map.invdisp.select_index(0)
     
     def unload_current_map(self):
         if not self.map.textures.obj_scatter == []:
@@ -223,6 +242,10 @@ class Engine:
             self.map.textures.obj_overlay = None
         if not self.map.player == None:
             self.map.player.model.destroy()
+        if not self.map.healthbar == None:
+            self.map.healthbar.destroy()
+        if not self.map.invdisp == None:
+            self.map.invdisp.destroy()
         self.game.message_pipe.send(['map load', 'Cleared old map assets'])
         
         self.keybindhandler.unbind_all()
@@ -749,3 +772,66 @@ class DisplayBar:
     
     def set_value(self, value):
         self.canvas.coords(self.objects.display, self.coords[0], self.coords[1], self.coords[0] + ((self.coords[2] - self.coords[0]) * (value / self.max_value)), self.coords[3])
+    
+    def destroy(self):
+        self.canvas.delete(self.objects.background)
+        self.canvas.delete(self.objects.display)
+
+class InventoryBar:
+    def __init__(self, canvas, coords, textures_path, items_path, rendermethod, num_slots = 5, sprite_dimensions = [64, 64], backingcolour = '#A0A0A0', outlinewidth = 5, divider_size = 10, backingcolour_selected = '#EAEAEA'):
+        self.canvas = canvas
+        self.coords = coords #the coordinates for the top right of the inventory bar
+        self.rendermethod = rendermethod
+        self.num_slots = num_slots
+        self.sprite_dimensions = sprite_dimensions
+        self.backingcolour = backingcolour
+        self.backingcolour_selected = backingcolour_selected
+        self.outlinewidth = outlinewidth
+        self.divider_size = divider_size
+        
+        class paths:
+            textures = textures_path
+            items = items_path
+        self.paths = paths
+        
+        self.items_data = {}
+        self.slot_objs = []
+        self.selection_index = None
+        
+        self.load_assets()
+        self.draw_slots()
+        
+    def load_assets(self):
+        for item in os.listdir(self.paths.items):
+            with open(os.path.join(self.paths.items, item), 'r') as file:
+                data = json.load(file)
+            self.items_data[item] = data
+            self.items_data[item]['sprite object'] = self.rendermethod(file = os.path.join(self.paths.textures, self.items_data[item]['icon']))
+    
+    def draw_slots(self):
+        coords = self.get_top_right_coords()
+        for i in range(self.num_slots):
+            x0 = coords[0] + (self.sprite_dimensions[0] * i) + (self.divider_size * i)
+            x1 = x0 + self.sprite_dimensions[0]
+            y0 = coords[1]
+            y1 = y0 + self.sprite_dimensions[1]
+            self.slot_objs.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill = self.backingcolour, outline = self.backingcolour))
+    
+    def change_item_quantity(self):
+        pass
+    
+    def select_index(self, index, force_refresh = False):
+        if index != self.selection_index and not force_refresh:
+            if not self.selection_index == None:
+                self.canvas.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour, outline = self.backingcolour)
+            self.selection_index = index
+            self.canvas.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour_selected, outline = self.backingcolour_selected)
+    
+    def destroy(self):
+        for object in self.slots_objs:
+            self.canvas.delete(object)
+    
+    def get_top_right_coords(self):
+        x = self.coords[0] - ((self.sprite_dimensions[0] * (self.num_slots / 2)) + (self.divider_size * (self.num_slots / 2)))
+        y = self.coords[1] - (self.sprite_dimensions[1] / 2)
+        return [x, y]

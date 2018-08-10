@@ -4,5 +4,12 @@
 		"down": ["down", "s"],
 		"left": ["left", "a"],
 		"right": ["right", "d"]
+	},
+	"inventory": {
+		"slot0": "1",
+		"slot1": "2",
+		"slot2": "3",
+		"slot3": "4",
+		"slot4": "5"
 	}
 }
