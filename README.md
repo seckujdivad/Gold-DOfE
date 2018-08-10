@@ -1,5 +1,5 @@
 # Silver DOfE
-This is the project for my "skills" section of my Silver Duke of Edinburgh's Award.
+This is the project for the "skills" section of my Silver Duke of Edinburgh's Award.
 
 ## Current Features
 * Level editor
@@ -13,7 +13,6 @@ This is the project for my "skills" section of my Silver Duke of Edinburgh's Awa
 * Combat using skill-based mechanics
 * Sounds
 * Particle effects
-* Keymapping
 * Areas in levels that have scripts attached to them
 
 ## How To Play
