@@ -225,6 +225,7 @@ class Player:
                 xmomentum = 0
                 ymomentum = 0
                 delay = 0.05
+                strafemove_mult = 1.2
         self.pos = pos
         
         self.setpos_queue, pipe = mp.Pipe()
@@ -286,15 +287,22 @@ class Player:
                     self.pos.momentum.xmomentum -= accel
                 if self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
                     self.pos.momentum.xmomentum += accel
-            
+                    
+                
+                                
             if not decel == 0:
                 self.pos.momentum.xmomentum /= decel
                 self.pos.momentum.ymomentum /= decel
             
-            if self.pos.momentum.xmomentum > velcap:
-                self.pos.momentum.xmomentum = velcap
-            if self.pos.momentum.ymomentum > velcap:
-                self.pos.momentum.ymomentum = velcap
+            #is adadadading (skill based movement)
+            if (self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left'])) ^ (self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right'])) ^ (self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left'])) ^ (self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right'])):
+                self.pos.momentum.xmomentum *= self.pos.momentum.strafemove_mult
+                self.pos.momentum.ymomentum *= self.pos.momentum.strafemove_mult
+            else: #not doing any movement acceleration - apply speed cap
+                if self.pos.momentum.xmomentum > velcap:
+                    self.pos.momentum.xmomentum = velcap
+                if self.pos.momentum.ymomentum > velcap:
+                    self.pos.momentum.ymomentum = velcap
             
             self.pos.x += self.pos.momentum.xmomentum
             self.pos.y += self.pos.momentum.ymomentum
