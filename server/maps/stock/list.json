@@ -10,5 +10,6 @@
 		"player": ["player"],
 		"cloud": ["cloud"]
 	},
-	"player entity": "player"
+	"player entity": "player",
+	"starting items": ["fireball.json", "swordswipe.json"]
 }
