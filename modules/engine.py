@@ -162,16 +162,6 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
             
-            #load keybinds
-            with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
-                keybind_data = json.load(file)
-            self.keybindhandler.bind(keybind_data['movement']['left'], self.map.player.move_left)
-            self.keybindhandler.bind(keybind_data['movement']['right'], self.map.player.move_right)
-            self.keybindhandler.bind(keybind_data['movement']['up'], self.map.player.move_up)
-            self.keybindhandler.bind(keybind_data['movement']['down'], self.map.player.move_down)
-            
-            self.game.message_pipe.send(['map load', 'Added keybinds'])
-            
             #render overlay
             self.map.textures.obj_overlay = self.game.canvas.create_image(402, 302, image = self.map.textures.overlay)
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
@@ -230,8 +220,11 @@ class Player:
             x = 0
             y = 0
             rotation = 0
-            class movement:
-                base_increment = 10
+            class momentum:
+                base_increment = 1
+                xmomentum = 0
+                ymomentum = 0
+                delay = 0.05
         self.pos = pos
         
         self.setpos_queue, pipe = mp.Pipe()
@@ -239,16 +232,12 @@ class Player:
         self.model = Model(ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvas)
         
         threading.Thread(target = self._setpos_queue, args = [pipe]).start()
+        threading.Thread(target = self._momentum_updater).start()
         
         self.setpos(100, 100)
     
     def setpos(self, x = None, y = None, rotation = None):
         self.setpos_queue.send([time.time(), x, y, rotation])
-        data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
-        outstr = ''
-        for panel, mat in data:
-            outstr += '{:<10}'.format(mat['display name'])
-        print(outstr)
         
     def _setpos_queue(self, pipe):
         while True:
@@ -269,21 +258,48 @@ class Player:
         self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
         event.set()
     
-    def move_up(self):
-        self.pos.y -= self.pos.movement.base_increment
-        self.setpos()
-    
-    def move_down(self):
-        self.pos.y += self.pos.movement.base_increment
-        self.setpos()
-    
-    def move_left(self):
-        self.pos.x -= self.pos.movement.base_increment
-        self.setpos()
-    
-    def move_right(self):
-        self.pos.x += self.pos.movement.base_increment
-        self.setpos()
+    def _momentum_updater(self):
+        with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
+            keybind_data = json.load(file)
+        
+        while True:
+            time.sleep(self.pos.momentum.delay)
+            
+            accel = 0
+            decel = 0
+            velcap = 0
+            data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
+            for panel, material in data:
+                if material['entities'][self.ent_name]['accelerate'] != None:
+                    accel = max(accel, material['entities'][self.ent_name]['accelerate'])
+                if material['entities'][self.ent_name]['decelerate'] != None:
+                    decel += material['entities'][self.ent_name]['decelerate']
+                if material['entities'][self.ent_name]['velcap'] != None:
+                    velcap = max(velcap, material['entities'][self.ent_name]['velcap'])
+            
+            if not accel == 0:
+                if self.engine.keybindhandler.get_state(keybind_data['movement']['up']):
+                    self.pos.momentum.ymomentum -= accel
+                if self.engine.keybindhandler.get_state(keybind_data['movement']['down']):
+                    self.pos.momentum.ymomentum += accel
+                if self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
+                    self.pos.momentum.xmomentum -= accel
+                if self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
+                    self.pos.momentum.xmomentum += accel
+            
+            if not decel == 0:
+                self.pos.momentum.xmomentum /= decel
+                self.pos.momentum.ymomentum /= decel
+            
+            if self.pos.momentum.xmomentum > velcap:
+                self.pos.momentum.xmomentum = velcap
+            if self.pos.momentum.ymomentum > velcap:
+                self.pos.momentum.ymomentum = velcap
+            
+            self.pos.x += self.pos.momentum.xmomentum
+            self.pos.y += self.pos.momentum.ymomentum
+            
+            self.setpos()
 
 class Model:
     def __init__(self, ent_name, map_path, imageloader, canvas):
@@ -582,7 +598,10 @@ class KeyBind:
     
     def get_state(self, keysym):
         if type(keysym) == list:
-            [self.get_state(key) for key in keysym]
+            for key in keysym:
+                if self.get_state(key):
+                    return True
+            return False
         elif keysym.lower() in self._keystates:
             return self._keystates[keysym.lower()]
         else:
