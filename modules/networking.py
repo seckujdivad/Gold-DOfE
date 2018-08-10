@@ -7,6 +7,7 @@ import sys
 import random
 
 import modules.servercmds
+import modules.logging
 
 class Server:
     def __init__(self, port_):
@@ -18,6 +19,8 @@ class Server:
             mapdata = None
             conn_data = [] #individual spaces for connections to store data to be publically accessible
         self.serverdata = serverdata
+        
+        self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
         
         self.output_pipe, pipe = mp.Pipe()
         
@@ -103,6 +106,8 @@ class Server:
             argstring += '{} '.format(arg)
         argstring = argstring[:len(argstring) - 1]
         
+        self.log.add('command input', command)
+        
         output = 'ERROR'
         if name == 'help':
             output = '''Commands:
@@ -159,6 +164,9 @@ sv_quit: destroy the server'''
             output = '$$close_window$$'
         else:
             output = 'Command not found, try \'help\''
+            
+        self.log.add('command output', output)
+        
         return output
     
     def run_script(self, text):
