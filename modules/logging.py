@@ -1,4 +1,5 @@
 import datetime
+import os
 
 class Log:
     def __init__(self, address):
@@ -19,9 +20,9 @@ class Log:
                 file.write(text)
     
     def clear(self):
-        self._write('Log:', newline = False)
+        self._write('Log {}:'.format(os.path.basename(self.address)), newline = False)
     
-    def log(self, category, message):
+    def add(self, category, message):
         self._append('[{^:19}] [{^:20}]: {}'.format(self._getdatetime(), category, message))
     
     def _getdatetime(self):
