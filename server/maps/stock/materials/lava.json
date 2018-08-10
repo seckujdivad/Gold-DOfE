@@ -1,0 +1,34 @@
+{
+	"display name": "Lava",
+	"entities": {
+		"player": {
+			"accelerate": 10,
+			"damage": 25,
+			"decelerate": 2,
+			"velcap": 5
+		}
+	},
+	"hitbox": [
+		[
+			-32,
+			-32
+		],
+		[
+			-32,
+			32
+		],
+		[
+			32,
+			32
+		],
+		[
+			32,
+			-32
+		]
+	],
+	"texture": {
+		"address": "lava.png",
+		"animated": false,
+		"editor colour": "#FF7700"
+	}
+}

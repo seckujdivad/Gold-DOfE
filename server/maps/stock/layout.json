@@ -254,21 +254,21 @@
 				608,
 				288
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				608,
 				224
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				608,
 				160
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
@@ -324,21 +324,21 @@
 				544,
 				288
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				544,
 				224
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				544,
 				160
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
@@ -394,21 +394,21 @@
 				480,
 				288
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				480,
 				224
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				480,
 				160
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
