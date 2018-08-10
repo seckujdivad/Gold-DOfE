@@ -930,6 +930,8 @@ class AddObject:
         self.ui_styling.set_weight(self.root, 4, 2)
         self.root.rowconfigure(0, weight = 0)
         
+        self.parent.canvas.bind('<e>', self.set_selection)
+        
         self.root.mainloop() #mainloop for new UI window (so that button presses and keybinds are handled properly
     
     def populate_list(self):
@@ -955,7 +957,7 @@ class AddObject:
                 for y in range(32, 664, 64):
                     self.parent.add_object({"coordinates": [x, y], "material": self.paths[selection[0]]}, layer = 'lowest') #tell the layout editor to add in the material at 0, 0
     
-    def set_selection(self):
+    def set_selection(self, event = None):
         selection = self.list_list.curselection()
         if not selection == (): #make sure that something has been selected
             self.parent.set_selection_material(self.paths[selection[0]])
