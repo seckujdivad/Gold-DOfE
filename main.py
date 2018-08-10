@@ -1,5 +1,3 @@
-'''Use blender to create images to use as 3d voxel layers: https://blendersushi.blogspot.co.uk/2012/01/volumetric-slicing-3d-object-using.html'''
-
 import json
 import os
 import sys
