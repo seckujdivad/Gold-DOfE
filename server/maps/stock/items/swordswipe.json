@@ -1,0 +1,16 @@
+{
+	"display name": "Sword",
+	"unlimited": false,
+	"icon": "swordswipe_icon.png",
+	"sprite": "swordswipe_sprite.png",
+	"damage": {
+		"player": 10
+	},
+	"destroyed after damage": true,
+	"range": 100,
+	"speed": null,
+	"hitbox": {
+		"type": "circular",
+		"radius": 32
+	}
+}
