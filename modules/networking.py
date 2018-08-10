@@ -72,6 +72,8 @@ class Server:
                 
             if req.command == 'disconnect':
                 self.output_pipe.send('User {} disconnected'.format(address[0]))
+                if 'clean' in req.arguments and not req.arguments['clean']:
+                    self.output_pipe.send('Disconnect was not clean'.format(address[0]))
             elif req.command == 'var update r':
                 if req.subcommand == 'map':
                     self.send(connection, Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map}))
