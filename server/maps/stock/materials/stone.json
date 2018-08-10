@@ -2,10 +2,10 @@
 	"display name": "Stone",
 	"entities": {
 		"player": {
-			"accelerate": 2,
+			"accelerate": 15,
 			"damage": 0,
-			"decelerate": 1,
-			"velcap": 6
+			"decelerate": 2,
+			"velcap": 20
 		}
 	},
 	"hitbox": [
