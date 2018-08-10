@@ -259,6 +259,7 @@ class UI:
                     self.populate_server_list()
                     
                     self.serverlist_list.bind('<Return>', self.choose_server)
+                    self.addserver_choose_button.config(command = self.add_server)
                     
                     self.button_back.config(command = self.return_to_menu)
                     self.button_connect.config(command = self.choose_server)
@@ -296,6 +297,34 @@ class UI:
                         server_target = settingsdata['network']['servers'][curselection[0]]
                         self.config['methods'].uiobject.call_trigger('connect to server', [server_target])
                 
+                @classmethod
+                def add_server(self):
+                    with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+                        settingsdata = json.load(file)
+                        
+                    sv_dict = {'address': self.vars.address.get(),
+                               'internal': not bool(self.addserver_islocal_flipswitch.state),
+                               'name': self.vars.name.get(),
+                               'port': self.vars.port.get()}
+                    try:
+                        sv_dict['port'] = int(sv_dict['port'])
+                    except: #is a word (normal), do nothing
+                        sv_dict['port'] = 'normal'
+                    settingsdata['network']['servers'].append(sv_dict)
+                    
+                    with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
+                        json.dump(settingsdata, file, sort_keys=True, indent='\t')
+                
+                    self.populate_server_list()
+                    self.vars.address.set('')
+                    self.vars.port.set('')
+                    self.vars.name.set('')
+                
+                class vars:
+                    address = tk.StringVar()
+                    port = tk.StringVar()
+                    name = tk.StringVar()
+                
                 frame = tk.Frame(main.page_frame)
                 
                 serverlist_frame = tk.Frame(frame)
@@ -309,11 +338,11 @@ class UI:
                 addserver_frame = tk.Frame(frame)
                 addserver_choose_button = tk.Button(addserver_frame, text = 'Add server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 addserver_name_label = tk.Label(addserver_frame, text = 'Name', **self.styling.get(font_size = 'small', object_type = tk.Label))
-                addserver_name_entry = tk.Entry(addserver_frame, **self.styling.get(font_size = 'small', object_type = tk.Entry))
+                addserver_name_entry = tk.Entry(addserver_frame, textvariable = vars.name, **self.styling.get(font_size = 'small', object_type = tk.Entry))
                 addserver_address_label = tk.Label(addserver_frame, text = 'Address', **self.styling.get(font_size = 'small', object_type = tk.Label))
-                addserver_address_entry = tk.Entry(addserver_frame, **self.styling.get(font_size = 'small', object_type = tk.Entry))
+                addserver_address_entry = tk.Entry(addserver_frame, textvariable = vars.address, **self.styling.get(font_size = 'small', object_type = tk.Entry))
                 addserver_port_label = tk.Label(addserver_frame, text = 'Port', **self.styling.get(font_size = 'small', object_type = tk.Label))
-                addserver_port_entry = tk.Entry(addserver_frame, **self.styling.get(font_size = 'small', object_type = tk.Entry))
+                addserver_port_entry = tk.Entry(addserver_frame, textvariable = vars.port, **self.styling.get(font_size = 'small', object_type = tk.Entry))
                 addserver_islocal_flipswitch = TkFlipSwitch(addserver_frame, options = [{'text': 'Local machine only', 'command': print},
                                                                                         {'text': 'Open to LAN', 'command': print}], **self.styling.get(font_size = 'small', object_type = tk.Button))
                 
