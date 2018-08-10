@@ -2,8 +2,11 @@ import datetime
 import os
 
 class Log:
-    def __init__(self, address):
+    def __init__(self, address, clear = True):
         self.address = address
+        
+        if clear:
+            self.clear()
     
     def _write(self, text, newline = True):
         with open(self.address, 'w') as file:
@@ -23,7 +26,7 @@ class Log:
         self._write('Log {}:'.format(os.path.basename(self.address)), newline = False)
     
     def add(self, category, message):
-        self._append('[{^:19}] [{^:20}]: {}'.format(self._getdatetime(), category, message))
+        self._append('[{:^19}] [{:^20}]: {}'.format(self._getdatetime(), category, message))
     
     def _getdatetime(self):
         now = datetime.datetime.now()
