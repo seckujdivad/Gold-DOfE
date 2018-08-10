@@ -744,21 +744,21 @@
 				160,
 				288
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
 				160,
 				224
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
 				160,
 				160
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
@@ -814,21 +814,21 @@
 				96,
 				288
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
 				96,
 				224
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
 				96,
 				160
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
@@ -884,21 +884,21 @@
 				32,
 				288
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
 				32,
 				224
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
 				32,
 				160
 			],
-			"material": "stone.json"
+			"material": "ice.json"
 		},
 		{
 			"coordinates": [
