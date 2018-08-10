@@ -226,7 +226,7 @@ class Player:
                 ymomentum = 0
                 delay = 0.05
             class strafemove:
-                mult = 1.2
+                mult = 1.5
                 increment = 0.05
                 current_strafe = None
                 current_mult = 1
