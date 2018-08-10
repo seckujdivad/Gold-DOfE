@@ -8,6 +8,7 @@ import sys
 import json
 import random
 import math
+import importlib.util
 
 import modules.networking
 
@@ -83,10 +84,10 @@ class Engine:
                 obj_scatter = []
             class layout:
                 data = {}
-                objs = []
             class materials:
                 data = {}
                 textures = {}
+                scripts = {}
             name = None
             cfg = {}
             rendermethod = None
@@ -134,17 +135,35 @@ class Engine:
                 self.map.layout.data = json.load(file)
             self.game.message_pipe.send(['map load', 'Loaded layout data'])
             
-            #load materials
+            #load textures
             for texture_name in os.listdir(os.path.join(self.map.path, 'textures')):
                 if texture_name.endswith('.png'):
                     self.map.materials.textures[texture_name] = self.map.rendermethod(file = os.path.join(self.map.path, 'textures', texture_name))
             self.game.message_pipe.send(['map load', 'Loaded material textures'])
             
-            #render layout panels
+            #load scripts
+            for material in os.listdir(os.path.join(self.map.path, 'materials')):
+                with open(os.path.join(self.map.path, 'materials', material), 'r') as file:
+                    data = json.load(file)
+                if 'scripts' in data:
+                    self.map.materials.scripts[material] = {}
+                    for script in data['scripts']:
+                        spec = importlib.util.spec_from_file_location('matscript', os.path.join(self.map.path, 'scripts', script))
+                        script_module = importlib.util.module_from_spec(spec)
+                        spec.loader.exec_module(script_module)
+                        self.map.materials.scripts[material][script] = script_module.Script
+            
+            #render layout panels and give them their scripts
             for panel in self.map.layout.data['geometry']:
-                with open(os.path.join(self.map.path, panel['material']), 'r') as file:
-                    self.map.materials.data[panel['material']] = json.load(file)
-                self.map.layout.objs.append(self.game.canvas.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[self.map.materials.data[panel['material']]['texture']['address']]))
+                with open(os.path.join(self.map.path, 'materials', panel['material']), 'r') as file:
+                    panel['material data'] = json.load(file)
+                panel['img obj'] = self.game.canvas.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[panel['material data']['texture']['address']])
+                panel['scripts'] = []
+                if 'scripts' in panel['material data']:
+                    print(self.map.materials.scripts)
+                    for script in panel['material data']['scripts']:
+                        panel['scripts'].append(self.map.materials.scripts[panel['material']][script](panel))
+                
             self.game.message_pipe.send(['map load', 'Rendered layout panels'])
             
             #render scatters
@@ -158,7 +177,7 @@ class Engine:
             
             #load player
             self.game.message_pipe.send(['map load', 'Creating player model...'])
-            self.map.player = Player(random.choice(self.map.cfg['entity models'][self.map.cfg['player entity']]), self.map.path, self)
+            self.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player entity']]), self.map.path, self, is_player = True)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
             
@@ -187,7 +206,7 @@ class Engine:
         output = []
         for panel in self.map.layout.data['geometry']:
             relative_coords = [x - panel['coordinates'][0], y - panel['coordinates'][1]]
-            mat_data = self.map.materials.data[panel['material']]
+            mat_data = panel['material data']
             hitbox = mat_data['hitbox']
             if self.is_inside_hitbox(relative_coords[0], relative_coords[1], hitbox):
                 output.append([panel, mat_data])
@@ -210,22 +229,23 @@ class Engine:
                 has_smaller = True
         return has_smaller and has_bigger
 
-class Player:
-    def __init__(self, ent_name, map_path, engine):
+class Entity:
+    def __init__(self, ent_name, map_path, engine, is_player = False):
         self.ent_name = ent_name
         self.engine = engine
         self.map_path = map_path
+        self.is_player = is_player
         
         class pos:
             x = 0
             y = 0
             rotation = 0
-            class momentum:
+            class momentum: #doesn't do anything when not player
                 base_increment = 1
                 xmomentum = 0
                 ymomentum = 0
                 delay = 0.05
-            class strafemove:
+            class strafemove: #doesn't do anything when not player
                 mult = 1.5
                 increment = 0.05
                 current_strafe = None
@@ -236,8 +256,10 @@ class Player:
         
         self.model = Model(ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvas)
         
-        threading.Thread(target = self._setpos_queue, args = [pipe]).start()
-        threading.Thread(target = self._momentum_updater).start()
+        threading.Thread(target = self._setpos_queue, name = 'Entity setpos queue', args = [pipe]).start()
+        
+        if self.is_player: #only the player has momentum calculations applied using the keyboard
+            threading.Thread(target = self._momentum_updater, name = 'Player momentum updating thread').start()
         
         self.setpos(100, 100)
     
@@ -261,6 +283,16 @@ class Player:
         if not rotation == None:
             self.pos.rotation = rotation % 360
         self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
+        
+        #run scripts
+        data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
+        for panel, material in data:
+            if not panel['scripts'] == []:
+                for script in panel['scripts']:
+                    if 'when touching' in script.binds:
+                        for func in script.binds['when touching']:
+                            func(self)
+            
         event.set()
     
     def _momentum_updater(self):

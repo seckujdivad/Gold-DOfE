@@ -376,7 +376,7 @@ class Editor:
                     'Add an object to the screen using a dictionary containing the coordinates and the material path'
                     if not layer in ['highest', 'lowest']:
                         raise ValueError('"layer" must be either "highest" or "lowest", not "{}"'.format(layer))
-                    dict['material data'] = self.editorobj.map.get_json(dict['material'])
+                    dict['material data'] = self.editorobj.map.get_json(os.path.join('materials', dict['material']))
                     dict['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(dict['material data']['hitbox'], dict['coordinates']), fill = dict['material data']['texture']['editor colour'], outline = dict['material data']['texture']['editor colour'])
                     if layer == 'highest':
                         self.screen_data.append(dict)
@@ -436,7 +436,7 @@ class Editor:
                 def set_selection_material(self, material_path):
                     if not self.selection == None:
                         self.screen_data[self.selection]['material'] = material_path
-                        self.screen_data[self.selection]['material data'] = self.editorobj.map.get_json(self.screen_data[self.selection]['material'])
+                        self.screen_data[self.selection]['material data'] = self.editorobj.map.get_json(os.path.join('materials', self.screen_data[self.selection]['material']))
                         
                         self.select_index(self.selection)
             
@@ -941,7 +941,7 @@ class AddObject:
         for material in os.listdir(os.path.join(self.map.path, 'materials')):
             data = self.map.get_json(os.path.join(self.map.path, 'materials', material)) #get the material file
             self.list_list.insert(tk.END, data['display name']) #use the material display name instead of the path in the list
-            self.paths.append(os.path.join('materials', material)) #add the path to the list of paths so that it can be easily found when chosen
+            self.paths.append(material) #add the path to the list of paths so that it can be easily found when chosen
     
     def add_selection(self):
         selection = self.list_list.curselection()
