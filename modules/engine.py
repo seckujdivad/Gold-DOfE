@@ -225,7 +225,11 @@ class Player:
                 xmomentum = 0
                 ymomentum = 0
                 delay = 0.05
-                strafemove_mult = 1.2
+            class strafemove:
+                mult = 1.2
+                increment = 0.05
+                current_strafe = None
+                current_mult = 1
         self.pos = pos
         
         self.setpos_queue, pipe = mp.Pipe()
@@ -295,9 +299,29 @@ class Player:
                 self.pos.momentum.ymomentum /= decel
             
             #is adadadading (skill based movement)
-            if (self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left'])) ^ (self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right'])) ^ (self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left'])) ^ (self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right'])):
-                self.pos.momentum.xmomentum *= self.pos.momentum.strafemove_mult
-                self.pos.momentum.ymomentum *= self.pos.momentum.strafemove_mult
+            if self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
+                current_strafe = 'ul'
+            elif self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
+                current_strafe = 'ur'
+            elif self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
+                current_strafe = 'dl'
+            elif self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
+                current_strafe = 'dr'
+            else:
+                current_strafe = None
+            
+            if not current_strafe == None:
+                
+                if self.pos.strafemove.current_strafe == None or self.pos.strafemove.current_strafe != current_strafe:
+                    self.pos.strafemove.current_mult = self.pos.strafemove.mult
+                else:
+                    self.pos.strafemove.current_mult = max(self.pos.strafemove.current_mult - self.pos.strafemove.increment, 1)
+                
+                self.pos.strafemove.current_strafe = current_strafe
+                
+                self.pos.momentum.xmomentum *= self.pos.strafemove.current_mult
+                self.pos.momentum.ymomentum *= self.pos.strafemove.current_mult
+                
             else: #not doing any movement acceleration - apply speed cap
                 if self.pos.momentum.xmomentum > velcap:
                     self.pos.momentum.xmomentum = velcap
