@@ -580,7 +580,7 @@ class CanvasMessages:
         self.running = True
         
         class graphical_properties:
-            updatedelay = 0.1
+            updatedelay = 1
             maxlen = 10
             font = ('', 10)
             height = 20
