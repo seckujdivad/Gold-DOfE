@@ -252,6 +252,8 @@ class Entity:
                 current_mult = 1
         self.pos = pos
         
+        self.health = 100
+        
         self.setpos_queue, pipe = mp.Pipe()
         
         self.model = Model(ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvas)
@@ -305,6 +307,7 @@ class Entity:
             accel = 0
             decel = 0
             velcap = 0
+            damage = 0
             data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
             for panel, material in data:
                 if material['entities'][self.ent_name]['accelerate'] != None:
@@ -313,57 +316,60 @@ class Entity:
                     decel += material['entities'][self.ent_name]['decelerate']
                 if material['entities'][self.ent_name]['velcap'] != None:
                     velcap = max(velcap, material['entities'][self.ent_name]['velcap'])
+                if material['entities'][self.ent_name]['damage'] != None:
+                    damage = max(damage, material['entities'][self.ent_name]['damage'])
             
-            if not accel == 0:
-                if self.engine.keybindhandler.get_state(keybind_data['movement']['up']):
-                    self.pos.momentum.ymomentum -= accel
-                if self.engine.keybindhandler.get_state(keybind_data['movement']['down']):
-                    self.pos.momentum.ymomentum += accel
-                if self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
-                    self.pos.momentum.xmomentum -= accel
-                if self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
-                    self.pos.momentum.xmomentum += accel
-                    
+            self.health -= damage * self.pos.momentum.delay
+            
+            if self.is_player:
+                if not accel == 0:
+                    if self.engine.keybindhandler.get_state(keybind_data['movement']['up']):
+                        self.pos.momentum.ymomentum -= accel
+                    if self.engine.keybindhandler.get_state(keybind_data['movement']['down']):
+                        self.pos.momentum.ymomentum += accel
+                    if self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
+                        self.pos.momentum.xmomentum -= accel
+                    if self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
+                        self.pos.momentum.xmomentum += accel
                 
-                                
-            if not decel == 0:
-                self.pos.momentum.xmomentum /= decel
-                self.pos.momentum.ymomentum /= decel
-            
-            #is adadadading (skill based movement)
-            if self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
-                current_strafe = 'ul'
-            elif self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
-                current_strafe = 'ur'
-            elif self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
-                current_strafe = 'dl'
-            elif self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
-                current_strafe = 'dr'
-            else:
-                current_strafe = None
-            
-            if not current_strafe == None:
+                if not decel == 0:
+                    self.pos.momentum.xmomentum /= decel
+                    self.pos.momentum.ymomentum /= decel
                 
-                if self.pos.strafemove.current_strafe == None or self.pos.strafemove.current_strafe != current_strafe:
-                    self.pos.strafemove.current_mult = self.pos.strafemove.mult
+                #is adadadading (skill based movement)
+                if self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
+                    current_strafe = 'ul'
+                elif self.engine.keybindhandler.get_state(keybind_data['movement']['up']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
+                    current_strafe = 'ur'
+                elif self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['left']):
+                    current_strafe = 'dl'
+                elif self.engine.keybindhandler.get_state(keybind_data['movement']['down']) and self.engine.keybindhandler.get_state(keybind_data['movement']['right']):
+                    current_strafe = 'dr'
                 else:
-                    self.pos.strafemove.current_mult = max(self.pos.strafemove.current_mult - self.pos.strafemove.increment, 1)
+                    current_strafe = None
                 
-                self.pos.strafemove.current_strafe = current_strafe
+                if not current_strafe == None:
+                    
+                    if self.pos.strafemove.current_strafe == None or self.pos.strafemove.current_strafe != current_strafe:
+                        self.pos.strafemove.current_mult = self.pos.strafemove.mult
+                    else:
+                        self.pos.strafemove.current_mult = max(self.pos.strafemove.current_mult - self.pos.strafemove.increment, 1)
+                    
+                    self.pos.strafemove.current_strafe = current_strafe
+                    
+                    self.pos.momentum.xmomentum *= self.pos.strafemove.current_mult
+                    self.pos.momentum.ymomentum *= self.pos.strafemove.current_mult
+                    
+                else: #not doing any movement acceleration - apply speed cap
+                    if self.pos.momentum.xmomentum > velcap:
+                        self.pos.momentum.xmomentum = velcap
+                    if self.pos.momentum.ymomentum > velcap:
+                        self.pos.momentum.ymomentum = velcap
                 
-                self.pos.momentum.xmomentum *= self.pos.strafemove.current_mult
-                self.pos.momentum.ymomentum *= self.pos.strafemove.current_mult
+                self.pos.x += self.pos.momentum.xmomentum
+                self.pos.y += self.pos.momentum.ymomentum
                 
-            else: #not doing any movement acceleration - apply speed cap
-                if self.pos.momentum.xmomentum > velcap:
-                    self.pos.momentum.xmomentum = velcap
-                if self.pos.momentum.ymomentum > velcap:
-                    self.pos.momentum.ymomentum = velcap
-            
-            self.pos.x += self.pos.momentum.xmomentum
-            self.pos.y += self.pos.momentum.ymomentum
-            
-            self.setpos()
+                self.setpos()
 
 class Model:
     def __init__(self, ent_name, map_path, imageloader, canvas):
