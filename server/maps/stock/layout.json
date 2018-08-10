@@ -658,48 +658,6 @@
 		{
 			"coordinates": [
 				224,
-				416
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				224,
-				352
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				224,
-				288
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				224,
-				224
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				224,
-				160
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				224,
-				96
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				224,
 				32
 			],
 			"material": "materials\\stone.json"
@@ -722,48 +680,6 @@
 			"coordinates": [
 				160,
 				480
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				160,
-				416
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				160,
-				352
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				160,
-				288
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				160,
-				224
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				160,
-				160
-			],
-			"material": "materials\\stone.json"
-		},
-		{
-			"coordinates": [
-				160,
-				96
 			],
 			"material": "materials\\stone.json"
 		},
@@ -913,6 +829,90 @@
 				32
 			],
 			"material": "materials\\stone.json"
+		},
+		{
+			"coordinates": [
+				224,
+				160
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				224,
+				96
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				224,
+				288
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				224,
+				224
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				224,
+				352
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				224,
+				416
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				160,
+				96
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				160,
+				160
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				160,
+				224
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				160,
+				288
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				160,
+				352
+			],
+			"material": "materials\\ice.json"
+		},
+		{
+			"coordinates": [
+				160,
+				416
+			],
+			"material": "materials\\ice.json"
 		}
 	]
 }
