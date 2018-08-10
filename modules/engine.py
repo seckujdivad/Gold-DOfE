@@ -317,7 +317,7 @@ class Entity:
                 if material['entities'][self.ent_name]['velcap'] != None:
                     velcap = max(velcap, material['entities'][self.ent_name]['velcap'])
                 if material['entities'][self.ent_name]['damage'] != None:
-                    damage = max(damage, material['entities'][self.ent_name]['damage'])
+                    damage += material['entities'][self.ent_name]['damage']
             
             self.health -= damage * self.pos.momentum.delay
             
