@@ -107,12 +107,13 @@ class Engine:
                 data = {}
                 textures = {}
                 scripts = {}
+            class other_players:
+                entities = []
             name = None
             cfg = {}
             rendermethod = None
             player = None
-            class other_players:
-                entities = []
+            healthbar = None
         self.map = map
         
         self.keybindhandler = KeyBind(self.game.canvas.nametowidget('.'))
@@ -204,6 +205,10 @@ class Engine:
             #render overlay
             self.map.textures.obj_overlay = self.game.canvas.create_image(402, 302, image = self.map.textures.overlay)
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
+            
+            #make healthbar
+            self.map.healthbar = DisplayBar(self.game.canvas, 100, [10, 10, 100, 20], 'gray', 'red')
+            self.map.healthbar.set_value(25)
     
     def unload_current_map(self):
         if not self.map.textures.obj_scatter == []:
@@ -723,3 +728,19 @@ class KeyBind:
         
     def kill(self):
         self._isactive = False
+        
+class DisplayBar:
+    def __init__(self, canvas, max_value, coords, bg, fg):
+        self.canvas = canvas
+        self.max_value = max_value
+        self.coords = coords
+        self.bg = bg
+        self.fg = fg
+        
+        class objects:
+            background = self.canvas.create_rectangle(*coords, fill = self.bg, outline = self.bg)
+            display = self.canvas.create_rectangle(*coords, fill = self.fg, outline = self.fg)
+        self.objects = objects
+    
+    def set_value(self, value):
+        self.canvas.coords(self.objects.display, self.coords[0], self.coords[1], self.coords[0] + ((self.coords[2] - self.coords[0]) * (value / self.max_value)), self.coords[3])
