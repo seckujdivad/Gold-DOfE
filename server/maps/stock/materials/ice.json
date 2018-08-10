@@ -2,10 +2,10 @@
 	"display name": "Ice",
 	"entities": {
 		"player": {
-			"accelerate": 0.2,
+			"accelerate": 15,
 			"damage": 0,
-			"decelerate": 0.1,
-			"velcap": 10
+			"decelerate": 2,
+			"velcap": 20
 		}
 	},
 	"hitbox": [
