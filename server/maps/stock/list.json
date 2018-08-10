@@ -11,5 +11,11 @@
 		"cloud": ["cloud"]
 	},
 	"player entity": "player",
-	"starting items": ["fireball.json", "swordswipe.json"]
+	"starting items": [{
+		"item": "fireball.json",
+		"quantity": 5
+	}, {
+		"item": "swordswipe.json",
+		"quantity": 1
+	}]
 }
