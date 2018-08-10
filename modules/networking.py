@@ -126,7 +126,7 @@ sv_quit: destroy the server'''
                 output = 'No permissions'
         elif name == 'say':
             self.send_all(Request(command = 'say', arguments = {'text': argstring}))
-            output = 'Said \'{}\''.format(argstring)
+            output = 'Said \'{}\' to all users'.format(argstring)
         elif name.startswith('sv_'):
             if name == 'sv_kick_addr':
                 if source == 'internal':

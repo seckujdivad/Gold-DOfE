@@ -1,1 +1,2 @@
 echo New user connected!
+say New user has connected!
