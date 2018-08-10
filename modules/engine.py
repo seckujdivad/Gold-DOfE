@@ -250,6 +250,7 @@ class Entity:
                 increment = 0.05
                 current_strafe = None
                 current_mult = 1
+            script_delay = 0.05
         self.pos = pos
         
         self.health = 100
@@ -262,6 +263,7 @@ class Entity:
         
         if self.is_player: #only the player has momentum calculations applied using the keyboard
             threading.Thread(target = self._momentum_updater, name = 'Player momentum updating thread').start()
+        threading.Thread(target = self.script_bind_handler, name = 'Entity script handler thread').start()
         
         self.setpos(100, 100)
     
@@ -285,15 +287,6 @@ class Entity:
         if not rotation == None:
             self.pos.rotation = rotation % 360
         self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
-        
-        #run scripts
-        data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
-        for panel, material in data:
-            if not panel['scripts'] == []:
-                for script in panel['scripts']:
-                    if 'when touching' in script.binds:
-                        for func in script.binds['when touching']:
-                            func(self)
             
         event.set()
     
@@ -370,6 +363,37 @@ class Entity:
                 self.pos.y += self.pos.momentum.ymomentum
                 
                 self.setpos()
+    
+    def script_bind_handler(self):
+        touching_last_loop = []
+        while True:
+            start = time.time()
+        
+            touching_this_loop = []
+            data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
+            for panel, material in data:
+                touching_this_loop.append(panel)
+                if not panel['scripts'] == []:
+                    for script in panel['scripts']:
+                        if 'when touching' in script.binds:
+                            for func in script.binds['when touching']:
+                                func(self)
+                        if not panel in touching_last_loop:
+                            if 'on enter' in script.binds:
+                                for func in script.binds['on enter']:
+                                    func(self)
+            for panel in touching_last_loop:
+                if not panel in touching_this_loop:
+                    if not panel['scripts'] == []:
+                        for script in panel['scripts']:
+                            if 'on leave' in script.binds:
+                                for func in script.binds['on leave']:
+                                    func(self)
+            touching_last_loop = touching_this_loop
+            
+            delay = self.pos.script_delay - (time.time() - start)
+            if delay > 0:
+                time.sleep(delay)
 
 class Model:
     def __init__(self, ent_name, map_path, imageloader, canvas):
