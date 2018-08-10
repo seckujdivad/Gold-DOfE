@@ -28,6 +28,8 @@ class App:
         self.ui.set_trigger('new map', self.map_make_new)
         self.ui.set_trigger('start editor', self.start_editor)
         self.ui.set_trigger('close editor', self.close_editor)
+        
+        self.ui.root.state('zoomed')
     
     def connect_to_server(self, server_data):
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
