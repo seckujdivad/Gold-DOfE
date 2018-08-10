@@ -46,7 +46,9 @@ class Game:
     
     def main(self):
         while self.running:
-            time.sleep(1)
+            time.sleep(0.05)
+            if not self.engine.map.player == None:
+                self.client.send(modules.networking.Request(command = 'var update w', subcommand = 'position', arguments = {'x': self.engine.map.player.pos.x, 'y': self.engine.map.player.pos.y, 'rotation': self.engine.map.player.pos.rotation}))
     
     def close(self):
         self.running = False

@@ -78,6 +78,12 @@ class Server:
                 elif req.subcommand == 'player model':
                     if self.serverdata.map != None:
                         self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[conn_id]['model']}))
+            elif req.command == 'var update w':
+                if req.subcommand == 'position':
+                    print(req.arguments['x'], req.arguments['y'], req.arguments['rotation'])
+                    self.serverdata.conn_data[conn_id]['position'] = {'x': req.arguments['x'],
+                                                                      'y': req.arguments['y'],
+                                                                      'rotation': req.arguments['rotation']}
         self.serverdata.conn_data[conn_id]['active'] = False
     
     def handle_command(self, command, source = 'internal'):
