@@ -208,7 +208,7 @@ class Engine:
             
             #make healthbar
             self.map.healthbar = DisplayBar(self.game.canvas, 100, [10, 10, 100, 20], 'gray', 'red')
-            self.map.healthbar.set_value(25)
+            self.map.healthbar.set_value(100)
     
     def unload_current_map(self):
         if not self.map.textures.obj_scatter == []:
@@ -278,7 +278,7 @@ class Entity:
             script_delay = 0.05
         self.pos = pos
         
-        self.health = 100
+        self.set_health(100)
         
         self.setpos_queue, pipe = mp.Pipe()
         
@@ -337,7 +337,7 @@ class Entity:
                 if material['entities'][self.ent_name]['damage'] != None:
                     damage += material['entities'][self.ent_name]['damage']
             
-            self.health -= damage * self.pos.momentum.delay
+            self.set_health(self.health - (damage * self.pos.momentum.delay))
             
             if self.is_player:
                 if not accel == 0:
@@ -419,6 +419,11 @@ class Entity:
             delay = self.pos.script_delay - (time.time() - start)
             if delay > 0:
                 time.sleep(delay)
+    
+    def set_health(self, value):
+        self.health = value
+        if not self.engine.map.healthbar == None: #make sure healthbar has been created
+            self.engine.map.healthbar.set_value(self.health)
 
 class Model:
     def __init__(self, ent_name, map_path, imageloader, canvas):
