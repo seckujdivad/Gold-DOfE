@@ -78,9 +78,14 @@ class Server:
                 elif req.subcommand == 'player model':
                     if self.serverdata.map != None:
                         self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[conn_id]['model']}))
+                elif req.subcommand == 'all player positions':
+                    output = []
+                    for data in self.serverdata.conn_data:
+                        if data['active'] and 'position' in data and not data == self.serverdata.conn_data[conn_id]:
+                            output.append(data['position'])
+                    self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': output}))
             elif req.command == 'var update w':
                 if req.subcommand == 'position':
-                    print(req.arguments['x'], req.arguments['y'], req.arguments['rotation'])
                     self.serverdata.conn_data[conn_id]['position'] = {'x': req.arguments['x'],
                                                                       'y': req.arguments['y'],
                                                                       'rotation': req.arguments['rotation']}
@@ -225,6 +230,8 @@ class Client:
             except ConnectionAbortedError:
                 req = Request(command = 'disconnect')
                 cont = False
+            except json.decoder.JSONDecodeError:
+                req = Request(command = None)
             for bind in self.recv_binds:
                 bind(req)
     

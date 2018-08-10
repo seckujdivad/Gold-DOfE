@@ -49,6 +49,7 @@ class Game:
             time.sleep(0.05)
             if not self.engine.map.player == None:
                 self.client.send(modules.networking.Request(command = 'var update w', subcommand = 'position', arguments = {'x': self.engine.map.player.pos.x, 'y': self.engine.map.player.pos.y, 'rotation': self.engine.map.player.pos.rotation}))
+            self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'all player positions'))
     
     def close(self):
         self.running = False
@@ -69,6 +70,20 @@ class Game:
                 if not self.engine.map.name == request.arguments['map name']:
                     self.engine.load_map(request.arguments['map name'])
                 self.vars[request.subcommand] = request.arguments['map name']
+            elif request.subcommand == 'player positions':
+                positions = request.arguments['positions']
+                if not len(positions) == len(self.engine.map.other_players.entities):
+                    new_ent_list = self.engine.map.other_players.entities[:len(positions)]
+                    excess_ents = self.engine.map.other_players.entities[len(positions):]
+                    for entity in excess_ents:
+                        entity.model.destroy()
+                    if len(new_ent_list) < len(positions):
+                        for i in range(len(positions) - len(new_ent_list)):
+                            new_ent_list.append(Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player entity']]), self.engine.map.path, self.engine, is_player = False))
+                        self.engine.map.other_players.entities = new_ent_list
+                
+                for index in range(len(positions)):
+                    self.engine.map.other_players.entities[index].setpos(positions[index]['x'], positions[index]['y'], positions[index]['rotation'])
             else:
                 self.vars[request.subcommand] = request.arguments['value']
 
@@ -94,6 +109,8 @@ class Engine:
             cfg = {}
             rendermethod = None
             player = None
+            class other_players:
+                entities = []
         self.map = map
         
         self.keybindhandler = KeyBind(self.game.canvas.nametowidget('.'))
@@ -162,7 +179,6 @@ class Engine:
                 panel['img obj'] = self.game.canvas.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[panel['material data']['texture']['address']])
                 panel['scripts'] = []
                 if 'scripts' in panel['material data']:
-                    print(self.map.materials.scripts)
                     for script in panel['material data']['scripts']:
                         panel['scripts'].append(self.map.materials.scripts[panel['material']][script](panel))
                 
