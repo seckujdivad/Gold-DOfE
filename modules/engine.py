@@ -228,6 +228,11 @@ class Engine:
             #set values for health bar and inventory bar
             self.map.healthbar.set_value(100)
             self.map.invdisp.select_index(0)
+            
+            #set the inventory slots from the config
+            for i in range(len(self.map.cfg['starting items'])):
+                data = self.map.cfg['starting items'][i]
+                self.map.invdisp.set_slot(i, data['item'], data['quantity'])
     
     def unload_current_map(self):
         if not self.map.textures.obj_scatter == []:
@@ -797,6 +802,10 @@ class InventoryBar:
         self.items_data = {}
         self.slot_objs = []
         self.selection_index = None
+        self.inv_items = []
+        
+        for i in range(5):
+            self.inv_items.append({'item': None, 'quantity': 0})
         
         self.load_assets()
         self.draw_slots()
@@ -817,8 +826,13 @@ class InventoryBar:
             y1 = y0 + self.sprite_dimensions[1]
             self.slot_objs.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill = self.backingcolour, outline = self.backingcolour))
     
-    def change_item_quantity(self):
-        pass
+    def set_slot(self, index, item = None, quantity = 1):
+        self.inv_items[index]['quantity'] = quantity
+        if not self.inv_items[index]['item'] == None:
+            self.canvas.delete(self.inv_items[index]['item'])
+        coords = self.get_top_right_coords()
+        if not item == None:
+            self.inv_items[index]['item'] = self.canvas.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'])
     
     def select_index(self, index, force_refresh = False):
         if index != self.selection_index and not force_refresh:
