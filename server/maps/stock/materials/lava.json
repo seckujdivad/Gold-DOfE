@@ -3,7 +3,7 @@
 	"entities": {
 		"player": {
 			"accelerate": 10,
-			"damage": 25,
+			"damage": 100,
 			"decelerate": 2,
 			"velcap": 5
 		}
