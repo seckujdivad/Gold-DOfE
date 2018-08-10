@@ -154,7 +154,7 @@ class UI:
                     settingsdict['user']['name'] = self.username_var.get()
                     
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
-                       json.dump(settingsdict, file, sort_keys=True, indent=4)
+                       json.dump(settingsdict, file, sort_keys=True, indent='\t')
                 
                 @classmethod
                 def fetch_settings(self, path):
