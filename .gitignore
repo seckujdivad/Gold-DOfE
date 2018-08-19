@@ -139,4 +139,5 @@ $RECYCLE.BIN/
 *.lnk
 
 # Project
-server/logs/
+server/logs/*
+!server/logs/_placeholder
