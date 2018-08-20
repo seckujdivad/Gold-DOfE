@@ -75,29 +75,44 @@ class UI:
                         
                     text_ = 'Name: {}, PIL rendering: {} \nGo to settings to make sure all packages have been installed'.format(settingsdict['user']['name'], pilrender_msg)
                     self.label_userdata.config(text = text_)
+                    
+                    self.button_editor.config(command = self.load_editor)
+                    self.button_connect.config(command = self.load_connect_server)
+                    self.button_host.config(command = self.load_host_server)
+                    self.button_settings.config(command = self.load_settings)
+                    self.button_quit.config(command = self.close_window)
                 
                 @classmethod
                 def on_close(self):
                     self.frame.pack_forget()
                 
-                def load_settings(ui_object):
-                    ui_object.load(ui_object.uiobjects.settings)
+                @classmethod
+                def load_settings(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.settings)
                 
-                def load_host_server(ui_object):
-                    ui_object.load(ui_object.uiobjects.game)
+                @classmethod
+                def load_host_server(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.game)
                 
-                def load_connect_server(ui_object):
-                    ui_object.load(ui_object.uiobjects.connect_server)
+                @classmethod
+                def load_connect_server(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.connect_server)
                 
-                def load_editor(ui_object):
-                    ui_object.load(ui_object.uiobjects.editor_choose_file)
+                @classmethod
+                def load_editor(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.editor_choose_file)
+                
+                @classmethod
+                def close_window(self):
+                    self.config['methods'].uiobject.call_trigger('quit')
                     
                 frame = tk.Frame(main.page_frame)
                 label_title = tk.Label(frame, text = 'Hydrophobes', **self.styling.get(font_size = 'large', object_type = tk.Label))
-                button_editor = tk.Button(frame, text = 'Map editor', command = functools.partial(load_editor, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_connect = tk.Button(frame, text = 'Connect to a server', command = functools.partial(load_connect_server, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_host = tk.Button(frame, text = 'Host a server', command = functools.partial(load_host_server, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_settings = tk.Button(frame, text = 'Change settings', command = functools.partial(load_settings, self), **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_editor = tk.Button(frame, text = 'Map editor', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_connect = tk.Button(frame, text = 'Connect to a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_host = tk.Button(frame, text = 'Host a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_settings = tk.Button(frame, text = 'Change settings', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_quit = tk.Button(frame, text = 'Quit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 label_userdata = tk.Label(frame, text = 'Loading...', **self.styling.get(font_size = 'small', object_type = tk.Label))
                 
                 label_title.grid(row = 0, column = 0, sticky = 'NESW')
@@ -105,8 +120,9 @@ class UI:
                 button_connect.grid(row = 2, column = 0, sticky = 'NESW')
                 button_host.grid(row = 3, column = 0, sticky = 'NESW')
                 button_settings.grid(row = 4, column = 0, sticky = 'NESW')
-                label_userdata.grid(row = 5, column = 0, sticky = 'NESW')
-                self.styling.set_weight(frame, 1, 6)
+                button_quit.grid(row = 5, column = 0, sticky = 'NESW')
+                label_userdata.grid(row = 6, column = 0, sticky = 'NESW')
+                self.styling.set_weight(frame, 1, 7)
                 
             class settings:
                 config = {'name': 'Settings'}

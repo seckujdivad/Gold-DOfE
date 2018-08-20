@@ -29,12 +29,13 @@ class App:
         
         self.ui.set_trigger('connect to server', self.connect_to_server)
         self.ui.set_trigger('create game object', self.create_game_object)
-        self.ui.set_trigger('window closed', self.close)
+        self.ui.set_trigger('window closed', self.on_window_close)
         self.ui.set_trigger('close game', self.close_game)
         self.ui.set_trigger('edit map', self.map_edit)
         self.ui.set_trigger('new map', self.map_make_new)
         self.ui.set_trigger('start editor', self.start_editor)
         self.ui.set_trigger('close editor', self.close_editor)
+        self.ui.set_trigger('quit', self.close)
     
     def connect_to_server(self, server_data):
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
@@ -76,9 +77,12 @@ class App:
     def close_editor(self):
         self.editor.close()
     
-    def close(self):
-        print('closing')
+    def on_window_close(self):
         sys.exit()
+    
+    def close(self):
+        self.ui.root.destroy()
+        self.on_window_close()
 
 if __name__ == '__main__':
     App()
