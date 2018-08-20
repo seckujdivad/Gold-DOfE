@@ -152,6 +152,7 @@ class UI:
                     settingsdict['hud']['chat']['fontsize'] = self.chatsize_var.get()
                     settingsdict['hud']['chat']['font'] = self.chatfont_var.get()
                     settingsdict['user']['name'] = self.username_var.get()
+                    settingsdict['default window state'] = self.windowzoom_flipswitch.state
                     
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
                        json.dump(settingsdict, file, sort_keys=True, indent='\t')
@@ -170,6 +171,7 @@ class UI:
                     self.chatsize_var.set(settingsdict['hud']['chat']['fontsize'])
                     self.chatfont_var.set(settingsdict['hud']['chat']['font'])
                     self.username_var.set(settingsdict['user']['name'])
+                    self.windowzoom_flipswitch.on_option_press(settingsdict['default window state'], run_binds = False)
                 
                 @classmethod
                 def meet_requirements(self):
@@ -181,6 +183,12 @@ class UI:
                 frame = tk.Frame(main.page_frame)
                 
                 settings_frame = tk.Frame(frame)
+                
+                cat_general_label = tk.Label(settings_frame, text = 'General', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                windowzoom_label = tk.Label(settings_frame, text = 'Default window zoom', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                windowzoom_flipswitch = TkFlipSwitch(settings_frame, options = [{'text': 'Windowed', 'command': print},
+                                                                                {'text': 'Maximised', 'command': print},
+                                                                                {'text': 'Fullscreen', 'command': print}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 cat_graphics_label = tk.Label(settings_frame, text = 'Graphics', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 pilrender_label = tk.Label(settings_frame, text = 'PIL rendering', **self.styling.get(font_size = 'medium', object_type = tk.Label))
@@ -218,25 +226,39 @@ class UI:
                 button_reset_default = tk.Button(frame, text = 'Reset to default', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_match_requirements = tk.Button(frame, text = 'Click to install any required packages...', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
-                cat_graphics_label.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
-                pilrender_label.grid(row = 1, column = 0, sticky = 'NESW')
-                pilrender_flipswitch.grid(row = 1, column = 1, sticky = 'NESW')
-                mdlquality_label.grid(row = 2, column = 0, sticky = 'NESW')
-                mdlquality_flipswitch.grid(row = 2, column = 1, sticky = 'NESW')
+                widget_row = 0
                 
-                cat_hud_label.grid(row = 3, column = 0, columnspan = 2, sticky = 'NESW')
-                chatalign_label.grid(row = 4, column = 0, sticky = 'NESW')
-                chatalign_flipswitch.grid(row = 4, column = 1, sticky = 'NESW')
-                chatcol_label.grid(row = 5, column = 0, sticky = 'NESW')
-                chatcol_entry.grid(row = 5, column = 1, sticky = 'NESW')
-                chatfont_label.grid(row = 6, column = 0, sticky = 'NESW')
-                chatfont_entry.grid(row = 6, column = 1, sticky = 'NESW')
-                chatsize_label.grid(row = 7, column = 0, sticky = 'NESW')
-                chatsize_spinbox.grid(row = 7, column = 1, sticky = 'NESW')
+                cat_general_label.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
+                windowzoom_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
+                windowzoom_flipswitch.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
                 
-                cat_user_label.grid(row = 8, column = 0, columnspan = 2, sticky = 'NESW')
-                username_label.grid(row = 9, column = 0, sticky = 'NESW')
-                username_entry.grid(row = 9, column = 1, sticky = 'NESW')
+                widget_row += 2
+                
+                cat_graphics_label.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
+                pilrender_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
+                pilrender_flipswitch.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
+                mdlquality_label.grid(row = widget_row + 2, column = 0, sticky = 'NESW')
+                mdlquality_flipswitch.grid(row = widget_row + 2, column = 1, sticky = 'NESW')
+                
+                widget_row += 3
+                
+                cat_hud_label.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
+                chatalign_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
+                chatalign_flipswitch.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
+                chatcol_label.grid(row = widget_row + 2, column = 0, sticky = 'NESW')
+                chatcol_entry.grid(row = widget_row + 2, column = 1, sticky = 'NESW')
+                chatfont_label.grid(row = widget_row + 3, column = 0, sticky = 'NESW')
+                chatfont_entry.grid(row = widget_row + 3, column = 1, sticky = 'NESW')
+                chatsize_label.grid(row = widget_row + 4, column = 0, sticky = 'NESW')
+                chatsize_spinbox.grid(row = widget_row + 4, column = 1, sticky = 'NESW')
+                
+                widget_row += 5
+                
+                cat_user_label.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
+                username_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
+                username_entry.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
+                
+                widget_row += 2
                 
                 settings_frame.grid(row = 0, column = 0, columnspan = 3, sticky = 'NESW')
                 button_match_requirements.grid(row = 1, column = 0, columnspan = 3, sticky = 'NESW')
@@ -244,7 +266,7 @@ class UI:
                 button_cancel.grid(row = 2, column = 1, sticky = 'NESW')
                 button_reset_default.grid(row = 2, column = 2, sticky = 'NESW')
                 
-                self.styling.set_weight(settings_frame, 2, 10, dorows = False)
+                self.styling.set_weight(settings_frame, 2, widget_row, dorows = False)
                 frame.columnconfigure(0, weight = 1)
                 frame.columnconfigure(1, weight = 1)
                 frame.columnconfigure(2, weight = 1)

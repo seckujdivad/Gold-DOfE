@@ -1,4 +1,5 @@
 {
+	"default window state": 0,
     "graphics": {
         "PILrender": false,
         "stacked model quality": 1

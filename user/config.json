@@ -1,4 +1,5 @@
 {
+	"default window state": 2,
 	"graphics": {
 		"PILrender": true,
 		"stacked model quality": 1
@@ -30,13 +31,13 @@
 			},
 			{
 				"address": "localhost",
-				"internal": true,
+				"internal": false,
 				"name": "Local PC",
 				"port": "normal"
 			},
 			{
 				"address": "localhost",
-				"internal": false,
+				"internal": true,
 				"name": "Local PC",
 				"port": "normal"
 			}

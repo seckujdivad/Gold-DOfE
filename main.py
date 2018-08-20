@@ -14,11 +14,18 @@ class App:
         self.game = None
         self.client = None
         self.server = None
+        
+        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+            settingsdata = json.load(file)
     
         self.ui = modules.ui.UI()
         self.ui.load(self.ui.uiobjects.menu)
         self.ui.set_title('Hydrophobes')
         self.ui.set_geometry('800x600')
+        if settingsdata['default window state'] in [0, 1]:
+            self.ui.root.state(['normal', 'zoomed'][settingsdata['default window state']])
+        else:
+            self.ui.root.attributes('-fullscreen', True)
         
         self.ui.set_trigger('connect to server', self.connect_to_server)
         self.ui.set_trigger('create game object', self.create_game_object)
@@ -28,8 +35,6 @@ class App:
         self.ui.set_trigger('new map', self.map_make_new)
         self.ui.set_trigger('start editor', self.start_editor)
         self.ui.set_trigger('close editor', self.close_editor)
-        
-        self.ui.root.state('zoomed')
     
     def connect_to_server(self, server_data):
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
