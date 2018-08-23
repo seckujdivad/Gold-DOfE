@@ -5,12 +5,11 @@ This is the project for the "skills" section of my Silver Duke of Edinburgh's Aw
 * Level editor
   * Material editor
   * Level layout editor
-* Basic servers (but no networked play)
+* Basic servers
 
 ## Planned Features
 * Entity editor
-* Working networked play
-* Combat using skill-based mechanics
+* Combat
 * Sounds
 * Particle effects
 * Areas in levels that have scripts attached to them
