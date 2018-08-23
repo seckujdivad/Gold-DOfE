@@ -226,19 +226,35 @@ class Editor:
                     self.button_save = tk.Button(self.frame_info, text = 'Save', command = self.save, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     self.button_refresh = tk.Button(self.frame_info, text = 'Reload', command = self.reload, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
+                    #right side frame
+                    self.frame_rightside = tk.Frame(self.frame)
+                    
                     #list of materials to set which one is used for the selected geometry
-                    self.polylist_frame = tk.Frame(self.frame)
+                    self.polylist_frame = tk.Frame(self.frame_rightside)
                     self.polylist_list = tk.Listbox(self.polylist_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
                     self.polylist_bar = tk.Scrollbar(self.polylist_frame, command = self.polylist_list.yview)
                     self.polylist_list.config(yscrollcommand = self.polylist_bar.set)
+                    
+                    self.script_frame = tk.Frame(self.frame_rightside)
+                    self.script_list = tk.Listbox(self.script_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.script_bar = tk.Scrollbar(self.script_frame, command = self.script_list.yview)
+                    self.script_list.config(yscrollcommand = self.script_bar.set)
+                    self.script_button = tk.Button(self.script_frame, text = 'Assign script to selection', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
                     
                     #specify layout
                     self.polylist_bar.pack(side = tk.RIGHT, fill = tk.Y)
                     self.polylist_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
+                    self.script_button.pack(side = tk.BOTTOM, fill = tk.X)
+                    self.script_bar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.script_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    self.polylist_frame.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.script_frame.grid(row = 1, column = 0, sticky = 'NESW')
+                    
                     self.canvas.grid(column = 0, row = 0, sticky = 'NESW')
                     self.frame_info.grid(column = 0, row = 1, sticky = 'NESW')
-                    self.polylist_frame.grid(column = 1, row = 0, rowspan = 2, sticky = 'NESW')
+                    self.frame_rightside.grid(column = 1, row = 0, rowspan = 2, sticky = 'NESW')
                     self.frame.rowconfigure(0, weight = 2)
                     self.frame.columnconfigure(0, weight = 2)
                     
@@ -252,6 +268,7 @@ class Editor:
                     self.button_save.grid(column = 4, row = 0, sticky = 'NESW')
                     self.button_refresh.grid(column = 4, row = 1, sticky = 'NESW')
                     self.ui_styling.set_weight(self.frame_info, 5, 2)
+                    self.ui_styling.set_weight(self.frame_rightside, 1, 2)
                     self.frame_info.columnconfigure(1, weight = 0)
                     
                     self.load_map_data()
@@ -898,7 +915,7 @@ class AddObject:
     
     def ui(self):
         self.root = tk.Tk() #make a new window
-        self.root.title('Editor - add object')
+        self.root.title('Editor - add/modify object')
         
         #header label
         self.label_header = tk.Label(self.root, text = 'Choose a material', **self.ui_styling.get(font_size = 'medium', object_type = tk.Label))
