@@ -293,6 +293,8 @@ class Editor:
                     self.polylist_list.bind('<Delete>', self.remove_object)
                     self.canvas.bind('<BackSpace>', self.remove_object)
                     self.polylist_list.bind('<BackSpace>', self.remove_object)
+                    self.script_list.bind('<Button>', self.set_scripts)
+                    self.script_list.bind('<space>', self.set_scripts)
                     
                     self.tabobj.set_title('editing...')
                 
@@ -360,7 +362,8 @@ class Editor:
                     #change the coordinate text
                     self.update_polycoord_display(*item['coordinates'])
                     
-                    self.highlight_scripts(self.screen_data[self.selection])
+                    #highlight the scripts that the panel has in the script pane
+                    self.highlight_scripts()
                  
                 def update_polycoord_display(self, x, y):
                     self.polyvar_x.set(x)
@@ -438,8 +441,11 @@ class Editor:
                     
                     geomdata = []
                     for item in self.screen_data:
-                        geomdata.append({'coordinates': item['coordinates'],
-                                         'material': item['material']})
+                        item_geometry_data = {'coordinates': item['coordinates'],
+                                              'material': item['material']}
+                        if 'scripts' in item:
+                            item_geometry_data['scripts'] = item['scripts']
+                        geomdata.append(item_geometry_data)
                     data['geometry'] = geomdata
                     
                     self.editorobj.map.write_json('layout.json', data)
@@ -471,7 +477,8 @@ class Editor:
                     for item in self.all_scripts:
                         self.script_list.insert(tk.END, item)
                 
-                def highlight_scripts(self, layout_obj):
+                def highlight_scripts(self):
+                    layout_obj = self.screen_data[self.selection]
                     self.script_list.selection_clear(0, tk.END)
                     if 'scripts' in layout_obj:
                         for script in layout_obj['scripts']:
@@ -479,6 +486,31 @@ class Editor:
                                 self.script_list.selection_set(self.all_scripts.index(script))
                             except ValueError:
                                 pass
+                
+                def set_scripts(self, event = None): #set the script in another thread so that the selection can update
+                    if not self.selection == None:
+                        threading.Thread(target = self._set_scripts).start()
+                
+                def _set_scripts(self):
+                    time.sleep(0.05)
+                    layout_obj = self.screen_data[self.selection]
+                    
+                    #remove scripts that are in the pane from save file. scripts that can't be selected are ignored
+                    for script in self.all_scripts:
+                        if 'scripts' in layout_obj:
+                            while script in layout_obj['scripts']:
+                                layout_obj['scripts'].remove(script)
+                    print(self.script_list.curselection())
+                    for index in self.script_list.curselection():
+                        if not 'scripts' in layout_obj:
+                            layout_obj['scripts'] = []
+                        layout_obj['scripts'].append(self.all_scripts[index])
+                    
+                    if layout_obj['scripts'] == []:
+                        layout_obj.pop('scripts')
+                    
+                    self.screen_data[self.selection] = layout_obj
+                    print(layout_obj)
             
             class MaterialEditor:
                 """
