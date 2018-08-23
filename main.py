@@ -24,6 +24,7 @@ class App:
         self.ui.set_geometry('800x600')
         if settingsdata['default window state'] in [0, 1]:
             self.ui.root.state(['normal', 'zoomed'][settingsdata['default window state']])
+            self.ui.root.attributes('-fullscreen', False)
         else:
             self.ui.root.attributes('-fullscreen', True)
         
