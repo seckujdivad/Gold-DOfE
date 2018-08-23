@@ -10,12 +10,35 @@
 		"player": ["player"],
 		"cloud": ["cloud"]
 	},
-	"player entity": "player",
-	"starting items": [{
-		"item": "fireball.json",
-		"quantity": 5
-	}, {
-		"item": "swordswipe.json",
-		"quantity": 1
-	}]
+	"player": {
+		"entity": "player",
+		"starting items": [
+			[
+				{
+					"item": "fireball.json",
+					"quantity": 5
+				}, {
+					"item": "swordswipe.json",
+					"quantity": 1
+				}
+			],
+			[
+				{
+					"item": "fireball.json",
+					"quantity": 5
+				}, {
+					"item": "swordswipe.json",
+					"quantity": 1
+				}
+			]
+		],
+		"spawnpoints": [
+			[
+				[400, 500]
+			],
+			[
+				[400, 100]
+			]
+		]
+	}
 }

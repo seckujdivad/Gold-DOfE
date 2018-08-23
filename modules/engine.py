@@ -200,7 +200,7 @@ class Engine:
             
             #load player
             self.game.message_pipe.send(['map load', 'Creating player model...'])
-            self.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player entity']]), self.map.path, self, is_player = True)
+            self.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.map.path, self, is_player = True)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
             
@@ -230,8 +230,8 @@ class Engine:
             self.map.invdisp.select_index(0)
             
             #set the inventory slots from the config
-            for i in range(len(self.map.cfg['starting items'])):
-                data = self.map.cfg['starting items'][i]
+            for i in range(len(self.map.cfg['player']['starting items'])):
+                data = self.map.cfg['player']['starting items'][i]
                 self.map.invdisp.set_slot(i, data['item'], data['quantity'])
     
     def unload_current_map(self):
