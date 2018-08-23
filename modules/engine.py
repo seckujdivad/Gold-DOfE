@@ -166,26 +166,26 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Loaded material textures'])
             
             #load scripts
-            for material in os.listdir(os.path.join(self.map.path, 'materials')):
-                with open(os.path.join(self.map.path, 'materials', material), 'r') as file:
-                    data = json.load(file)
-                if 'scripts' in data:
-                    self.map.materials.scripts[material] = {}
-                    for script in data['scripts']:
-                        spec = importlib.util.spec_from_file_location('matscript', os.path.join(self.map.path, 'scripts', script))
-                        script_module = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(script_module)
-                        self.map.materials.scripts[material][script] = script_module.Script
+            self.map.materials.scripts = {}
+            for script in os.listdir(os.path.join(self.map.path, 'scripts')):
+                if not (script.startswith('.') or script.startswith('_')):
+                    spec = importlib.util.spec_from_file_location('matscript', os.path.join(self.map.path, 'scripts', script))
+                    script_module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(script_module)
+                    self.map.materials.scripts[script] = script_module.Script
             
             #render layout panels and give them their scripts
             for panel in self.map.layout.data['geometry']:
                 with open(os.path.join(self.map.path, 'materials', panel['material']), 'r') as file:
                     panel['material data'] = json.load(file)
                 panel['img obj'] = self.game.canvas.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[panel['material data']['texture']['address']])
-                panel['scripts'] = []
+                panel['scriptmodules'] = []
                 if 'scripts' in panel['material data']:
                     for script in panel['material data']['scripts']:
-                        panel['scripts'].append(self.map.materials.scripts[panel['material']][script](panel))
+                        panel['scriptmodules'].append(self.map.materials.scripts[script](panel))
+                if 'scripts' in panel:
+                    for script in panel['scripts']:
+                        panel['scriptmodules'].append(self.map.materials.scripts[script](panel))
                 
             self.game.message_pipe.send(['map load', 'Rendered layout panels'])
             
@@ -426,8 +426,8 @@ class Entity:
             data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
             for panel, material in data:
                 touching_this_loop.append(panel)
-                if not panel['scripts'] == []:
-                    for script in panel['scripts']:
+                if not panel['scriptmodules'] == []:
+                    for script in panel['scriptmodules']:
                         if 'when touching' in script.binds:
                             for func in script.binds['when touching']:
                                 func(self)
@@ -437,8 +437,8 @@ class Entity:
                                     func(self)
             for panel in touching_last_loop:
                 if not panel in touching_this_loop:
-                    if not panel['scripts'] == []:
-                        for script in panel['scripts']:
+                    if not panel['scriptmodules'] == []:
+                        for script in panel['scriptmodules']:
                             if 'on leave' in script.binds:
                                 for func in script.binds['on leave']:
                                     func(self)
