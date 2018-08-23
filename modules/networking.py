@@ -60,10 +60,14 @@ class Server:
         self.output_pipe.send('New connection from {}'.format(address[0]))
         
         self.serverdata.conn_data.append({'model': random.choice(self.serverdata.mapdata['entity models']['player']),
-                                              'connection': connection,
-                                              'active': True,
-                                              'address': address,
-                                              'id': conn_id})
+                                          'connection': connection,
+                                          'active': True,
+                                          'address': address,
+                                          'id': conn_id,
+                                          'team': self.get_team_id(self.get_team_distributions())})
+        
+        
+        print(self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']])
         
         cont = True
         while cont:
@@ -73,6 +77,9 @@ class Server:
             except ConnectionResetError or ConnectionAbortedError:
                 req = Request(command = 'disconnect', arguments = {'clean': False}) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
                 cont = False
+            except json.decoder.JSONDecodeError:
+                req = Request()
+                self.log.add('error', 'Couldn\'t read JSON {}'.format(data))
                 
             if req.command == 'disconnect':
                 self.output_pipe.send('User {} disconnected'.format(address[0]))
@@ -95,6 +102,9 @@ class Server:
                     self.serverdata.conn_data[conn_id]['position'] = {'x': req.arguments['x'],
                                                                       'y': req.arguments['y'],
                                                                       'rotation': req.arguments['rotation']}
+            elif req.command == 'map loaded':
+                self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
+                self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
         self.serverdata.conn_data[conn_id]['active'] = False
     
     def handle_command(self, command, source = 'internal'):
@@ -190,7 +200,14 @@ sv_quit: destroy the server'''
         
         req = Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
-    
+        
+        for conn_data in self.serverdata.conn_data:
+            if conn_data['active']:
+                req = Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][conn_data['team']]})
+                self.send(conn_data['connection'], req)
+                req = Request(command = 'var update w', subcommand = 'team', arguments = {'value': conn_data['team']})
+                self.send(conn_data['connection'], req)
+                
     def kick_address(self, target_address):
         i = 0
         to_delete = []
@@ -203,6 +220,7 @@ sv_quit: destroy the server'''
             self.serverdata.connections.pop(i)
     
     def send(self, connection, data):
+        self.log.add('sent', 'Data sent to {} - {}'.format(connection.getpeername(), data.pretty_print()))
         connection.send(data.as_json().encode())
         
     def send_all(self, data):
@@ -211,6 +229,16 @@ sv_quit: destroy the server'''
     
     def quit(self):
         self.connection.close()
+    
+    def get_team_id(self, team_quantities):
+        return team_quantities.index(min(team_quantities))
+    
+    def get_team_distributions(self):
+        team_quantities = [0, 0]
+        for conn_data in self.serverdata.conn_data:
+            if conn_data['active'] and conn_data['team'] != None:
+                team_quantities[conn_data['team']] += 1
+        return team_quantities
 
 class Client:
     def __init__(self, host_, port_):
@@ -300,3 +328,6 @@ class Request:
     def _clear_all_values(self):
         self.request_id = None
         self.response_id = None
+    
+    def pretty_print(self):
+        return '<{}> - {} {}'.format(self.command, self.subcommand, self.arguments)

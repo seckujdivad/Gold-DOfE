@@ -11,6 +11,7 @@ import math
 import importlib.util
 
 import modules.networking
+import modules.logging
 
 class Game:
     def __init__(self, canvas, client):
@@ -22,6 +23,8 @@ class Game:
             allow_external = True
             name = 'localhost'
         self.server = server
+        
+        self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'game.txt'))
         
         self.vars = {}
         
@@ -58,7 +61,11 @@ class Game:
         self.engine.unload_current_map()
     
     def recv_handler(self, request):
-        data = request.as_dict()
+        try:
+            data = request.as_dict()
+            self.log.add('received', 'Data received from the server - {}'.format(request.pretty_print()))
+        except json.decoder.JSONDecoderError:
+            self.log.add('error', 'Error while reading JSON "{}"'.format(data))
         
         if request.command == 'say':
             self.message_pipe.send(['chat', request.arguments['text']])
@@ -86,8 +93,16 @@ class Game:
                 
                 for index in range(len(positions)):
                     self.engine.map.other_players.entities[index].setpos(positions[index]['x'], positions[index]['y'], positions[index]['rotation'])
+            elif request.subcommand == 'team':
+                self.vars['team'] = request.arguments['value']
             else:
                 self.vars[request.subcommand] = request.arguments['value']
+        elif request.command == 'give':
+            for item in request.arguments['items']:
+                i = 0
+                while self.engine.map.invdisp.inv_items[i]['quantity'] != 0:
+                    i += 1
+                self.engine.map.invdisp.set_slot(i, item['item'], item['quantity'])
 
 class Engine:
     def __init__(self, game):
@@ -229,10 +244,8 @@ class Engine:
             self.map.healthbar.set_value(100)
             self.map.invdisp.select_index(0)
             
-            #set the inventory slots from the config
-            for i in range(len(self.map.cfg['player']['starting items'])):
-                data = self.map.cfg['player']['starting items'][i]
-                self.map.invdisp.set_slot(i, data['item'], data['quantity'])
+            #tell the server that the player has loaded in
+            self.game.client.send(modules.networking.Request(command = 'map loaded'))
     
     def unload_current_map(self):
         if not self.map.textures.obj_scatter == []:
