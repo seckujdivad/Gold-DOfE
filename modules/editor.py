@@ -237,7 +237,7 @@ class Editor:
                     self.polylist_list.config(yscrollcommand = self.polylist_bar.set)
                     
                     self.script_frame = tk.Frame(self.frame_rightside)
-                    self.script_list = tk.Listbox(self.script_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.script_list = tk.Listbox(self.script_frame, selectmode = tk.MULTIPLE, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
                     self.script_bar = tk.Scrollbar(self.script_frame, command = self.script_list.yview)
                     self.script_list.config(yscrollcommand = self.script_bar.set)
                     self.script_button = tk.Button(self.script_frame, text = 'Assign script to selection', **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
@@ -359,6 +359,8 @@ class Editor:
                     
                     #change the coordinate text
                     self.update_polycoord_display(*item['coordinates'])
+                    
+                    self.highlight_scripts(self.screen_data[self.selection])
                  
                 def update_polycoord_display(self, x, y):
                     self.polyvar_x.set(x)
@@ -468,6 +470,15 @@ class Editor:
                             self.all_scripts.append(item)
                     for item in self.all_scripts:
                         self.script_list.insert(tk.END, item)
+                
+                def highlight_scripts(self, layout_obj):
+                    self.script_list.selection_clear(0, tk.END)
+                    if 'scripts' in layout_obj:
+                        for script in layout_obj['scripts']:
+                            try:
+                                self.script_list.selection_set(self.all_scripts.index(script))
+                            except ValueError:
+                                pass
             
             class MaterialEditor:
                 """
