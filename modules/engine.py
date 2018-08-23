@@ -855,7 +855,7 @@ class InventoryBar:
             self.canvas.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour_selected, outline = self.backingcolour_selected)
     
     def destroy(self):
-        for object in self.slots_objs:
+        for object in self.slot_objs:
             self.canvas.delete(object)
     
     def get_top_right_coords(self):
