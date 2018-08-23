@@ -199,6 +199,7 @@ class Editor:
                     
                     self.screen_data = []
                     self.selection = None
+                    self.all_scripts = []
                     
                     self.canvas = tk.Canvas(self.frame, **self.ui_styling.get(font_size = 'medium', object_type = tk.Canvas))
                     
@@ -306,6 +307,7 @@ class Editor:
                         self.add_object(item)
                         
                     self.repopulate_poly_list()
+                    self.repopulate_script_list()
                 
                 def clear_screen(self):
                     for item in self.screen_data:
@@ -456,6 +458,16 @@ class Editor:
                         self.screen_data[self.selection]['material data'] = self.editorobj.map.get_json(os.path.join('materials', self.screen_data[self.selection]['material']))
                         
                         self.select_index(self.selection)
+                
+                def repopulate_script_list(self):
+                    self.script_list.delete(0, tk.END)
+                    self.all_scripts = []
+                    
+                    for item in os.listdir(os.path.join(self.editorobj.map.path, 'scripts')):
+                        if not (item.startswith('.') or item.startswith('_')):
+                            self.all_scripts.append(item)
+                    for item in self.all_scripts:
+                        self.script_list.insert(tk.END, item)
             
             class MaterialEditor:
                 """
