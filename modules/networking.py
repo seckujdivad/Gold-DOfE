@@ -105,6 +105,9 @@ class Server:
             elif req.command == 'map loaded':
                 self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
                 self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
+                
+                spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][self.serverdata.conn_data[conn_id]['team']])
+                self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
         self.serverdata.conn_data[conn_id]['active'] = False
     
     def handle_command(self, command, source = 'internal'):

@@ -95,6 +95,8 @@ class Game:
                     self.engine.map.other_players.entities[index].setpos(positions[index]['x'], positions[index]['y'], positions[index]['rotation'])
             elif request.subcommand == 'team':
                 self.vars['team'] = request.arguments['value']
+            elif request.subcommand == 'client position':
+                self.engine.map.player.setpos(request.arguments['x'], request.arguments['y'], request.arguments['rotation'])
             else:
                 self.vars[request.subcommand] = request.arguments['value']
         elif request.command == 'give':
