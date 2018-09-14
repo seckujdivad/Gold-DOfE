@@ -481,6 +481,7 @@ class Entity:
         self.health = value
         if not self.engine.map.healthbar == None: #make sure healthbar has been created
             self.engine.map.healthbar.set_value(self.health)
+        self.engine.game.client.send(modules.networking.Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.health}))
 
 class Model:
     def __init__(self, ent_name, map_path, imageloader, canvas):
