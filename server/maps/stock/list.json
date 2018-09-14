@@ -40,5 +40,11 @@
 				[400, 100]
 			]
 		]
-	}
+	},
+	"events": {
+		"player": {
+			"outside map": ["teleport.py"]
+		}
+	},
+	"geometry": [800, 600]
 }

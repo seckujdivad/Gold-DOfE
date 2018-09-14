@@ -459,6 +459,20 @@ class Entity:
                                     func(self)
             touching_last_loop = touching_this_loop
             
+            if self.pos.x < 0 or self.pos.x > self.engine.map.cfg['geometry'][0] or self.pos.y < 0 or self.pos.y > self.engine.map.cfg['geometry'][1]:
+                if self.is_player:
+                    if 'player' in self.engine.map.cfg['events']:
+                        if 'outside map' in self.engine.map.cfg['events']['player']:
+                            for path in self.engine.map.cfg['events']['player']['outside map']:
+                                if path in self.engine.map.materials.scripts:
+                                    for func in self.engine.map.materials.scripts[path](touching_last_loop).binds['player']['when outside map']:
+                                        func(self)
+                                    print(path)
+                if 'outside map' in self.engine.map.cfg['events']:
+                    for path in self.engine.map.cfg['events']['outside map']:
+                        if path in self.engine.map.materials.scripts:
+                            self.engine.map.materials.scripts[path](self)
+            
             delay = self.pos.script_delay - (time.time() - start)
             if delay > 0:
                 time.sleep(delay)
