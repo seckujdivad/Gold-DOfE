@@ -47,6 +47,7 @@ class Game:
         self.running = True
         threading.Thread(target = self.main, daemon = True).start()
         
+        #make canvas take focus when the mouse enters, and lose it when it leaves
         self.canvas.bind('<Enter>', lambda event: self.canvas.focus_set())
         self.canvas.bind('<Leave>', lambda event: self.canvas.nametowidget('.').focus_set())
     
@@ -138,7 +139,7 @@ class Engine:
         self.map = map
         
         #make keybind handler
-        self.keybindhandler = KeyBind(self.game.canvas.nametowidget('.'))
+        self.keybindhandler = KeyBind(self.game.canvas)
     
     def load_map(self, name):
         self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)
