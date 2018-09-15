@@ -6,10 +6,13 @@
 		"right": ["right", "d"]
 	},
 	"inventory": {
-		"slot0": "1",
-		"slot1": "2",
-		"slot2": "3",
-		"slot3": "4",
-		"slot4": "5"
+		"slot0": ["1"],
+		"slot1": ["2"],
+		"slot2": ["3"],
+		"slot3": ["4"],
+		"slot4": ["5"]
+	},
+	"window": {
+		"return to menu": ["Escape"]
 	}
 }

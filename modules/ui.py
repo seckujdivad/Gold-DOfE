@@ -414,7 +414,14 @@ class UI:
                 def on_load(self):
                     self.frame.pack(fill = tk.BOTH, expand = True)
                     self.config['methods'].uiobject.call_trigger('create game object', [self.canvas])
-                    self.button_exit.config(command = self.return_to_menu)
+                    
+                    #set keybinds for returning to the menu
+                    with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
+                        keybinds_data = json.load(file)
+                    if type(keybinds_data['window']['return to menu']) == str:
+                        keybinds_data['window']['return to menu'] = [keybinds_data['window']['return to menu']]
+                    for key in keybinds_data['window']['return to menu']:
+                        self.canvas.bind('<{}>'.format(key), self.return_to_menu)
                 
                 @classmethod
                 def on_close(self):
@@ -422,18 +429,16 @@ class UI:
                     self.config['methods'].uiobject.call_trigger('close game')
                 
                 @classmethod
-                def return_to_menu(self):
+                def return_to_menu(self, event = None):
                     self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
                 
                 frame = tk.Frame(main.page_frame)
                 
                 canvas = tk.Canvas(frame, width = 800, height = 600, **self.styling.get(font_size = 'medium', object_type = tk.Canvas))
-                button_exit = tk.Button(frame, text = 'Exit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
                 canvas.grid(row = 0, column = 0)
-                button_exit.grid(row = 1, column = 0, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 1, 2)
+                self.styling.set_weight(frame, 1, 1)
                 frame.rowconfigure(1, weight = 0)
             
             class editor_choose_file:
