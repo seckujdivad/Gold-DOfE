@@ -802,7 +802,7 @@ class KeyBind:
         self._isactive = False
     
     def _checkfocusd(self):
-        while True:
+        while self._isactive:
             start = time.time()
             
             if not self.root == self.root.focus_get():
