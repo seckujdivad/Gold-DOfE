@@ -737,6 +737,7 @@ class KeyBind:
         self._isactive = True #stores whether or not the keyboard
         
         threading.Thread(target = self._keyhandlerd, name = 'Keyboard input handler daemon').start()
+        threading.Thread(target = self._checkfocusd, name = 'Root has focus daemon').start()
     
     def _keyhandlerd(self): #daemon to handle key inputs
         keypress_funcid = self.root.bind('<KeyPress>', self._onkeypress)
@@ -798,6 +799,20 @@ class KeyBind:
         
     def kill(self):
         self._isactive = False
+    
+    def _checkfocusd(self):
+        while True:
+            start = time.time()
+            
+            if not self.root == self.root.focus_get():
+                keypress_snapshot = self._keystates.copy()
+                for key in keypress_snapshot:
+                    keypress_snapshot[key] = False
+                self._keystates = keypress_snapshot
+            
+            delay = self.delay - (time.time() - start)
+            if delay > 0:
+                time.sleep(delay)
         
 class DisplayBar:
     def __init__(self, canvas, min_value, max_value, coords, bg, fg):
