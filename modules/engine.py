@@ -724,9 +724,10 @@ class KeyBind:
     '''
     Easily bind a function to a key being pressed. It works better than the internal tkinter keybinding because the internal method will act like holding down a key in a text box (i.e. function is called once, then a slight delay, then it is called lots of times). Using this method, the function can be called every 0.1 seconds (or however long the delay is) from when the key is pressed until the key is released.
     '''
-    def __init__(self, root, delay = 0.1):
+    def __init__(self, root, delay = 0.1, verbose = False):
         self.root = root
         self.delay = delay
+        self.verbose = verbose
         
         self.binds = {}
         self._keystates = {}
@@ -755,6 +756,9 @@ class KeyBind:
     
     def _onkeypress(self, event):
         self._keystates[event.keysym.lower()] = True
+        
+        if self.verbose:
+            print('Key {} was just pressed'.format(event.keysym.lower()))
     
     def _onkeyrelease(self, event):
         self._keystates[event.keysym.lower()] = False
