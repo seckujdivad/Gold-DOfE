@@ -226,7 +226,7 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
             
             #make healthbar
-            self.map.healthbar = DisplayBar(self.game.canvas, 100, [10, 10, 100, 20], 'gray', 'red')
+            self.map.healthbar = DisplayBar(self.game.canvas, 0, 100, [10, 10, 100, 20], 'gray', 'red')
             self.map.healthbar.set_value(100)
             
             #make inventory display
@@ -793,20 +793,26 @@ class KeyBind:
         self._isactive = False
         
 class DisplayBar:
-    def __init__(self, canvas, max_value, coords, bg, fg):
+    def __init__(self, canvas, min_value, max_value, coords, bg, fg):
         self.canvas = canvas
+        self.min_value = min_value
         self.max_value = max_value
         self.coords = coords
         self.bg = bg
         self.fg = fg
         
         class objects:
-            background = self.canvas.create_rectangle(*coords, fill = self.bg, outline = self.bg)
-            display = self.canvas.create_rectangle(*coords, fill = self.fg, outline = self.fg)
+            background = self.canvas.create_rectangle(*coords, fill = self.bg, outline = self.bg, width = 5)
+            display = self.canvas.create_rectangle(*coords, fill = self.fg, outline = self.fg, width = 0)
         self.objects = objects
     
     def set_value(self, value):
-        self.canvas.coords(self.objects.display, self.coords[0], self.coords[1], self.coords[0] + ((self.coords[2] - self.coords[0]) * (value / self.max_value)), self.coords[3])
+        if value < self.min_value:
+            value = self.min_value
+        if value > self.max_value:
+            value = self.max_value
+        
+        self.canvas.coords(self.objects.display, self.coords[0], self.coords[1], self.coords[0] + ((self.coords[2] - self.coords[0]) * ((value - self.min_value) / (self.max_value - self.min_value))), self.coords[3])
     
     def destroy(self):
         self.canvas.delete(self.objects.background)
