@@ -46,6 +46,9 @@ class Game:
         
         self.running = True
         threading.Thread(target = self.main, daemon = True).start()
+        
+        self.canvas.bind('<Enter>', lambda event: self.canvas.focus_set())
+        self.canvas.bind('<Leave>', lambda event: self.canvas.nametowidget('.').focus_set())
     
     def main(self):
         while self.running:
