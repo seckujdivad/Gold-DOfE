@@ -141,3 +141,5 @@ $RECYCLE.BIN/
 # Project
 server/logs/*
 !server/logs/_placeholder
+
+server/database.db
