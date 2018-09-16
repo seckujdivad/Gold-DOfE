@@ -143,3 +143,5 @@ server/logs/*
 !server/logs/_placeholder
 
 server/database.db
+*.db
+*.db
