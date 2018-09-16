@@ -1,5 +1,6 @@
 from tkinter import messagebox
 import multiprocessing as mp
+import sqlite3 as sql
 import socket
 import threading
 import json
@@ -343,3 +344,43 @@ class Request:
     
     def pretty_print(self):
         return '<{}> - {} {}'.format(self.command, self.subcommand, self.arguments)
+
+class ServerDatabase:
+    def __init__(self, path):
+        self.path = path
+        
+        self.connection = sql.connect(self.path)
+        
+    def make(self):
+        self.connection.execute("""CREATE TABLE `users` (
+	`username`	TEXT,
+	`lastconn`	REAL,
+	`elo`	REAL,
+	`wins`	INTEGER,
+	`losses`	INTEGER,
+	`metadata`	TEXT
+)""")
+    
+    def add_user(self, username):
+        if self.get_user_data(username) == None:
+            self.connection.execute("INSERT INTO `users` VALUES ((?), (?), 0.0, 0, 0, '{}')", (username, time.time()))
+        else:
+            raise ValueError('Username "{}" is already in use'.format(username))
+    
+    def user_connected(self, username):
+        self.connection.execute("UPDATE users SET lastconn = (?) WHERE username = (?)", (time.time(), username))
+    
+    def match_concluded(self, winner_name, loser_name):
+        if (not self.get_user_data(winner_name) == None) and (not self.get_user_data(winner_name) == None):
+            pass #users exist
+        else:
+            pass #users don't exist
+    
+    def get_user_data(self, username):
+        'Finds the data for a user if they exist. If not, returns None'
+        data = self.connection.execute("SELECT * FROM users WHERE username = (?)", (username)).fetchall()
+        
+        if len(data) == 0:
+            return None
+        else:
+            return data[0]
