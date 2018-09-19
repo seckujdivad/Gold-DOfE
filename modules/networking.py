@@ -352,6 +352,8 @@ class ServerDatabase:
         
         self.connection = sql.connect(self.path)
         
+        self.wrap_log('Connected to SQLite database at {}'.format(self.path))
+        
     def make(self):
         self.connection.execute("""CREATE TABLE `users` (
 	`username`	TEXT,
