@@ -24,6 +24,8 @@ class Server:
         
         self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
         
+        self.database = ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'), self.log)
+        
         self.output_pipe, pipe = mp.Pipe()
         
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -66,7 +68,8 @@ class Server:
                                           'address': address,
                                           'id': conn_id,
                                           'team': self.get_team_id(self.get_team_distributions()),
-                                          'health': 100})
+                                          'health': 100,
+                                          'username': 'guest'})
         
         
         print(self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']])
@@ -111,10 +114,15 @@ class Server:
                                                                       'rotation': req.arguments['rotation']}
                 elif req.subcommand == 'health': #client wants to update it's own health
                     self.serverdata.conn_data[conn_id]['health'] = req.arguments['value']
+                
+                elif req.subcommand == 'username':
+                    self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
+                    self.database.user_connected(self.serverdata.conn_data[conn_id]['username'])
                     
             elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
                 self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
                 self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
+                self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
                 
                 spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][self.serverdata.conn_data[conn_id]['team']])
                 self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
@@ -374,6 +382,8 @@ class ServerDatabase:
             raise ValueError('Username "{}" is already in use'.format(username))
     
     def user_connected(self, username):
+        if self.get_user_data(username) == None:
+            self.add_user(username)
         self.connection.execute("UPDATE users SET lastconn = (?) WHERE username = (?)", (time.time(), username))
         self.wrap_log('User {} connected'.format(username))
     
