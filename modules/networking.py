@@ -19,7 +19,7 @@ class Server:
             connections = []
             map = None
             mapdata = None
-            conn_data = [] #individual spaces for connections to store data to be publically accessible
+            conn_data = [] #individual spaces for connections to store data to be publicly accessible
         self.serverdata = serverdata
         
         self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
@@ -363,7 +363,7 @@ class ServerDatabase:
     
     def add_user(self, username):
         if self.get_user_data(username) == None:
-            self.connection.execute("INSERT INTO `users` VALUES ((?), (?), 0.0, 0, 0, '{}')", (username, time.time()))
+            self.connection.execute("INSERT INTO `users` VALUES ((?), (?), 1500.0, 0, 0, '{}')", (username, time.time()))
         else:
             raise ValueError('Username "{}" is already in use'.format(username))
     
@@ -372,9 +372,10 @@ class ServerDatabase:
     
     def match_concluded(self, winner_name, loser_name):
         if (not self.get_user_data(winner_name) == None) and (not self.get_user_data(winner_name) == None):
-            pass #users exist
+            self.connection.execute('UPDATE users SET wins = wins + 1 WHERE username = (?)', (winner_name))
+            self.connection.execute('UPDATE users SET losses = losses + 1 WHERE username = (?)', (loser_name))
         else:
-            pass #users don't exist
+            raise ValueError('Either {} or {} do not exist'.format(winner_name, loser_name))
     
     def get_user_data(self, username):
         'Finds the data for a user if they exist. If not, returns None'
