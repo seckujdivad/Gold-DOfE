@@ -346,8 +346,9 @@ class Request:
         return '<{}> - {} {}'.format(self.command, self.subcommand, self.arguments)
 
 class ServerDatabase:
-    def __init__(self, path):
+    def __init__(self, path, log = None):
         self.path = path
+        self.log = log
         
         self.connection = sql.connect(self.path)
         
@@ -360,21 +361,27 @@ class ServerDatabase:
 	`losses`	INTEGER,
 	`metadata`	TEXT
 )""")
+        self.wrap_log('Made user table')
     
     def add_user(self, username):
         if self.get_user_data(username) == None:
             self.connection.execute("INSERT INTO `users` VALUES ((?), (?), 1500.0, 0, 0, '{}')", (username, time.time()))
+            self.wrap_log('Added user {}'.format(username))
         else:
+            self.wrap_log('Couldn\'t add user {}'.format(username))
             raise ValueError('Username "{}" is already in use'.format(username))
     
     def user_connected(self, username):
         self.connection.execute("UPDATE users SET lastconn = (?) WHERE username = (?)", (time.time(), username))
+        self.wrap_log('User {} connected'.format(username))
     
     def match_concluded(self, winner_name, loser_name):
         if (not self.get_user_data(winner_name) == None) and (not self.get_user_data(winner_name) == None):
             self.connection.execute('UPDATE users SET wins = wins + 1 WHERE username = (?)', (winner_name))
             self.connection.execute('UPDATE users SET losses = losses + 1 WHERE username = (?)', (loser_name))
+            self.wrap_log('{} beat {}, stored in database'.format(winner_name, loser_name))
         else:
+            self.wrap_log('Couldn\'t find either {} or {}'.format(winner_name, loser_name))
             raise ValueError('Either {} or {} do not exist'.format(winner_name, loser_name))
     
     def get_user_data(self, username):
@@ -382,6 +389,12 @@ class ServerDatabase:
         data = self.connection.execute("SELECT * FROM users WHERE username = (?)", (username)).fetchall()
         
         if len(data) == 0:
+            self.wrap_log('Couldn\'t find data for {}'.format(username))
             return None
         else:
+            self.wrap_log('Found data for {}, {} entry/entries'.format(username, len(data)))
             return data[0]
+    
+    def wrap_log(self, text):
+        if not self.log == None:
+            self.log.add('database', text)
