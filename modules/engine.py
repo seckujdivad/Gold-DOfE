@@ -109,6 +109,9 @@ class Game:
                 while self.engine.map.invdisp.inv_items[i]['quantity'] != 0:
                     i += 1
                 self.engine.map.invdisp.set_slot(i, item['item'], item['quantity'])
+        elif request.command == 'var update r':
+            if request.subcommand == 'username':
+                self.client.send(modules.networking.Request(command = 'var update w', subcommand = 'username', arguments = {'value': self.settingsdict['user']['name']}))
 
 class Engine:
     def __init__(self, game):
