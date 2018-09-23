@@ -24,7 +24,7 @@ class Server:
         
         self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
         
-        self.database = ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'), self.log)
+        self.database = ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'), modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'dblog.txt')))
         
         self.output_pipe, pipe = mp.Pipe()
         
