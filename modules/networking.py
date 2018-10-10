@@ -473,7 +473,7 @@ class ServerDatabase:
     def user_connected(self, username):
         'Updates the last connection time on a user'
         self.pipe.send([self.lookup.user_connected, [username]])
-        print(username)
+        print('{} connected'.format(username))
     
     def match_concluded(self, winner_name, loser_name):
         self.pipe.send([self.lookup.match_concluded, [winner_name, loser_name]])
