@@ -410,7 +410,7 @@ class ServerDatabase:
     
     def _add_user(self, username):
         'Add a user to the database if the username doesn\'t already exist'
-        if self.get_user_data(username) == None:
+        if self._get_user_data(username) == None:
             self.connection.execute("INSERT INTO `users` VALUES ((?), (?), 1500.0, 0, 0, '{}')", (username, time.time()))
             self._log_wrapper('Added user {}'.format(username))
         else:
@@ -419,16 +419,16 @@ class ServerDatabase:
     
     def _user_connected(self, username):
         'Add a user if they don\'t already exist. Update their last connection time if they do'
-        if self.get_user_data(username) == None:
-            self.add_user(username)
+        if self._get_user_data(username) == None:
+            self._add_user(username)
         self.connection.execute("UPDATE users SET lastconn = (?) WHERE username = (?)", (time.time(), username))
         self._log_wrapper('User {} connected'.format(username))
     
     def _match_concluded(self, winner_name, loser_name):
         'Update win/loss records for two users'
-        if (not self.get_user_data(winner_name) == None) and (not self.get_user_data(winner_name) == None):
-            self.connection.execute('UPDATE users SET wins = wins + 1 WHERE username = (?)', (winner_name))
-            self.connection.execute('UPDATE users SET losses = losses + 1 WHERE username = (?)', (loser_name))
+        if (not self._get_user_data(winner_name) == None) and (not self._get_user_data(winner_name) == None):
+            self.connection.execute('UPDATE users SET wins = wins + 1 WHERE username = (?)', (winner_name,))
+            self.connection.execute('UPDATE users SET losses = losses + 1 WHERE username = (?)', (loser_name,))
             self._log_wrapper('{} beat {}, stored in database'.format(winner_name, loser_name))
         else:
             self._log_wrapper('Couldn\'t find either {} or {}'.format(winner_name, loser_name))
@@ -437,7 +437,7 @@ class ServerDatabase:
     def _get_user_data(self, username):
         'Return all information on a user'
         'Finds the data for a user if they exist. If not, returns None'
-        data = self.connection.execute("SELECT * FROM users WHERE username = (?)", (username)).fetchall()
+        data = self.connection.execute("SELECT * FROM users WHERE username = (?)", (username,)).fetchall()
         
         if len(data) == 0:
             self._log_wrapper('Couldn\'t find data for {}'.format(username))
