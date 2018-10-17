@@ -32,7 +32,7 @@ class UI:
                 if object_type == tk.Button:
                     output['overrelief'] = self.reliefs[relief]['overrelief']
                 output['relief'] = self.reliefs[relief]['relief']
-                if not object_type in [tk.Canvas]:
+                if not object_type in [tk.Canvas, tk.Scrollbar]:
                     output['font'] = self.fonts[font_size]
                 return output
             
