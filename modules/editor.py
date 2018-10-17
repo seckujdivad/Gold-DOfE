@@ -847,6 +847,30 @@ class Editor:
                     
                     self.options_frame = tk.Frame(self.frame)
                     
+                    #tk vars
+                    class vars:
+                        basetex = tk.StringVar()
+                        overlaytex = tk.StringVar()
+                    self.vars = vars
+                    
+                    #column 0
+                    basetex_label = tk.Label(self.options_frame, text = 'Base texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    basetex_entry = tk.Entry(self.options_frame, textvariable = self.vars.basetex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    
+                    overlaytex_label = tk.Label(self.options_frame, text = 'Overlay texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    overlaytex_entry = tk.Entry(self.options_frame, textvariable = self.vars.overlaytex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    
+                    basetex_label.grid(row = 0, column = 0, sticky = 'NESW')
+                    basetex_entry.grid(row = 0, column = 1, sticky = 'NESW')
+                    overlaytex_label.grid(row = 1, column = 0, sticky = 'NESW')
+                    overlaytex_entry.grid(row = 1, column = 1, sticky = 'NESW')
+                    
+                    #column 1
+                    #column 2
+                    #column 3
+                    
+                    self.ui_styling.set_weight(self.options_frame, 2, 2, dorows = False)
+                    
                     self.options_frame.grid(row = 0, column = 0, sticky = 'NESW')
                     self.toolbar_frame.grid(row = 1, column = 0, sticky = 'NESW')
                     self.ui_styling.set_weight(self.frame, 1, 2)
