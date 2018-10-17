@@ -72,7 +72,6 @@ class Server:
                                           'health': 100,
                                           'username': 'guest'})
         
-        
         print(self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']])
         
         self.send(connection, Request(command = 'var update r', subcommand = 'username'))
@@ -366,7 +365,14 @@ class ServerDatabase:
         threading.Thread(target = self.databasecontrollerd, name = 'Server database controller daemon', args = [pipe]).start()
     
     def databasecontrollerd(self, input_pipe):
+        database_is_new = False
+        if not os.path.isfile(self.path):
+            database_is_new = True
+            
         self.connection = sql.connect(self.path)
+        
+        if database_is_new:
+            self._make()
         
         self._log_wrapper('Connected to SQLite database at {}'.format(self.path))
         
