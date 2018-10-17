@@ -829,7 +829,7 @@ class Editor:
             library = {'Text': Text,
                        'Tree': Tree,
                        'Layout': Layout,
-                       'Material Editor': MaterialEditor} #all the types of tab
+                       'Materials': MaterialEditor} #all the types of tab
             
             @classmethod
             def create_new(self, name):
