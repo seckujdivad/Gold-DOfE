@@ -837,6 +837,8 @@ class Editor:
                     
                     self.ui_styling = self.editorobj.uiobjs.ui_styling
                     
+                    self.tabobj.set_title('constructing...')
+                    
                     self.toolbar_frame = tk.Frame(self.frame)
                     self.toolbar_save = tk.Button(self.toolbar_frame, text = 'Save', **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
                     self.toolbar_reload = tk.Button(self.toolbar_frame, text = 'Reload', **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
@@ -851,32 +853,60 @@ class Editor:
                     class vars:
                         basetex = tk.StringVar()
                         overlaytex = tk.StringVar()
+                        scatternum = tk.StringVar()
                     self.vars = vars
                     
-                    #column 0
-                    basetex_label = tk.Label(self.options_frame, text = 'Base texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    basetex_entry = tk.Entry(self.options_frame, textvariable = self.vars.basetex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    ## column 0
+                    #base texture
+                    self.basetex_label = tk.Label(self.options_frame, text = 'Base texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.basetex_entry = tk.Entry(self.options_frame, textvariable = self.vars.basetex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
-                    overlaytex_label = tk.Label(self.options_frame, text = 'Overlay texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    overlaytex_entry = tk.Entry(self.options_frame, textvariable = self.vars.overlaytex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    #overlay texture
+                    self.overlaytex_label = tk.Label(self.options_frame, text = 'Overlay texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.overlaytex_entry = tk.Entry(self.options_frame, textvariable = self.vars.overlaytex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
-                    basetex_label.grid(row = 0, column = 0, sticky = 'NESW')
-                    basetex_entry.grid(row = 0, column = 1, sticky = 'NESW')
-                    overlaytex_label.grid(row = 1, column = 0, sticky = 'NESW')
-                    overlaytex_entry.grid(row = 1, column = 1, sticky = 'NESW')
+                    #scatters chooser
+                    self.scatter_frame = tk.Frame(self.options_frame)
+                    self.scatter_list = tk.Listbox(self.scatter_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.scatter_scrollbar = tk.Scrollbar(self.scatter_frame, command = self.scatter_list.yview, **self.ui_styling.get(font_size = 'small', object_type = tk.Scrollbar))
+                    self.scatter_list.config(yscrollcommand = self.scatter_scrollbar.set)
+                    
+                    self.scatter_scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.scatter_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    #scatter number
+                    self.scatternum_label = tk.Label(self.options_frame, text = 'Overlay texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.scatternum_spinbox = tk.Spinbox(self.options_frame, from_ = 0, to = 65535, textvariable = self.vars.scatternum, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    
+                    #pack all
+                    self.basetex_label.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.basetex_entry.grid(row = 0, column = 1, sticky = 'NESW')
+                    self.overlaytex_label.grid(row = 1, column = 0, sticky = 'NESW')
+                    self.overlaytex_entry.grid(row = 1, column = 1, sticky = 'NESW')
+                    self.scatter_frame.grid(row = 2, column = 0, columnspan = 2, sticky = 'NESW')
+                    self.scatternum_label.grid(row = 3, column = 0, sticky = 'NESW')
+                    self.scatternum_spinbox.grid(row = 3, column = 1, sticky = 'NESW')
                     
                     #column 1
                     #column 2
                     #column 3
                     
-                    self.ui_styling.set_weight(self.options_frame, 2, 2, dorows = False)
+                    self.ui_styling.set_weight(self.options_frame, 2, 3, dorows = False)
                     
                     self.options_frame.grid(row = 0, column = 0, sticky = 'NESW')
                     self.toolbar_frame.grid(row = 1, column = 0, sticky = 'NESW')
                     self.ui_styling.set_weight(self.frame, 1, 2)
                     self.frame.rowconfigure(1, weight = 0)
                     
+                    self.tabobj.set_title('populating...')
+                    
+                    self.populate_scatters()
+                    
                     self.tabobj.set_title('editing...')
+                
+                def populate_scatters(self):
+                    for file in os.listdir(os.path.join(self.editorobj.map.path, 'models')):
+                        self.scatter_list.insert(tk.END, file)
                     
             library = {'Text': Text,
                        'Tree': Tree,
