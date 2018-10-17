@@ -875,7 +875,7 @@ class Editor:
                     self.scatter_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     #scatter number
-                    self.scatternum_label = tk.Label(self.options_frame, text = 'Overlay texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.scatternum_label = tk.Label(self.options_frame, text = 'Number of scatters', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     self.scatternum_spinbox = tk.Spinbox(self.options_frame, from_ = 0, to = 65535, textvariable = self.vars.scatternum, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
                     
                     #pack all
