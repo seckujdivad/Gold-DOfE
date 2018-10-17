@@ -1,0 +1,16 @@
+{
+	"display name": "Fireball",
+	"unlimited": false,
+	"icon": "fireball_icon.png",
+	"sprite": "fireball_sprite.png",
+	"damage": {
+		"player": 10
+	},
+	"destroyed after damage": false,
+	"range": null,
+	"speed": 50,
+	"hitbox": {
+		"type": "circular",
+		"radius": 32
+	}
+}

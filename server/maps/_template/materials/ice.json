@@ -1,0 +1,34 @@
+{
+	"display name": "Ice",
+	"entities": {
+		"player": {
+			"accelerate": 15,
+			"damage": 0,
+			"decelerate": 2,
+			"velcap": 20
+		}
+	},
+	"hitbox": [
+		[
+			-32,
+			-32
+		],
+		[
+			-32,
+			32
+		],
+		[
+			32,
+			32
+		],
+		[
+			32,
+			-32
+		]
+	],
+	"texture": {
+		"address": "ice.png",
+		"animated": false,
+		"editor colour": "#C9CDFF"
+	}
+}

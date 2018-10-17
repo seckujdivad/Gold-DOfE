@@ -1,0 +1,31 @@
+{
+	"background": {
+		"base": "textures/background/base.png",
+		"overlay": "textures/background/overlay.png",
+		"scatters": ["cloud"],
+		"scatternum": 0
+	},
+	"layout": "layout.json",
+	"entity models": {
+		"player": ["player"],
+		"cloud": ["cloud"]
+	},
+	"player": {
+		"entity": "player",
+		"starting items": [],
+		"spawnpoints": [
+			[
+				[400, 500]
+			],
+			[
+				[400, 100]
+			]
+		]
+	},
+	"events": {
+		"player": {
+			"outside map": ["teleport.py"]
+		}
+	},
+	"geometry": [800, 600]
+}
