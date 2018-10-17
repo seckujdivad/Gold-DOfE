@@ -898,6 +898,9 @@ class Editor:
                     self.ui_styling.set_weight(self.frame, 1, 2)
                     self.frame.rowconfigure(1, weight = 0)
                     
+                    self.reload()
+                
+                def reload(self):
                     self.tabobj.set_title('populating...')
                     
                     self.populate_scatters()
