@@ -825,6 +825,17 @@ class Editor:
                 def save_all(self, event = None):
                     for name in self.material_dicts:
                         self.editorobj.map.write_json(os.path.join('materials', name), self.material_dicts[name])
+                
+            class ConfigEditor:
+                """
+                An editor for editing the map config files
+                """
+                def __init__(self, frame, editorobj, tabobj):
+                    self.frame = frame
+                    self.editorobj = editorobj
+                    self.tabobj = tabobj
+                    
+                    self.ui_styling = self.editorobj.uiobjs.ui_styling
                     
                     self.toolbar_frame = tk.Frame(self.frame)
                     self.toolbar_save = tk.Button(self.toolbar_frame, text = 'Save', **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
