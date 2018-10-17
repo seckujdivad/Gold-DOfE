@@ -867,7 +867,7 @@ class Editor:
                     
                     #scatters chooser
                     self.scatter_frame = tk.Frame(self.options_frame)
-                    self.scatter_list = tk.Listbox(self.scatter_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.scatter_list = tk.Listbox(self.scatter_frame, selectmode = tk.MULTIPLE, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
                     self.scatter_scrollbar = tk.Scrollbar(self.scatter_frame, command = self.scatter_list.yview, **self.ui_styling.get(font_size = 'small', object_type = tk.Scrollbar))
                     self.scatter_list.config(yscrollcommand = self.scatter_scrollbar.set)
                     
