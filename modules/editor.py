@@ -905,6 +905,7 @@ class Editor:
                     self.tabobj.set_title('editing...')
                 
                 def populate_scatters(self):
+                    self.scatter_list.delete(0, tk.END)
                     for file in os.listdir(os.path.join(self.editorobj.map.path, 'models')):
                         self.scatter_list.insert(tk.END, file)
                     
