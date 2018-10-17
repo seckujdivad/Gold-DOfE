@@ -839,9 +839,10 @@ class Editor:
                     
                     self.tabobj.set_title('constructing...')
                     
+                    #toolbar options
                     self.toolbar_frame = tk.Frame(self.frame)
-                    self.toolbar_save = tk.Button(self.toolbar_frame, text = 'Save', **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
-                    self.toolbar_reload = tk.Button(self.toolbar_frame, text = 'Reload', **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
+                    self.toolbar_save = tk.Button(self.toolbar_frame, text = 'Save', command = self.save, **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
+                    self.toolbar_reload = tk.Button(self.toolbar_frame, text = 'Reload', command = self.reload, **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
                     
                     self.toolbar_save.grid(row = 0, column = 0, sticky = 'NESW')
                     self.toolbar_reload.grid(row = 0, column = 1, sticky = 'NESW')
@@ -911,6 +912,9 @@ class Editor:
                     self.scatter_list.delete(0, tk.END)
                     for file in os.listdir(os.path.join(self.editorobj.map.path, 'models')):
                         self.scatter_list.insert(tk.END, file)
+                
+                def save(self):
+                    pass
                     
             library = {'Text': Text,
                        'Tree': Tree,
