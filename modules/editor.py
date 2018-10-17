@@ -826,10 +826,28 @@ class Editor:
                     for name in self.material_dicts:
                         self.editorobj.map.write_json(os.path.join('materials', name), self.material_dicts[name])
                     
+                    self.toolbar_frame = tk.Frame(self.frame)
+                    self.toolbar_save = tk.Button(self.toolbar_frame, text = 'Save', **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
+                    self.toolbar_reload = tk.Button(self.toolbar_frame, text = 'Reload', **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
+                    
+                    self.toolbar_save.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.toolbar_reload.grid(row = 0, column = 1, sticky = 'NESW')
+                    self.ui_styling.set_weight(self.toolbar_frame, 2, 1)
+                    
+                    self.options_frame = tk.Frame(self.frame)
+                    
+                    self.options_frame.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.toolbar_frame.grid(row = 1, column = 0, sticky = 'NESW')
+                    self.ui_styling.set_weight(self.frame, 1, 2)
+                    self.frame.rowconfigure(1, weight = 0)
+                    
+                    self.tabobj.set_title('editing...')
+                    
             library = {'Text': Text,
                        'Tree': Tree,
                        'Layout': Layout,
-                       'Materials': MaterialEditor} #all the types of tab
+                       'Materials': MaterialEditor,
+                       'Config': ConfigEditor} #all the types of tab
             
             @classmethod
             def create_new(self, name):
