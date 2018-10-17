@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import functools
+import shutil
 
 class UI:
     def __init__(self):
@@ -447,10 +448,12 @@ class UI:
                 @classmethod
                 def on_load(self):
                     for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps')):
-                        self.listbox_box.insert(tk.END, name)
+                        if not name.startswith('_'):
+                            self.listbox_box.insert(tk.END, name)
                     
                     self.button_choose.config(command = self.open_map)
                     self.button_go_back.config(command = self.return_to_menu)
+                    self.button_new.config(command = self.create_new_map)
                     
                     self.listbox_box.bind('<Return>', self.open_map)
                     
@@ -471,6 +474,18 @@ class UI:
                 @classmethod
                 def return_to_menu(self):
                     self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
+                
+                @classmethod
+                def create_new_map(self):
+                    if self.entry_mapname.get() == '':
+                        messagebox.showerror('Error while creating new map', 'You must enter a map name')
+                    elif os.path.isdir(os.path.join(sys.path[0], 'server', 'maps', self.entry_mapname.get())):
+                        messagebox.showerror('Error while creating new map', 'The map name "{}" is already in use'.format(self.entry_mapname.get()))
+                    else:
+                        try:
+                            shutil.copytree('_template', self.entry_mapname.get())
+                        except:
+                            messagebox.showerror('Unidentified error', 'Unidentified error while creating map with name "{}"\n\nRemember! It must be a valid directory name'.format(self.entry_mapname.get()))
                 
                 frame = tk.Frame(main.page_frame)
                 
