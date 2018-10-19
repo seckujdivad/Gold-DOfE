@@ -935,7 +935,17 @@ class Editor:
                 def reload(self):
                     self.tabobj.set_title('populating...')
                     
+                    with open(os.path.join(self.editorobj.map.path, 'list.json'), 'r') as file:
+                        data = json.load(file)
+                    
+                    #populate lists
                     self.populate_scatters()
+                    self.populate_items()
+                    
+                    #set vars
+                    self.vars.basetex.set(data['background']['base'])
+                    self.vars.overlaytex.set(data['background']['overlay'])
+                    self.vars.scatternum.set(data['background']['scatternum'])
                     
                     self.tabobj.set_title('editing...')
                 
@@ -943,6 +953,11 @@ class Editor:
                     self.scatter_list.delete(0, tk.END)
                     for file in os.listdir(os.path.join(self.editorobj.map.path, 'models')):
                         self.scatter_list.insert(tk.END, file)
+                
+                def populate_items(self):
+                    self.startitems_list.delete(0, tk.END)
+                    for file in os.listdir(os.path.join(self.editorobj.map.path, 'items')):
+                        self.startitems_list.insert(tk.END, file)
                 
                 def save(self):
                     pass
