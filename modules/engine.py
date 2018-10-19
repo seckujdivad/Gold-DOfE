@@ -537,7 +537,7 @@ class Model:
                 for img in self.config['textures']:
                     self.graphics.stack.textures.append(self.imageloader(file = os.path.join(self.ent_path, img)))
             else:
-                for img in os.listdir(os.path.join(self.ent_path, self.ent_name, 'stack')):
+                for img in os.listdir(os.path.join(self.ent_path, 'stack')):
                     self.graphics.stack.textures.append(self.preimgloader(os.path.join(self.ent_path, 'stack', img)))
             
             self.graphics.stack.numlayers = self.config['numlayers'][self.userconfig['graphics']['stacked model quality']]
