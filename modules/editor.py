@@ -857,17 +857,24 @@ class Editor:
                         scatternum = tk.StringVar()
                     self.vars = vars
                     
+                    #column frames
+                    self.col0_frame = tk.Frame(self.options_frame)
+                    self.col1_frame = tk.Frame(self.options_frame)
+                    self.col2_frame = tk.Frame(self.options_frame)
+                    self.col3_frame = tk.Frame(self.options_frame)
+                    
                     ## column 0
                     #base texture
-                    self.basetex_label = tk.Label(self.options_frame, text = 'Base texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.basetex_entry = tk.Entry(self.options_frame, textvariable = self.vars.basetex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.basetex_label = tk.Label(self.col0_frame, text = 'Base texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.basetex_entry = tk.Entry(self.col0_frame, textvariable = self.vars.basetex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
                     #overlay texture
-                    self.overlaytex_label = tk.Label(self.options_frame, text = 'Overlay texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.overlaytex_entry = tk.Entry(self.options_frame, textvariable = self.vars.overlaytex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+                    self.overlaytex_label = tk.Label(self.col0_frame, text = 'Overlay texture', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.overlaytex_entry = tk.Entry(self.col0_frame, textvariable = self.vars.overlaytex, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
                     
                     #scatters chooser
-                    self.scatter_frame = tk.Frame(self.options_frame)
+                    self.scatter_label = tk.Label(self.col0_frame, text = 'Types of object to be used as scatters', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.scatter_frame = tk.Frame(self.col0_frame)
                     self.scatter_list = tk.Listbox(self.scatter_frame, selectmode = tk.MULTIPLE, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
                     self.scatter_scrollbar = tk.Scrollbar(self.scatter_frame, command = self.scatter_list.yview, **self.ui_styling.get(font_size = 'small', object_type = tk.Scrollbar))
                     self.scatter_list.config(yscrollcommand = self.scatter_scrollbar.set)
@@ -876,23 +883,47 @@ class Editor:
                     self.scatter_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     #scatter number
-                    self.scatternum_label = tk.Label(self.options_frame, text = 'Number of scatters', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.scatternum_spinbox = tk.Spinbox(self.options_frame, from_ = 0, to = 65535, textvariable = self.vars.scatternum, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.scatternum_label = tk.Label(self.col0_frame, text = 'Number of scatters', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.scatternum_spinbox = tk.Spinbox(self.col0_frame, from_ = 0, to = 65535, textvariable = self.vars.scatternum, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
                     
                     #pack all
                     self.basetex_label.grid(row = 0, column = 0, sticky = 'NESW')
                     self.basetex_entry.grid(row = 0, column = 1, sticky = 'NESW')
                     self.overlaytex_label.grid(row = 1, column = 0, sticky = 'NESW')
                     self.overlaytex_entry.grid(row = 1, column = 1, sticky = 'NESW')
-                    self.scatter_frame.grid(row = 2, column = 0, columnspan = 2, sticky = 'NESW')
-                    self.scatternum_label.grid(row = 3, column = 0, sticky = 'NESW')
-                    self.scatternum_spinbox.grid(row = 3, column = 1, sticky = 'NESW')
+                    self.scatter_label.grid(row = 2, column = 0, columnspan = 2, sticky = 'NESW')
+                    self.scatter_frame.grid(row = 3, column = 0, columnspan = 2, sticky = 'NESW')
+                    self.scatternum_label.grid(row = 4, column = 0, sticky = 'NESW')
+                    self.scatternum_spinbox.grid(row = 4, column = 1, sticky = 'NESW')
                     
-                    #column 1
-                    #column 2
-                    #column 3
+                    self.ui_styling.set_weight(self.col0_frame, 2, 5, dorows = False)
                     
-                    self.ui_styling.set_weight(self.options_frame, 2, 3, dorows = False)
+                    ## column 1
+                    #choose starting items for players
+                    self.startitems_label = tk.Label(self.col1_frame, text = 'Starting items', **self.ui_styling.get(font_size = 'small', object_type = tk.Scrollbar))
+                    self.startitems_frame = tk.Frame(self.col1_frame)
+                    self.startitems_list = tk.Listbox(self.startitems_frame, selectmode = tk.MULTIPLE, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.startitems_scrollbar = tk.Scrollbar(self.startitems_frame, command = self.startitems_list.yview, **self.ui_styling.get(font_size = 'small', object_type = tk.Scrollbar))
+                    self.startitems_list.config(yscrollcommand = self.startitems_scrollbar.set)
+                    
+                    self.startitems_scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.startitems_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    #pack all
+                    self.startitems_label.grid(row = 0, column = 2, columnspan = 2, sticky = 'NESW')
+                    self.startitems_frame.grid(row = 1, column = 2, columnspan = 2, sticky = 'NESW')
+                    
+                    self.ui_styling.set_weight(self.col1_frame, 2, 2, dorows = False)
+                    
+                    ## column 2
+                    ## column 3
+                    
+                    self.col0_frame.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.col1_frame.grid(row = 0, column = 1, sticky = 'NESW')
+                    self.col2_frame.grid(row = 0, column = 2, sticky = 'NESW')
+                    self.col3_frame.grid(row = 0, column = 3, sticky = 'NESW')
+                    
+                    self.ui_styling.set_weight(self.options_frame, 4, 1, dorows = False)
                     
                     self.options_frame.grid(row = 0, column = 0, sticky = 'NESW')
                     self.toolbar_frame.grid(row = 1, column = 0, sticky = 'NESW')
