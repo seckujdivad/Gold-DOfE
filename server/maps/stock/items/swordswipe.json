@@ -1,6 +1,6 @@
 {
 	"display name": "Sword",
-	"unlimited": false,
+	"unlimited": true,
 	"icon": "swordswipe_icon.png",
 	"sprite": "swordswipe_sprite.png",
 	"damage": {
