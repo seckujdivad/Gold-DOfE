@@ -905,16 +905,13 @@ class InventoryBar:
         return [x, y]
     
     def increment_slot(self, index, increment):
-        self.inv_items[index]['quantity'] += increment
-        if self.inv_items[index]['quantity'] < 1:
-            self.canvas.delete(self.inv_items[index]['image'])
-            self.inv_items[index] = {'item': None, 'image': None, 'quantity': 0}
+        self.set_slot(index, quantity = self.inv_items[index]['quantity'] + increment)
     
     def set_slot(self, index, item = None, quantity = 0):
-        if quantity == 0:
+        if quantity < 1:
             if not self.inv_items[index]['image'] == None:
                 self.canvas.delete(self.inv_items[index]['image'])
-                self.inv_items[index]['image'] = None
+            self.inv_items[index] = {'item': None, 'image': None, 'quantity': 0}
         else:
             self.inv_items[index]['quantity'] = quantity
             if not item == None:
@@ -923,3 +920,15 @@ class InventoryBar:
                 if self.inv_items[index]['image'] == None:
                     coords = self.get_top_right_coords()
                     self.inv_items[index]['image'] = self.canvas.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'])
+    
+    def get_item_info(self, item):
+        return self.items_data[item]
+    
+    def get_slot_info(self, index):
+        if self.inv_items[index]['quantity'] == 0:
+            data = {}
+        else:
+            data = self.get_item_info(self.inv_items[index]['item'])
+        data['quantity'] = self.inv_items[index]['quantity']
+        data['file name'] = self.inv_items[index]['item']
+        return data
