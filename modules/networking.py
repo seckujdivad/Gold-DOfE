@@ -22,6 +22,7 @@ class Server:
             mapdata = None
             conn_data = [] #individual spaces for connections to store data to be publicly accessible
             item_data = [] #store ongoing items
+            item_ticket = 0 #allow clients to know which items are which from tick to tick
             tickrate = 30 #times to process items per second
             looptime = 1 / tickrate
         self.serverdata = serverdata
@@ -134,6 +135,17 @@ class Server:
                 self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
             elif req.command == 'use':
                 print('client used', req.arguments)
+                
+                with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', req.arguments['item']), 'r') as file:
+                    item_data = json.load(file)
+                
+                self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
+                                                  'data': item_data',
+                                                  'file name': req.arguments['item'],
+                                                  'distance travelled': 0})
+                
+                self.serverdata.item_ticket += 1
+                
         self.serverdata.conn_data[conn_id]['active'] = False
     
     def handle_command(self, command, source = 'internal'):
