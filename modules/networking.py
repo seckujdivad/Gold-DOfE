@@ -21,6 +21,9 @@ class Server:
             map = None
             mapdata = None
             conn_data = [] #individual spaces for connections to store data to be publicly accessible
+            item_data = [] #store ongoing items
+            tickrate = 30 #times to process items per second
+            looptime = 1 / tickrate
         self.serverdata = serverdata
         
         self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
@@ -43,6 +46,7 @@ class Server:
             self.output_pipe.send(self.run_script(text))
         
         threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
+        threading.Thread(target = self.handle_items, name = 'Item handler', daemon = True).start()
         
     def acceptance_thread(self):
         conn_id = 0
@@ -264,6 +268,15 @@ sv_quit: destroy the server'''
             if conn_data['active'] and conn_data['team'] != None:
                 team_quantities[conn_data['team']] += 1
         return team_quantities
+    
+    def handle_items(self):
+        while True:
+            start = time.time()
+            
+            for item in self.serverdata.item_data:
+                pass
+            
+            time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
 
 class Client:
     def __init__(self, host_, port_):
