@@ -888,15 +888,6 @@ class InventoryBar:
             y1 = y0 + self.sprite_dimensions[1]
             self.slot_objs.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill = self.backingcolour, outline = self.backingcolour))
     
-    def set_slot(self, index, item = None, quantity = 1):
-        self.inv_items[index]['quantity'] = quantity
-        if not self.inv_items[index]['image'] == None:
-            self.canvas.delete(self.inv_items[index]['image'])
-        coords = self.get_top_right_coords()
-        if not item == None:
-            self.inv_items[index]['item'] = item
-            self.inv_items[index]['image'] = self.canvas.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'])
-    
     def select_index(self, index, force_refresh = False):
         if index != self.selection_index and not force_refresh:
             if not self.selection_index == None:
@@ -918,3 +909,17 @@ class InventoryBar:
         if self.inv_items[index]['quantity'] < 1:
             self.canvas.delete(self.inv_items[index]['image'])
             self.inv_items[index] = {'item': None, 'image': None, 'quantity': 0}
+    
+    def set_slot(self, index, item = None, quantity = 0):
+        if quantity == 0:
+            if not self.inv_items[index]['image'] == None:
+                self.canvas.delete(self.inv_items[index]['image'])
+                self.inv_items[index]['image'] = None
+        else:
+            self.inv_items[index]['quantity'] = quantity
+            if not item == None:
+                self.inv_items[index]['item'] = item
+                
+                if self.inv_items[index]['image'] == None:
+                    coords = self.get_top_right_coords()
+                    self.inv_items[index]['image'] = self.canvas.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'])
