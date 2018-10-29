@@ -139,6 +139,7 @@ class Engine:
             player = None
             healthbar = None
             invdisp = None
+            items = []
         self.map = map
         
         #make keybind handler
@@ -248,6 +249,7 @@ class Engine:
             self.keybindhandler.bind(keybinds_data['inventory']['slot2'], lambda: self.map.invdisp.select_index(2))
             self.keybindhandler.bind(keybinds_data['inventory']['slot3'], lambda: self.map.invdisp.select_index(3))
             self.keybindhandler.bind(keybinds_data['inventory']['slot4'], lambda: self.map.invdisp.select_index(4))
+            self.keybindhandler.bind(keybinds_data['inventory']['use'], self.use_current_item)
             
             #set values for health bar and inventory bar
             self.map.healthbar.set_value(100)
@@ -273,6 +275,8 @@ class Engine:
             self.map.healthbar.destroy()
         if not self.map.invdisp == None:
             self.map.invdisp.destroy()
+        for item in self.map.items:
+            item.destroy()
         self.game.message_pipe.send(['map load', 'Cleared old map assets'])
         
         self.keybindhandler.unbind_all()
@@ -303,6 +307,12 @@ class Engine:
             if hx < 0 and hy < 0:
                 has_smaller = True
         return has_smaller and has_bigger
+    
+    def use_current_item(self):
+        if not self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['quantity'] == 0:
+            self.game.client.send(modules.networking.Request(command = 'use', subcommand = 'client item', arguments = {'item': self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['file name']}))
+            if not self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['unlimited']:
+                self.map.invdisp.increment_slot(self.map.invdisp.selection_index, -1)
 
 class Entity:
     def __init__(self, ent_name, map_path, engine, is_player = False):
