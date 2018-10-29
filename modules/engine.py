@@ -867,7 +867,7 @@ class InventoryBar:
         self.inv_items = []
         
         for i in range(5):
-            self.inv_items.append({'item': None, 'quantity': 0})
+            self.inv_items.append({'item': None, 'image': None, 'quantity': 0})
         
         self.load_assets()
         self.draw_slots()
@@ -890,11 +890,12 @@ class InventoryBar:
     
     def set_slot(self, index, item = None, quantity = 1):
         self.inv_items[index]['quantity'] = quantity
-        if not self.inv_items[index]['item'] == None:
-            self.canvas.delete(self.inv_items[index]['item'])
+        if not self.inv_items[index]['image'] == None:
+            self.canvas.delete(self.inv_items[index]['image'])
         coords = self.get_top_right_coords()
         if not item == None:
-            self.inv_items[index]['item'] = self.canvas.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'])
+            self.inv_items[index]['item'] = item
+            self.inv_items[index]['image'] = self.canvas.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'])
     
     def select_index(self, index, force_refresh = False):
         if index != self.selection_index and not force_refresh:
@@ -911,3 +912,9 @@ class InventoryBar:
         x = self.coords[0] - ((self.sprite_dimensions[0] * (self.num_slots / 2)) + (self.divider_size * (self.num_slots / 2)))
         y = self.coords[1] - (self.sprite_dimensions[1] / 2)
         return [x, y]
+    
+    def increment_slot(self, index, increment):
+        self.inv_items[index]['quantity'] += increment
+        if self.inv_items[index]['quantity'] < 1:
+            self.canvas.delete(self.inv_items[index]['image'])
+            self.inv_items[index] = {'item': None, 'image': None, 'quantity': 0}
