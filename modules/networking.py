@@ -288,18 +288,25 @@ sv_quit: destroy the server'''
             start = time.time()
             
             to_remove = []
+            data_to_send = []
+            
             for index in self.serverdata.item_data:
                 item = self.serverdata.item_data[index]
                 if (not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']:
                     to_remove.append(index)
-                    
+                
+                to_move = 0
                 if not item['data']['speed'] == 0:
-                    pass
+                    to_move = item['data']['speed'] / self.serverdata.tickrate
             
             to_remove.sort()
             to_remove.reverse()
             for index in to_remove:
+                data_to_send.append(['removal', {'ticket': self.serverdata.item_data[index]['ticket']}])
                 self.serverdata.item_data.pop(index)
+            
+            for conn_data in self.serverdata.conn_data:
+                self.send(conn_data['connection'], Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))
             
             time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
 
