@@ -310,7 +310,9 @@ class Engine:
     
     def use_current_item(self):
         if not self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['quantity'] == 0:
-            self.game.client.send(modules.networking.Request(command = 'use', subcommand = 'client item', arguments = {'item': self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['file name']}))
+            self.game.client.send(modules.networking.Request(command = 'use', subcommand = 'client item', arguments = {'item': self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['file name'],
+                                'rotation': self.map.player.pos.rotation,
+                                'position': [self.map.player.pos.x, self.map.player.pos.y]}))
             if not self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['unlimited']:
                 self.map.invdisp.increment_slot(self.map.invdisp.selection_index, -1)
 

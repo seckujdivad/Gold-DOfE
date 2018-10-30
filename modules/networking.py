@@ -142,7 +142,9 @@ class Server:
                 self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
                                                   'data': item_data',
                                                   'file name': req.arguments['item'],
-                                                  'distance travelled': 0})
+                                                  'distance travelled': 0,
+                                                  'angle': req.arguments['rotation'],
+                                                  'position': req.arguments['position']})
                 
                 self.serverdata.item_ticket += 1
                 
@@ -287,6 +289,7 @@ sv_quit: destroy the server'''
             
             for item in self.serverdata.item_data:
                 pass
+            for index in self.serverdata.item_data:
             
             time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
 
