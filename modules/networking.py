@@ -140,11 +140,12 @@ class Server:
                     item_data = json.load(file)
                 
                 self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
-                                                  'data': item_data',
+                                                  'data': item_data,
                                                   'file name': req.arguments['item'],
                                                   'distance travelled': 0,
                                                   'angle': req.arguments['rotation'],
-                                                  'position': req.arguments['position']})
+                                                  'position': req.arguments['position'],
+                                                  'new': True})
                 
                 self.serverdata.item_ticket += 1
                 
@@ -291,6 +292,8 @@ sv_quit: destroy the server'''
             data_to_send = []
             
             for index in self.serverdata.item_data:
+                to_send_loop = {}
+            
                 item = self.serverdata.item_data[index]
                 if (not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']:
                     to_remove.append(index)
@@ -298,6 +301,15 @@ sv_quit: destroy the server'''
                 to_move = 0
                 if not item['data']['speed'] == 0:
                     to_move = item['data']['speed'] / self.serverdata.tickrate
+                
+                if item['new']:
+                    to_send_loop['position'] = item['position']
+                    to_send_loop['rotation'] = item['position']
+                    to_send_loop['new'] = True
+                    item['new'] = False
+                
+                if not to_send_loop == {}:
+                    data_to_send.append(to_send_loop)
             
             to_remove.sort()
             to_remove.reverse()
