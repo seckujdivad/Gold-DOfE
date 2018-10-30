@@ -287,9 +287,19 @@ sv_quit: destroy the server'''
         while True:
             start = time.time()
             
-            for item in self.serverdata.item_data:
-                pass
+            to_remove = []
             for index in self.serverdata.item_data:
+                item = self.serverdata.item_data[index]
+                if (not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']:
+                    to_remove.append(index)
+                    
+                if not item['data']['speed'] == 0:
+                    pass
+            
+            to_remove.sort()
+            to_remove.reverse()
+            for index in to_remove:
+                self.serverdata.item_data.pop(index)
             
             time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
 
