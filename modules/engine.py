@@ -531,6 +531,11 @@ class Entity:
         if not self.engine.map.healthbar == None: #make sure healthbar has been created
             self.engine.map.healthbar.set_value(self.health)
         self.engine.game.client.send(modules.networking.Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.health}))
+    
+    def angle_to_pos(self, x, y):
+        dx = x - self.pos.x
+        dy = y - self.pos.y
+        return math.degrees(math.atan(dy / dx))
 
 class Model:
     def __init__(self, ent_name, map_path, imageloader, canvas):
