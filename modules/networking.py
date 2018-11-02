@@ -82,72 +82,88 @@ class Server:
         
         cont = True
         while cont:
+            reqs = []
             try:
-                data = connection.recv(2048)
-                req = Request(json.loads(data.decode()))
+                data = connection.recv(4096).decode('UTF-8')
+                
+                #unpack the data - often will get multiple dictionaries
+                escape_level = 0
+                output = []
+                current_string = ''
+                for char in data:
+                    if char == '{':
+                        escape_level += 1
+                    elif char == '}':
+                        escape_level -= 1
+                    current_string += char
+                    if escape_level == 0 and not len(current_string) == 0:
+                        output.append(current_string)
+                        current_string = ''
+                
+                for json_data in output:
+                    reqs.append(Request(json_data))
             except ConnectionResetError or ConnectionAbortedError:
                 req = Request(command = 'disconnect', arguments = {'clean': False}) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
                 cont = False
             except json.decoder.JSONDecodeError:
-                req = Request()
-                self.log.add('error', 'Couldn\'t read JSON {}'.format(data))
-                
-            if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
-                self.output_pipe.send('User {} disconnected'.format(address[0]))
-                if 'clean' in req.arguments and not req.arguments['clean']:
-                    self.output_pipe.send('Disconnect was not clean'.format(address[0]))
-                    
-            elif req.command == 'var update r': #client wants the server to send it a value
-            
-                if req.subcommand == 'map': #client wants the server to send the name of the current map
-                    self.send(connection, Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map}))
-                    
-                elif req.subcommand == 'player model': #client wants to know it's own player model
-                    if self.serverdata.map != None:
-                        self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[conn_id]['model']}))
+                pass
+            for req in reqs:
+                if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
+                    self.output_pipe.send('User {} disconnected'.format(address[0]))
+                    if 'clean' in req.arguments and not req.arguments['clean']:
+                        self.output_pipe.send('Disconnect was not clean'.format(address[0]))
                         
-                elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
-                    output = []
-                    for data in self.serverdata.conn_data:
-                        if data['active'] and 'position' in data and not data == self.serverdata.conn_data[conn_id]:
-                            output.append(data['position'])
-                    self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': output}))
+                elif req.command == 'var update r': #client wants the server to send it a value
+                
+                    if req.subcommand == 'map': #client wants the server to send the name of the current map
+                        self.send(connection, Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map}))
+                        
+                    elif req.subcommand == 'player model': #client wants to know it's own player model
+                        if self.serverdata.map != None:
+                            self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[conn_id]['model']}))
+                            
+                    elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
+                        output = []
+                        for data in self.serverdata.conn_data:
+                            if data['active'] and 'position' in data and not data == self.serverdata.conn_data[conn_id]:
+                                output.append(data['position'])
+                        self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': output}))
+                        
+                elif req.command == 'var update w': #client wants to update a variable on the server
+                    if req.subcommand == 'position': #client wants to update it's own position
+                        self.serverdata.conn_data[conn_id]['position'] = {'x': req.arguments['x'],
+                                                                          'y': req.arguments['y'],
+                                                                          'rotation': req.arguments['rotation']}
+                    elif req.subcommand == 'health': #client wants to update it's own health
+                        self.serverdata.conn_data[conn_id]['health'] = req.arguments['value']
                     
-            elif req.command == 'var update w': #client wants to update a variable on the server
-                if req.subcommand == 'position': #client wants to update it's own position
-                    self.serverdata.conn_data[conn_id]['position'] = {'x': req.arguments['x'],
-                                                                      'y': req.arguments['y'],
-                                                                      'rotation': req.arguments['rotation']}
-                elif req.subcommand == 'health': #client wants to update it's own health
-                    self.serverdata.conn_data[conn_id]['health'] = req.arguments['value']
-                
-                elif req.subcommand == 'username':
-                    self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
-                    self.database.user_connected(self.serverdata.conn_data[conn_id]['username'])
+                    elif req.subcommand == 'username':
+                        self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
+                        self.database.user_connected(self.serverdata.conn_data[conn_id]['username'])
+                        
+                elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
+                    self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
+                    print('gie')
+                    self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
+                    self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
                     
-            elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
-                self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
-                print('gie')
-                self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
-                self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
-                
-                spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][self.serverdata.conn_data[conn_id]['team']])
-                self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
-            elif req.command == 'use':
-                print('client used', req.arguments)
-                
-                with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', req.arguments['item']), 'r') as file:
-                    item_data = json.load(file)
-                
-                self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
-                                                  'data': item_data,
-                                                  'file name': req.arguments['item'],
-                                                  'distance travelled': 0,
-                                                  'angle': req.arguments['rotation'],
-                                                  'position': req.arguments['position'],
-                                                  'new': True})
-                
-                self.serverdata.item_ticket += 1
+                    spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][self.serverdata.conn_data[conn_id]['team']])
+                    self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
+                elif req.command == 'use':
+                    print('client used', req.arguments)
+                    
+                    with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', req.arguments['item']), 'r') as file:
+                        item_data = json.load(file)
+                    
+                    self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
+                                                      'data': item_data,
+                                                      'file name': req.arguments['item'],
+                                                      'distance travelled': 0,
+                                                      'angle': req.arguments['rotation'],
+                                                      'position': req.arguments['position'],
+                                                      'new': True})
+                    
+                    self.serverdata.item_ticket += 1
                 
         self.serverdata.conn_data[conn_id]['active'] = False
     
