@@ -8,10 +8,10 @@
 	},
 	"destroyed after damage": true,
 	"range": 100,
-	"speed": null,
+	"speed": 100,
 	"hitbox": {
 		"type": "circular",
 		"radius": 32
 	},
-	"model": "fireball"
+	"model": "swordswipe"
 }
