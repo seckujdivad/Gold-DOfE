@@ -320,7 +320,7 @@ sv_quit: destroy the server'''
                     to_send_loop['type'] = 'add'
                     
                     to_send_loop['position'] = item['position']
-                    to_send_loop['rotation'] = item['position']
+                    to_send_loop['rotation'] = item['rotation']
                     to_send_loop['new'] = True
                     item['new'] = False
                 
