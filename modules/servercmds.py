@@ -39,6 +39,8 @@ class ServerCommandLineUI:
         threading.Thread(target = self.listen_to_pipe, name = 'Server command line pipe listen').start()
         
         self.root.mainloop()
+
+        self.command_handler('sv_quit')
     
     def process_command(self, event = None):
         data = self.command_field.get()
