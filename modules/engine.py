@@ -118,7 +118,8 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        entity = Entity(data['data']['sprite'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine)
+                        print(data)
+                        entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine)
                         entity.setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
                         self.engine.map.items.append({'ticket': data['ticket'],
                                                       'object': entity})
@@ -370,7 +371,7 @@ class Entity:
         
         self.setpos_queue, pipe = mp.Pipe()
         
-        self.model = Model(ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvas)
+        self.model = Model(self.ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvas)
         
         threading.Thread(target = self._setpos_queue, name = 'Entity setpos queue', args = [pipe]).start()
         
@@ -535,6 +536,8 @@ class Model:
         self.ent_path = os.path.join(self.map_path, 'models', self.ent_name)
         self.imageloader = imageloader
         self.canvas = canvas
+        
+        print(self.ent_name)
         
         class graphics:
             x = 0
