@@ -8,6 +8,7 @@ import os
 import sys
 import random
 import time
+import math
 
 import modules.servercmds
 import modules.logging
@@ -45,7 +46,7 @@ class Server:
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
                 text = file.read()
             self.output_pipe.send(self.run_script(text))
-        
+
         threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
         threading.Thread(target = self.handle_items, name = 'Item handler', daemon = True).start()
         
@@ -67,6 +68,8 @@ class Server:
     
     def connection_handler(self, address, connection, conn_id):
         self.output_pipe.send('New connection from {}'.format(address[0]))
+
+        print(self.serverdata.mapdata)
         
         self.serverdata.conn_data.append({'model': random.choice(self.serverdata.mapdata['entity models']['player']),
                                           'connection': connection,
@@ -183,7 +186,7 @@ sv_quit: destroy the server'''
                     self.load_map(argstring)
                     output = 'Loading map \'{}\'...'.format(argstring)
                 except ValueError:
-                    output = 'Map \'{}\' not found'.format(argstring)
+                    output = 'Error while loading map \'{}\''.format(argstring)
             else:
                 output = 'No permissions'
         elif name == 'say':
@@ -291,31 +294,38 @@ sv_quit: destroy the server'''
             to_remove = []
             data_to_send = []
             
-            for index in self.serverdata.item_data:
+            for item in self.serverdata.item_data:
                 to_send_loop = {}
             
-                item = self.serverdata.item_data[index]
+                index = item['ticket']
                 if (not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']:
+                    to_send_loop['type'] = 'remove'
+                    
                     to_remove.append(index)
-                
-                to_move = 0
-                if not item['data']['speed'] == 0:
-                    to_move = item['data']['speed'] / self.serverdata.tickrate
-                
-                if item['new']:
+                   
+                elif item['new']:
+                    to_send_loop['type'] = 'add'
+                    
                     to_send_loop['position'] = item['position']
                     to_send_loop['rotation'] = item['position']
                     to_send_loop['new'] = True
                     item['new'] = False
                 
+                elif not item['data']['speed'] == 0:
+                    to_send_loop['type'] = 'update position'
+                    
+                    to_move = item['data']['speed'] / self.serverdata.tickrate
+                    to_send_loop['position'] = [item['position'][0] + (to_move * math.cos(math.radians(item['rotation']))), item['positon'][1] + (to_move * math.sin(math.radians(item['rotation'])))]
+                
                 if not to_send_loop == {}:
+                    to_send_loop['ticket'] = item['ticket']
                     data_to_send.append(to_send_loop)
-            
+			
             to_remove.sort()
             to_remove.reverse()
-            for index in to_remove:
-                data_to_send.append(['removal', {'ticket': self.serverdata.item_data[index]['ticket']}])
-                self.serverdata.item_data.pop(index)
+            for ticket in to_remove:
+                data_to_send.append(['removal', {'ticket': ticket}])
+                self.serverdata.item_data.pop(index) ################change
             
             for conn_data in self.serverdata.conn_data:
                 self.send(conn_data['connection'], Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))

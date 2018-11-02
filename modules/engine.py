@@ -112,6 +112,32 @@ class Game:
         elif request.command == 'var update r':
             if request.subcommand == 'username':
                 self.client.send(modules.networking.Request(command = 'var update w', subcommand = 'username', arguments = {'value': self.settingsdict['user']['name']}))
+        
+        elif request.command == 'update items':
+            if request.subcommand == 'server tick':
+                updates = request.arguments['pushed']
+                for data in updates:
+                    if data['type'] == 'add': #item has just been created
+                        entity = Entity(data['data']['sprite'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine)
+                        entity.setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
+                        self.engine.map.items.append({'ticket': data['ticket'],
+                                                      'object': entity})
+                    elif data['type'] == 'remove':
+                        to_remove = []
+                        for i in self.engine.map.items:
+                            if i['ticket'] == data['ticket']:
+                                to_remove.append(i)
+                        for i in to_remove:
+                            i['object'].destroy()
+                            self.engine.map.items.remove(i)
+                    
+                    elif data['type'] == 'update position':
+                        to_update = []
+                        for i in self.engine.map.items:
+                            if i['ticket'] == data['ticket']:
+                                to_update.append(i)
+                        for i in to_update:
+                            i['object'].setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
 
 class Engine:
     def __init__(self, game):
@@ -276,7 +302,7 @@ class Engine:
         if not self.map.invdisp == None:
             self.map.invdisp.destroy()
         for item in self.map.items:
-            item.destroy()
+            item['object'].destroy()
         self.game.message_pipe.send(['map load', 'Cleared old map assets'])
         
         self.keybindhandler.unbind_all()

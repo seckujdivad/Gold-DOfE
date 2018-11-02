@@ -43,7 +43,8 @@
 	},
 	"events": {
 		"player": {
-			"outside map": ["teleport.py"]
+			"outside map": ["teleport.py"],
+			"uses item": []
 		}
 	},
 	"geometry": [800, 600]
