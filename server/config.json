@@ -1,6 +1,7 @@
 {
 	"network": {
-		"port": 4321
+		"port": 4321,
+		"tickrate": 15
 	},
 	"scripts": {
 		"autoexec": ["autoexec"],

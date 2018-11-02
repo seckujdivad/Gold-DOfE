@@ -24,7 +24,7 @@ class Server:
             conn_data = [] #individual spaces for connections to store data to be publicly accessible
             item_data = [] #store ongoing items
             item_ticket = 0 #allow clients to know which items are which from tick to tick
-            tickrate = 30 #times to process items per second
+            tickrate = 10 #times to process items per second
             looptime = 1 / tickrate
         self.serverdata = serverdata
         
@@ -46,6 +46,9 @@ class Server:
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
                 text = file.read()
             self.output_pipe.send(self.run_script(text))
+        
+        self.serverdata.tickrate = self.settingsdata['network']['tickrate']
+        self.serverdata.looptime = 1 / self.serverdata.tickrate
 
         threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
         threading.Thread(target = self.handle_items, name = 'Item handler', daemon = True).start()
