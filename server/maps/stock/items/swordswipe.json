@@ -12,5 +12,6 @@
 	"hitbox": {
 		"type": "circular",
 		"radius": 32
-	}
+	},
+	"model": "fireball"
 }
