@@ -159,7 +159,7 @@ class Server:
                                                       'data': item_data,
                                                       'file name': req.arguments['item'],
                                                       'distance travelled': 0,
-                                                      'angle': req.arguments['rotation'],
+                                                      'rotation': req.arguments['rotation'],
                                                       'position': req.arguments['position'],
                                                       'new': True})
                     
@@ -323,12 +323,13 @@ sv_quit: destroy the server'''
                     to_send_loop['rotation'] = item['rotation']
                     to_send_loop['new'] = True
                     item['new'] = False
+                    to_send_loop['data'] = item['data']
                 
                 elif not item['data']['speed'] == 0:
                     to_send_loop['type'] = 'update position'
                     
                     to_move = item['data']['speed'] / self.serverdata.tickrate
-                    to_send_loop['position'] = [item['position'][0] + (to_move * math.cos(math.radians(item['rotation']))), item['positon'][1] + (to_move * math.sin(math.radians(item['rotation'])))]
+                    to_send_loop['position'] = [item['position'][0] + (to_move * math.cos(math.radians(item['rotation']))), item['position'][1] + (to_move * math.sin(math.radians(item['rotation'])))]
                 
                 if not to_send_loop == {}:
                     to_send_loop['ticket'] = item['ticket']
