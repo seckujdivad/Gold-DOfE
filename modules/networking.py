@@ -68,8 +68,6 @@ class Server:
     
     def connection_handler(self, address, connection, conn_id):
         self.output_pipe.send('New connection from {}'.format(address[0]))
-
-        print(self.serverdata.mapdata)
         
         self.serverdata.conn_data.append({'model': random.choice(self.serverdata.mapdata['entity models']['player']),
                                           'connection': connection,
@@ -79,8 +77,6 @@ class Server:
                                           'team': self.get_team_id(self.get_team_distributions()),
                                           'health': 100,
                                           'username': 'guest'})
-        
-        print(self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']])
         
         self.send(connection, Request(command = 'var update r', subcommand = 'username'))
         
@@ -131,6 +127,7 @@ class Server:
                     
             elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
                 self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
+                print('gie')
                 self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
                 self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
                 
@@ -363,16 +360,34 @@ class Client:
     def recv_loop(self):
         cont = True
         while cont:
+            reqs = []
             try:
-                data = self.connection.recv(1024).decode('UTF-8')
-                req = Request(data)
+                data = self.connection.recv(4096).decode('UTF-8')
+                
+                #unpack the data - often will get multiple dictionaries
+                escape_level = 0
+                output = []
+                current_string = ''
+                for char in data:
+                    if char == '{':
+                        escape_level += 1
+                    elif char == '}':
+                        escape_level -= 1
+                    current_string += char
+                    if escape_level == 0 and not len(current_string) == 0:
+                        output.append(current_string)
+                        current_string = ''
+                
+                for json_data in output:
+                    reqs.append(Request(json_data))
             except ConnectionAbortedError:
-                req = Request(command = 'disconnect')
+                reqs = [Request(command = 'disconnect')]
                 cont = False
             except json.decoder.JSONDecodeError:
-                req = Request(command = None)
+                pass
             for bind in self.recv_binds:
-                bind(req)
+                for req in reqs:
+                    bind(req)
     
     def disconnect(self):
         self.connection.close()
