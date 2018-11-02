@@ -138,7 +138,10 @@ class Game:
                             if i['ticket'] == data['ticket']:
                                 to_update.append(i)
                         for i in to_update:
-                            i['object'].setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
+                            if 'position' in data:
+                                i['object'].setpos(x = data['position'][0], y = data['position'][1])
+                            if 'rotation' in data:
+                                i['object'].setpos(rotation = data['rotation'])
 
 class Engine:
     def __init__(self, game):
