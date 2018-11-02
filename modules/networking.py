@@ -329,7 +329,11 @@ sv_quit: destroy the server'''
                     to_send_loop['type'] = 'update position'
                     
                     to_move = item['data']['speed'] / self.serverdata.tickrate
-                    to_send_loop['position'] = [item['position'][0] + (to_move * math.cos(math.radians(item['rotation']))), item['position'][1] + (to_move * math.sin(math.radians(item['rotation'])))]
+
+                    item['position'][0] +=  to_move * math.cos(math.radians(item['rotation']))
+                    item['position'][1] +=  to_move * math.sin(math.radians(item['rotation']))
+                    
+                    to_send_loop['position'] = item['position']
                 
                 if not to_send_loop == {}:
                     to_send_loop['ticket'] = item['ticket']

@@ -118,7 +118,7 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        print(data)
+                        
                         entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine)
                         entity.setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
                         self.engine.map.items.append({'ticket': data['ticket'],
