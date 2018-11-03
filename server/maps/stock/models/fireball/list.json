@@ -1,4 +1,6 @@
 {
 	"type": "flat",
-	"texture": "fireball_sprite.png"
+	"texture": "fireball_sprite.png",
+	"offscreen": [-100, -100],
+	"rotations": [64, 32, 16, 8]
 }

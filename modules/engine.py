@@ -561,10 +561,12 @@ class Model:
             prev_rotation = None
             displaytype = None
             preimgloader = None
+            usesPIL = False
             class flat:
                 texture = None
+                textures = []
                 imgobj = None
-                canvobj = None
+                canvobjs = []
             class stack:
                 class offsets:
                     x = 0
@@ -577,6 +579,7 @@ class Model:
         
         if not self.imageloader == tk.PhotoImage:
             self.preimgloader = __import__('PIL.Image').Image.open
+            self.graphics.usesPIL = True
         
         with open(os.path.join(self.ent_path, 'list.json'), 'r') as file:
             self.config = json.load(file)
@@ -587,11 +590,11 @@ class Model:
         #load textures
         self.graphics.displaytype = self.config['type']
         if self.graphics.displaytype == 'flat':
-            self.graphics.flat.texture = self.imageloader(file = os.path.join(self.ent_path, self.config['texture']))
+            self.graphics.flat.texture = self.preimgloader(os.path.join(self.ent_path, self.config['texture']))
         elif self.graphics.displaytype == 'stack':
             if type(self.config['textures']) == list:
                 for img in self.config['textures']:
-                    self.graphics.stack.textures.append(self.imageloader(file = os.path.join(self.ent_path, img)))
+                    self.graphics.stack.textures.append(self.preimgloader(os.path.join(self.ent_path, img)))
             else:
                 for img in os.listdir(os.path.join(self.ent_path, 'stack')):
                     self.graphics.stack.textures.append(self.preimgloader(os.path.join(self.ent_path, 'stack', img)))
@@ -612,11 +615,8 @@ class Model:
             self.graphics.x = x
         if not y == None:
             self.graphics.y = y
-            
-        if self.graphics.displaytype == 'flat':
-            self.graphics.flat.canvobj = self.canvas.create_image(self.graphics.x, self.graphics.y, image = self.graphics.flat.texture)
-        elif self.graphics.displaytype == 'stack':
-            self.create_rotations(self.config['rotations'])
+
+        self.create_rotations(self.config['rotations'][self.userconfig['graphics']['stacked model quality']])
     
     def setpos(self, x = None, y = None, rotation = None):
         if not x == None:
@@ -630,7 +630,9 @@ class Model:
             self.graphics.rotation = rotation
             
         if self.graphics.displaytype == 'flat':
-            self.canvas.coords(self.graphics.flat.canvobj, self.graphics.x, self.graphics.y)
+            if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
+                self.canvas.coords(self.obj_from_angle(self.graphics.prev_rotation), self.config['offscreen'][0], self.config['offscreen'][1])
+            self.canvas.coords(self.obj_from_angle(self.graphics.rotation), self.graphics.x, self.graphics.y)
         elif self.graphics.displaytype == 'stack':
             i = 0
             if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
@@ -642,38 +644,57 @@ class Model:
     
     def create_rotations(self, num_rotations):
         'Premake all canvas objects for different rotations to speed up rendering'
-        
-        if self.graphics.stack.numlayers == len(self.graphics.stack.textures): #find out the indexes of the images to be used
-                iterator = range(len(self.graphics.stack.textures))
+        if self.graphics.displaytype == 'stack':
+            if self.graphics.stack.numlayers == len(self.graphics.stack.textures): #find out the indexes of the images to be used
+                    iterator = range(len(self.graphics.stack.textures))
+            else:
+                iterator = []
+                mult = len(self.graphics.stack.textures) / self.graphics.stack.numlayers
+                for i in range(self.graphics.stack.numlayers):
+                    iterator.append(int(i * mult))
+            
+            angle_increment = 360 / num_rotations
+            i = 0
+            for rot in range(num_rotations):
+                #create sublists
+                self.graphics.stack.canvobjs.append([])
+                self.graphics.stack.imgobjs.append([])
+                
+                angle = angle_increment * rot #precalculate angle
+                
+                for tex in iterator:
+                    if self.graphics.usesPIL:
+                        loaded_image = self.imageloader(image = self.graphics.stack.textures[tex].rotate(angle))
+                    else:
+                        loaded_image = self.imageloader(image = self.graphics.stack.textures[tex])
+                    new_canv_obj = self.canvas.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image)
+                    self.graphics.stack.canvobjs[i].append(new_canv_obj)
+                    self.canvas.coords(new_canv_obj, self.config['offscreen'][0], self.config['offscreen'][1])
+                    
+                    self.graphics.stack.imgobjs[i].append(loaded_image)
+                i += 1
         else:
-            iterator = []
-            mult = len(self.graphics.stack.textures) / self.graphics.stack.numlayers
-            for i in range(self.graphics.stack.numlayers):
-                iterator.append(int(i * mult))
-        
-        angle_increment = 360 / num_rotations
-        i = 0
-        for rot in range(num_rotations):
-            #create sublists
-            self.graphics.stack.canvobjs.append([])
-            self.graphics.stack.imgobjs.append([])
-            
-            angle = angle_increment * rot #precalculate angle
-            
-            for tex in iterator:
-                loaded_image = self.imageloader(image = self.graphics.stack.textures[tex].rotate(angle))
+            angle_increment = 360 / num_rotations
+            for rot in range(num_rotations):
+                angle = angle_increment * rot
+                if self.graphics.usesPIL:
+                    loaded_image = self.imageloader(image = self.graphics.flat.texture.rotate(angle))
+                else:
+                    loaded_image = self.imageloader(image = self.graphics.flat.texture)
                 new_canv_obj = self.canvas.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image)
-                self.graphics.stack.canvobjs[i].append(new_canv_obj)
-                self.canvas.coords(new_canv_obj, self.config['offscreen'][0], self.config['offscreen'][1])
-                self.graphics.stack.imgobjs[i].append(loaded_image)
-            i += 1
+                self.graphics.flat.canvobjs.append(new_canv_obj)
+                self.graphics.flat.textures.append(loaded_image)
     
     def objset_from_angle(self, angle):
         return self.graphics.stack.canvobjs[int((angle / 360) * len(self.graphics.stack.canvobjs))]
+    
+    def obj_from_angle(self, angle):
+        return self.graphics.flat.canvobjs[int((angle / 360) * len(self.graphics.flat.canvobjs))]
         
     def destroy(self):
         if self.graphics.displaytype == 'flat':
-            self.canvas.delete(self.graphics.flat.canvobj)
+            for obj in self.graphics.flat.canvobjs:
+                self.canvas.delete(obj)
         else:
             for rotationset in self.graphics.stack.canvobjs:
                 for obj in rotationset:

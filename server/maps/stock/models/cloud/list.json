@@ -1,4 +1,6 @@
 {
 	"type": "flat",
-	"texture": "texture.png"
+	"texture": "texture.png",
+	"offscreen": [-100, -100],
+	"rotations": [1, 1, 1, 1]
 }
