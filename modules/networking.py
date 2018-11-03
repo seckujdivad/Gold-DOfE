@@ -146,7 +146,6 @@ class Server:
                         
                 elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
                     self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
-                    print('gie')
                     self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
                     self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
                     

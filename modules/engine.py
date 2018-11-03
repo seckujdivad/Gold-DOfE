@@ -558,8 +558,6 @@ class Model:
         self.imageloader = imageloader
         self.canvas = canvas
         
-        print(self.ent_name)
-        
         class graphics:
             x = 0
             y = 0
