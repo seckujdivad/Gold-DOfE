@@ -168,6 +168,7 @@ class UI:
                     settingsdict['hud']['chat']['colour'] = self.chatcol_var.get()
                     settingsdict['hud']['chat']['fontsize'] = self.chatsize_var.get()
                     settingsdict['hud']['chat']['font'] = self.chatfont_var.get()
+                    settingsdict['hud']['chat']['maxlen'] = self.chatmaxlen_var.get()
                     settingsdict['user']['name'] = self.username_var.get()
                     settingsdict['default window state'] = self.windowzoom_flipswitch.state
                     
@@ -187,6 +188,7 @@ class UI:
                     self.chatcol_var.set(settingsdict['hud']['chat']['colour'])
                     self.chatsize_var.set(settingsdict['hud']['chat']['fontsize'])
                     self.chatfont_var.set(settingsdict['hud']['chat']['font'])
+                    self.chatmaxlen_var.set(settingsdict['hud']['chat']['maxlen'])
                     self.username_var.set(settingsdict['user']['name'])
                     self.windowzoom_flipswitch.on_option_press(settingsdict['default window state'], run_binds = False)
                 
@@ -232,6 +234,9 @@ class UI:
                 chatsize_label = tk.Label(settings_frame, text = 'Chat size', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 chatsize_var = tk.IntVar()
                 chatsize_spinbox = tk.Spinbox(settings_frame, from_ = 0, to = 128, textvariable = chatsize_var, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
+                chatmaxlen_label = tk.Label(settings_frame, text = 'Chat messages to display', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                chatmaxlen_var = tk.IntVar()
+                chatmaxlen_spinbox = tk.Spinbox(settings_frame, from_ = 0, to = 128, textvariable = chatmaxlen_var, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
                 
                 cat_user_label = tk.Label(settings_frame, text = 'User', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 username_label = tk.Label(settings_frame, text = 'Username', **self.styling.get(font_size = 'medium', object_type = tk.Label))
@@ -268,8 +273,10 @@ class UI:
                 chatfont_entry.grid(row = widget_row + 3, column = 1, sticky = 'NESW')
                 chatsize_label.grid(row = widget_row + 4, column = 0, sticky = 'NESW')
                 chatsize_spinbox.grid(row = widget_row + 4, column = 1, sticky = 'NESW')
+                chatmaxlen_label.grid(row = widget_row + 5, column = 0, sticky = 'NESW')
+                chatmaxlen_spinbox.grid(row = widget_row + 5, column = 1, sticky = 'NESW')
                 
-                widget_row += 5
+                widget_row += 6
                 
                 cat_user_label.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
                 username_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
