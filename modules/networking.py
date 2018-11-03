@@ -308,6 +308,7 @@ sv_quit: destroy the server'''
             to_remove = []
             data_to_send = []
             
+            i = 0
             for item in self.serverdata.item_data:
                 to_send_loop = {}
             
@@ -315,7 +316,7 @@ sv_quit: destroy the server'''
                 if (not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']:
                     to_send_loop['type'] = 'remove'
                     
-                    to_remove.append(index)
+                    to_remove.append(i)
                    
                 elif item['new']:
                     to_send_loop['type'] = 'add'
@@ -339,12 +340,14 @@ sv_quit: destroy the server'''
                 if not to_send_loop == {}:
                     to_send_loop['ticket'] = item['ticket']
                     data_to_send.append(to_send_loop)
+                    
+                i += 1
 			
             to_remove.sort()
             to_remove.reverse()
-            for ticket in to_remove:
-                data_to_send.append(['removal', {'ticket': ticket}])
-                self.serverdata.item_data.pop(index) ################change
+            for i in to_remove:
+                data_to_send.append(['removal', {'ticket': self.serverdata.item_data[i]['ticket']}])
+                self.serverdata.item_data.pop(i)
             
             for conn_data in self.serverdata.conn_data:
                 self.send(conn_data['connection'], Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))
