@@ -311,11 +311,12 @@ sv_quit: destroy the server'''
             i = 0
             for item in self.serverdata.item_data:
                 to_send_loop = {}
+                
+                out_of_bounds = False
             
-                index = item['ticket']
-                if (not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']:
+                if ((not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']) or out_of_bounds:
                     to_send_loop['type'] = 'remove'
-                    
+                    to_send_loop['ticket'] = item['ticket']
                     to_remove.append(i)
                    
                 elif item['new']:
@@ -346,7 +347,6 @@ sv_quit: destroy the server'''
             to_remove.sort()
             to_remove.reverse()
             for i in to_remove:
-                data_to_send.append(['removal', {'ticket': self.serverdata.item_data[i]['ticket']}])
                 self.serverdata.item_data.pop(i)
             
             for conn_data in self.serverdata.conn_data:

@@ -356,6 +356,8 @@ class Entity:
         self.map_path = map_path
         self.is_player = is_player
         
+        self.running = True
+        
         class pos:
             x = 0
             y = 0
@@ -414,7 +416,7 @@ class Entity:
         with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
             keybind_data = json.load(file)
         
-        while True:
+        while self.running:
             time.sleep(self.pos.momentum.delay)
             
             accel = 0
@@ -486,7 +488,7 @@ class Entity:
     
     def script_bind_handler(self):
         touching_last_loop = []
-        while True:
+        while self.running:
             start = time.time()
         
             touching_this_loop = []
@@ -543,6 +545,10 @@ class Entity:
             return math.degrees(math.atan(dy / dx)) + 180
         else:
             return math.degrees(math.atan(dy / dx))
+    
+    def destroy(self):
+        self.model.destroy()
+        self.running = False
 
 class Model:
     def __init__(self, ent_name, map_path, imageloader, canvas):
