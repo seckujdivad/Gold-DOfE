@@ -118,16 +118,17 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        
                         entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine)
                         entity.setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
                         self.engine.map.items.append({'ticket': data['ticket'],
                                                       'object': entity})
+                        
                     elif data['type'] == 'remove':
                         to_remove = []
                         for i in self.engine.map.items:
                             if i['ticket'] == data['ticket']:
                                 to_remove.append(i)
+                                
                         for i in to_remove:
                             i['object'].destroy()
                             self.engine.map.items.remove(i)
@@ -137,11 +138,13 @@ class Game:
                         for i in self.engine.map.items:
                             if i['ticket'] == data['ticket']:
                                 to_update.append(i)
+                                
                         for i in to_update:
                             if 'position' in data:
                                 i['object'].setpos(x = data['position'][0], y = data['position'][1])
                             if 'rotation' in data:
                                 i['object'].setpos(rotation = data['rotation'])
+                                print(data['rotation'])
 
 class Engine:
     def __init__(self, game):
