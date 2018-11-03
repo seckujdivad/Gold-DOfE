@@ -34,7 +34,8 @@ class Game:
         self.message_pipe, pipe = mp.Pipe()
         self.messagedisplay = CanvasMessages(self.canvas, pipe)
         self.messagedisplay.graphical_properties.font = (self.settingsdict['hud']['chat']['font'], self.settingsdict['hud']['chat']['fontsize'])
-        self.messagedisplay.graphical_properties.persist = self.settingsdict['hud']['chat']['maxlen']
+        self.messagedisplay.graphical_properties.maxlen = self.settingsdict['hud']['chat']['maxlen']
+        self.messagedisplay.graphical_properties.persist = self.settingsdict['hud']['chat']['persist time']
         self.messagedisplay.graphical_properties.height = self.settingsdict['hud']['chat']['spacing']
         self.messagedisplay.graphical_properties.colour = self.settingsdict['hud']['chat']['colour']
         self.messagedisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['chat']['position']]

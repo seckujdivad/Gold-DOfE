@@ -9,9 +9,10 @@
 			"colour": "#000000",
 			"font": "Courier New",
 			"fontsize": 9,
-			"maxlen": 10,
+			"maxlen": 15,
 			"position": 3,
-			"spacing": 20
+			"spacing": 20,
+			"persist time": 8
 		}
 	},
 	"network": {
