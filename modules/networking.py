@@ -313,6 +313,16 @@ sv_quit: destroy the server'''
                 to_send_loop = {}
                 
                 out_of_bounds = False
+                if item['data']['hitbox']['type'] == 'circular':
+                    if item['position'][0] > self.serverdata.mapdata['geometry'][0] + item['data']['hitbox']['radius']:
+                        out_of_bounds = True
+                    elif item['position'][0] < 0 - item['data']['hitbox']['radius']:
+                        out_of_bounds = True
+                    if item['position'][1] > self.serverdata.mapdata['geometry'][1] + item['data']['hitbox'][
+                        'radius']:
+                        out_of_bounds = True
+                    elif item['position'][1] < 0 - item['data']['hitbox']['radius']:
+                        out_of_bounds = True
             
                 if ((not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']) or out_of_bounds:
                     to_send_loop['type'] = 'remove'
