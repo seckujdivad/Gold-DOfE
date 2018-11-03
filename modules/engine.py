@@ -40,6 +40,9 @@ class Game:
         self.messagedisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['chat']['position']]
         
         self.engine = Engine(self)
+
+        # display IP
+        self.message_pipe.send(['info', 'Connected to {}:{}'.format(self.client.serverdata.host, self.client.serverdata.port)])
         
         self.client.recv_binds.append(self.recv_handler)
         self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'map'))
@@ -181,6 +184,8 @@ class Engine:
     def load_map(self, name):
         self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)
         if os.path.isdir(self.map.path):
+            self.game.message_pipe.send(['map load', 'Loading map "{}"'.format(name)])
+            
             #check user cfg
             with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
                 self.map.settingscfg = json.load(file)
