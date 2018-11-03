@@ -541,10 +541,15 @@ class Entity:
         dx = x - self.pos.x
         dy = y - self.pos.y
         
-        if dx < 0:
-            return math.degrees(math.atan(dy / dx)) + 180
+        if dx == 0:
+            if dy > 0:
+                return 270
+            else:
+                return 90
+        elif dx < 0:
+            return (math.degrees(math.atan(dy / dx)) + 180) % 360
         else:
-            return math.degrees(math.atan(dy / dx))
+            return math.degrees(math.atan(dy / dx)) % 360
     
     def destroy(self):
         self.model.destroy()
@@ -682,7 +687,7 @@ class Model:
             for rot in range(num_rotations):
                 angle = angle_increment * rot
                 if self.graphics.usesPIL:
-                    loaded_image = self.imageloader(image = self.graphics.flat.texture.rotate(angle))
+                    loaded_image = self.imageloader(image = self.graphics.flat.texture.rotate(0 - angle))
                 else:
                     loaded_image = self.imageloader(image = self.graphics.flat.texture)
                 new_canv_obj = self.canvas.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image)
