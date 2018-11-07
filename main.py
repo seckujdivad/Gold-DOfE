@@ -15,6 +15,11 @@ class App:
         self.client = None
         self.server = None
         
+        if not os.path.isfile(os.path.join(sys.path[0], 'user', 'config.json')):
+            with open(os.path.join(sys.path[0], 'user', 'default_config.json'), 'r') as file:
+                with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as writeto_file:
+                    writeto_file.write(file.read())
+        
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             settingsdata = json.load(file)
     
