@@ -351,6 +351,19 @@ sv_quit: destroy the server'''
                 for playerdata in self.serverdata.conn_data:
                     if playerdata['active']:
                         if self.item_touches_player(playerdata['position']['x'], playerdata['position']['y'], item):
+                            if item['data']['destroyed after damage']:
+                                to_send_loop['type'] = 'remove'
+                                to_send_loop['ticket'] = item['ticket']
+                                to_remove.append(i)
+                                
+                            if 'last damage' in item and not item['last damage'] == None:
+                                if (time.time() - item['last damage']) > item['data']['damage cooldown']:
+                                    playerdata['health'] -= item['data']['damage']['player']
+                                    item['last damage'] = time.time()
+                            else:
+                                playerdata['health'] -= item['data']['damage']['player']
+                                item['last damage'] = time.time()
+                            
                             print(playerdata['username'])
                 
                 if not to_send_loop == {}:

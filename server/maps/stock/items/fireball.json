@@ -7,6 +7,7 @@
 		"player": 10
 	},
 	"destroyed after damage": false,
+	"damage cooldown": 1,
 	"range": null,
 	"speed": 50,
 	"hitbox": {
