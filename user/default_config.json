@@ -1,31 +1,38 @@
 {
 	"default window state": 0,
-    "graphics": {
-        "PILrender": false,
-        "stacked model quality": 1
-    },
-    "hud": {
-        "chat": {
-            "colour": "#000000",
-            "font": "Courier New",
-            "fontsize": 9,
-            "maxlen": 10,
-            "position": 3,
-            "spacing": 20
-        }
-    },
-    "network": {
-        "default port": 4321,
-        "servers": [
-            {
-                "address": "localhost",
-                "internal": true,
-                "name": "Local PC",
-                "port": "normal"
-            }
-        ]
-    },
-    "user": {
-        "name": "unknown"
-    }
+	"graphics": {
+		"PILrender": true,
+		"stacked model quality": 3
+	},
+	"hud": {
+		"chat": {
+			"colour": "#000000",
+			"font": "Courier New",
+			"fontsize": 9,
+			"maxlen": 15,
+			"position": 3,
+			"spacing": 20,
+			"persist time": 8
+		}
+	},
+	"network": {
+		"default port": 4321,
+		"servers": [
+			{
+				"address": "localhost",
+				"internal": false,
+				"name": "Local PC",
+				"port": "normal"
+			},
+			{
+				"address": "localhost",
+				"internal": true,
+				"name": "Local PC",
+				"port": "normal"
+			}
+		]
+	},
+	"user": {
+		"name": "unknown"
+	}
 }
