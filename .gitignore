@@ -148,3 +148,5 @@ server/database.db
 *.db
 
 .idea/*
+
+user/config.json
