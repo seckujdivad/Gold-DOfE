@@ -346,6 +346,12 @@ sv_quit: destroy the server'''
                     item['position'][1] +=  to_move * math.sin(math.radians(item['rotation']))
                     
                     to_send_loop['position'] = item['position']
+                    
+                #clipping
+                for playerdata in self.serverdata.conn_data:
+                    if playerdata['active']:
+                        if self.item_touches_player(playerdata['position']['x'], playerdata['position']['y'], item):
+                            print(playerdata['username'])
                 
                 if not to_send_loop == {}:
                     to_send_loop['ticket'] = item['ticket']
@@ -362,6 +368,15 @@ sv_quit: destroy the server'''
                 self.send(conn_data['connection'], Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))
             
             time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
+    
+    def item_touches_player(self, x, y, item):
+        if item['data']['hitbox']['type'] == 'circular':
+            if self.distance_to_point(x, y, *item['position']) <= item['data']['hitbox']['radius']:
+                return True
+        return False
+    
+    def distance_to_point(self, x0, y0, x1, y1):
+        return math.hypot(x1 - x0, y1 - y0)
 
 class Client:
     def __init__(self, host_, port_):
