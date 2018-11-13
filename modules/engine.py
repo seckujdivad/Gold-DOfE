@@ -105,6 +105,8 @@ class Game:
                 self.vars['team'] = request.arguments['value']
             elif request.subcommand == 'client position':
                 self.engine.map.player.setpos(request.arguments['x'], request.arguments['y'], request.arguments['rotation'])
+            elif request.subcommand == 'health':
+                self.engine.map.player.set_health(request.arguments['value'])
             else:
                 self.vars[request.subcommand] = request.arguments['value']
         elif request.command == 'give':

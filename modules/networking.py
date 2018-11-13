@@ -124,6 +124,9 @@ class Server:
                     elif req.subcommand == 'player model': #client wants to know it's own player model
                         if self.serverdata.map != None:
                             self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[conn_id]['model']}))
+                    
+                    elif req.subcommand == 'health':
+                        self.send(connection, Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.serverdata.conn_data[conn_id]['health']}))
                             
                     elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
                         output = []
@@ -349,6 +352,7 @@ sv_quit: destroy the server'''
                     
                 #clipping
                 for playerdata in self.serverdata.conn_data:
+                    damage_dealt = False
                     if playerdata['active']:
                         if self.item_touches_player(playerdata['position']['x'], playerdata['position']['y'], item):
                             if item['data']['destroyed after damage']:
@@ -358,13 +362,15 @@ sv_quit: destroy the server'''
                                 
                             if 'last damage' in item and not item['last damage'] == None:
                                 if (time.time() - item['last damage']) > item['data']['damage cooldown']:
-                                    playerdata['health'] -= item['data']['damage']['player']
-                                    item['last damage'] = time.time()
+                                    damage_dealt = True
                             else:
-                                playerdata['health'] -= item['data']['damage']['player']
-                                item['last damage'] = time.time()
-                            
-                            print(playerdata['username'])
+                                damage_dealt = True
+                    
+                    if damage_dealt:
+                        playerdata['health'] -= item['data']['damage']['player']
+                        item['last damage'] = time.time()
+                        
+                        self.send(playerdata['connection'], Request(command = 'var update w', subcommand = 'health', arguments = {'value': playerdata['health']}))
                 
                 if not to_send_loop == {}:
                     to_send_loop['ticket'] = item['ticket']
