@@ -1,0 +1,11 @@
+# Notes on the engine
+
+## Layers
+0 Base texture (background)
+1 Map panels
+2 Items
+3 Player models
+4 Scatters
+30 Overlay
+31 Log text
+32 numerical bars, inv bars
