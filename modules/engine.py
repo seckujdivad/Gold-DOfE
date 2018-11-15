@@ -81,7 +81,7 @@ class Game:
             self.message_pipe.send(['chat', request.arguments['text']])
         elif request.command == 'disconnect':
             if self.running == True:
-                print('connection to server interrupted')
+                print('Connection to server interrupted')
         elif request.command == 'var update w':
             if request.subcommand == 'map':
                 if not self.engine.map.name == request.arguments['map name']:
@@ -150,7 +150,6 @@ class Game:
                                 i['object'].setpos(x = data['position'][0], y = data['position'][1])
                             if 'rotation' in data:
                                 i['object'].setpos(rotation = data['rotation'])
-                                print(data['rotation'])
 
 class Engine:
     def __init__(self, game):
@@ -530,7 +529,6 @@ class Entity:
                                 if path in self.engine.map.materials.scripts:
                                     for func in self.engine.map.materials.scripts[path](touching_last_loop).binds['player']['when outside map']:
                                         func(self)
-                                    print(path)
                 if 'outside map' in self.engine.map.cfg['events']:
                     for path in self.engine.map.cfg['events']['outside map']:
                         if path in self.engine.map.materials.scripts:
