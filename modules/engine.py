@@ -1017,7 +1017,7 @@ class InventoryBar:
     def set_slot(self, index, item = None, quantity = 0):
         if quantity < 1:
             if not self.inv_items[index]['image'] == None:
-                self.canvas.delete(self.inv_items[index]['image'])
+                self.canvcont.delete(self.inv_items[index]['image'])
             self.inv_items[index] = {'item': None, 'image': None, 'quantity': 0}
         else:
             self.inv_items[index]['quantity'] = quantity
