@@ -11,7 +11,7 @@
 		"slot2": ["3"],
 		"slot3": ["4"],
 		"slot4": ["5"],
-		"use": ["0", "space", "e"]
+		"use": ["0", "space", "e", "mouse1"]
 	},
 	"window": {
 		"return to menu": ["Escape"]

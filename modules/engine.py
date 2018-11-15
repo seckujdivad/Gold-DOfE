@@ -841,6 +841,7 @@ class KeyBind:
     def _keyhandlerd(self): #daemon to handle key inputs
         keypress_funcid = self.root.bind('<KeyPress>', self._onkeypress)
         keyrelease_funcid = self.root.bind('<KeyRelease>', self._onkeyrelease)
+        m1_funcid = self.root.bind('<Button-1>', self._mouse1)
         
         while self._isactive:
             start = time.time()
@@ -856,6 +857,7 @@ class KeyBind:
         
         self.root.unbind('<KeyPress>', keypress_funcid)
         self.root.unbind('<KeyRelease>', keyrelease_funcid)
+        self.root.unbind('<Button1>', m1_funcid)
     
     def _onkeypress(self, event):
         self._keystates[event.keysym.lower()] = True
@@ -912,6 +914,12 @@ class KeyBind:
             delay = self.delay - (time.time() - start)
             if delay > 0:
                 time.sleep(delay)
+    
+    def _mouse1(self, event):
+        if "mouse1" in self.binds:
+            for bind in self.binds["mouse1"]:
+                bind()
+        
         
 class DisplayBar:
     def __init__(self, canvcont, min_value, max_value, coords, bg, fg):
@@ -1071,17 +1079,9 @@ class CanvasController:
         
         self.layers[args['layer']].append({'object': obj})
         
-        ## objects are always created on the top - find how many should
-        ## be above and move the tag down by the required amount
+        ## objects are always created on the top
         
-        '''layers_above = len(self.layers) - args['layer']
-        move_by = 0
-        for i in range(args['layer'] + 1, len(self.layers), 1):
-            move_by += len(self.layers[i])
-        
-        print(move_by, len(self.layers))'''
-        
-        if not len(self.layers) == args['layer'] + 1: ## check if top level
+        if not len(self.layers) == args['layer'] + 1: ## logic to find next highest tag and move just below it
             next_layer = None
             for i in range(len(self.layers) - 1, args['layer'], -1):
                 if not len(self.layers[i]) == 0:
@@ -1102,7 +1102,7 @@ class CanvasController:
         return obj
     
     def delete(self, obj):
-        self.canvas.delete(obj) ##will include optimisation in future
+        self.canvas.delete(obj) ##will include memory optimisation in future
     
     def coords(self, obj, *coords):
         self.canvas.coords(obj, *coords)
