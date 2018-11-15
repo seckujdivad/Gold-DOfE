@@ -2,7 +2,7 @@
 	"default window state": 0,
 	"graphics": {
 		"PILrender": true,
-		"stacked model quality": 3
+		"stacked model quality": 1
 	},
 	"hud": {
 		"chat": {
@@ -10,9 +10,9 @@
 			"font": "Courier New",
 			"fontsize": 9,
 			"maxlen": 15,
+			"persist time": 8,
 			"position": 3,
-			"spacing": 20,
-			"persist time": 8
+			"spacing": 20
 		}
 	},
 	"network": {
