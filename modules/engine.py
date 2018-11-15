@@ -739,6 +739,7 @@ class CanvasMessages:
         
         self.messages = []
         self.running = True
+        self.layer = 31
         
         class graphical_properties:
             updatedelay = 1
@@ -772,7 +773,7 @@ class CanvasMessages:
                 displaytext = data
             elif type(data) == list:
                 displaytext = self.graphical_properties.formatlib[self.graphical_properties.alignment].format(data[0], data[1])
-            self.messages.insert(0, {'text': displaytext, 'timestamp': time.time(), 'obj': self.canvcont.create_text(0, 0, text = displaytext, fill = self.graphical_properties.colour, font = self.graphical_properties.font, anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment], layer = 31)})
+            self.messages.insert(0, {'text': displaytext, 'timestamp': time.time(), 'obj': self.canvcont.create_text(0, 0, text = displaytext, fill = self.graphical_properties.colour, font = self.graphical_properties.font, anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment], layer = self.layer)})
             if len(self.messages) > self.graphical_properties.maxlen:
                 for message in self.messages[self.graphical_properties.maxlen:]:
                     self.canvcont.delete(message['obj'])
@@ -921,7 +922,7 @@ class DisplayBar:
         self.bg = bg
         self.fg = fg
         
-        self.layer = 15
+        self.layer = 32
         
         class objects:
             background = self.canvcont.create_rectangle(*coords, fill = self.bg, outline = self.bg, width = 5, layer = self.layer)
@@ -952,7 +953,7 @@ class InventoryBar:
         self.outlinewidth = outlinewidth
         self.divider_size = divider_size
         
-        self.layer = 15
+        self.layer = 32
         
         class paths:
             textures = textures_path
