@@ -31,6 +31,8 @@ class Game:
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             self.settingsdict = json.load(file)
         
+        self.canvcont = CanvasController(self.canvas)
+        
         self.message_pipe, pipe = mp.Pipe()
         self.messagedisplay = CanvasMessages(self.canvas, pipe)
         self.messagedisplay.graphical_properties.font = (self.settingsdict['hud']['chat']['font'], self.settingsdict['hud']['chat']['fontsize'])
@@ -1026,3 +1028,48 @@ class InventoryBar:
         data['quantity'] = self.inv_items[index]['quantity']
         data['file name'] = self.inv_items[index]['item']
         return data
+
+class CanvasController:
+    def __init__(self, canvas):
+        self.canvas = canvas
+        
+        self.layers = []
+        self.reserved_args = ['layer']
+        
+    def create_rectangle(self, *coords, **args):
+        'Wrapper function to provide tk canvas-like syntax'
+        self._create('rectangle', coords, args)
+    
+    def create_image(self, *coords, **args):
+        'Wrapper function to provide tk canvas-like syntax'
+        self._create('image', coords, args)
+    
+    def _create(self, obj_type, coords, args):
+        if not 'layer' in args:
+            args['layer'] = 0
+            
+        while not len(self.layers) >= args['layer'] + 1:
+            self.layers.append([])
+        
+        filtered_args = {}
+        for key in args:
+            if not key in self.reserved_args:
+                filtered_args[key] = args[key]
+        
+        if obj_type == 'rectangle':
+            obj = self.canvas.create_rectangle(*coords, **filtered_args)
+        elif obj_type == 'image':
+            obj = self.canvas.create_image(*coords, **filtered_args)
+        
+        self.layers[args['layer']].append({'object': obj})
+        
+        ## objects are always created on the top - find how many should
+        ## be above and move the tag down by the required amount
+        
+        layers_above = len(self.layers) - args['layer']
+        move_by = 0
+        for i in range(len(self.layers) - 1, args['layer'], -1):
+            move_by += len(self.layers[i])
+        
+        for i in range(move_by):
+            self.canvas.tag_lower(obj)
