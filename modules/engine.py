@@ -34,7 +34,7 @@ class Game:
         self.canvcont = CanvasController(self.canvas)
         
         self.message_pipe, pipe = mp.Pipe()
-        self.messagedisplay = CanvasMessages(self.canvas, pipe)
+        self.messagedisplay = CanvasMessages(self.canvcont, pipe)
         self.messagedisplay.graphical_properties.font = (self.settingsdict['hud']['chat']['font'], self.settingsdict['hud']['chat']['fontsize'])
         self.messagedisplay.graphical_properties.maxlen = self.settingsdict['hud']['chat']['maxlen']
         self.messagedisplay.graphical_properties.persist = self.settingsdict['hud']['chat']['persist time']
@@ -96,9 +96,7 @@ class Game:
                         entity.model.destroy()
                     if len(new_ent_list) < len(positions):
                         for i in range(len(positions) - len(new_ent_list)):
-                            new_ent_list.append(Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, is_player = False))
-                            if not self.engine.map.textures.obj_overlay == None:
-                                self.canvas.tag_raise(self.engine.map.textures.obj_overlay)
+                            new_ent_list.append(Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 3, is_player = False))
                         self.engine.map.other_players.entities = new_ent_list
                 
                 for index in range(len(positions)):
@@ -126,7 +124,7 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine)
+                        entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine, 2)
                         entity.setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
                         self.engine.map.items.append({'ticket': data['ticket'],
                                                       'object': entity})
@@ -219,7 +217,7 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
             
             #render base layer
-            self.map.textures.obj_base = self.game.canvas.create_image(402, 302, image = self.map.textures.base)
+            self.map.textures.obj_base = self.game.canvcont.create_image(402, 302, image = self.map.textures.base, layer = 0)
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
             
             #open layout
@@ -246,7 +244,7 @@ class Engine:
             for panel in self.map.layout.data['geometry']:
                 with open(os.path.join(self.map.path, 'materials', panel['material']), 'r') as file:
                     panel['material data'] = json.load(file)
-                panel['img obj'] = self.game.canvas.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[panel['material data']['texture']['address']])
+                panel['img obj'] = self.game.canvcont.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[panel['material data']['texture']['address']], layer = 1)
                 panel['scriptmodules'] = []
                 if 'scripts' in panel['material data']:
                     for script in panel['material data']['scripts']:
@@ -261,27 +259,27 @@ class Engine:
             self.map.textures.obj_scatter = []
             for i in range(int(self.map.cfg['background']['scatternum'] / len(self.map.cfg['background']['scatters']))):
                 for scatter in self.map.cfg['background']['scatters']:
-                    scattermdl = Model(random.choice(self.map.cfg['entity models'][scatter]), self.map.path, self.map.rendermethod, self.game.canvas)
+                    scattermdl = Model(random.choice(self.map.cfg['entity models'][scatter]), self.map.path, self.map.rendermethod, self.game.canvcont, 4)
                     scattermdl.setpos(random.randint(0, 800), random.randint(0, 600))
                     self.map.textures.obj_scatter.append(scattermdl)
             self.game.message_pipe.send(['map load', 'Loaded scatters'])
             
             #load player
             self.game.message_pipe.send(['map load', 'Creating player model...'])
-            self.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.map.path, self, is_player = True)
+            self.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.map.path, self, 3, is_player = True)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
             
             #render overlay
-            self.map.textures.obj_overlay = self.game.canvas.create_image(402, 302, image = self.map.textures.overlay)
+            self.map.textures.obj_overlay = self.game.canvcont.create_image(402, 302, image = self.map.textures.overlay, layer = 30)
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
             
             #make healthbar
-            self.map.healthbar = DisplayBar(self.game.canvas, 0, 100, [10, 10, 100, 20], 'gray', 'red')
+            self.map.healthbar = DisplayBar(self.game.canvcont, 0, 100, [10, 10, 100, 20], 'gray', 'red')
             self.map.healthbar.set_value(100)
             
             #make inventory display
-            self.map.invdisp = InventoryBar(self.game.canvas, [400, 550], os.path.join(self.map.path, 'textures'), os.path.join(self.map.path, 'items'), self.map.rendermethod)
+            self.map.invdisp = InventoryBar(self.game.canvcont, [400, 550], os.path.join(self.map.path, 'textures'), os.path.join(self.map.path, 'items'), self.map.rendermethod)
             self.map.invdisp.select_index(0)
             
             #set up binds for inventory display
@@ -307,10 +305,10 @@ class Engine:
                 scatter.destroy()
             self.map.textures.obj_scatter = []
         if not self.map.textures.obj_base == None:
-            self.game.canvas.delete(self.map.textures.obj_base)
+            self.game.canvcont.delete(self.map.textures.obj_base)
             self.map.textures.obj_base = None
         if not self.map.textures.obj_overlay == None:
-            self.game.canvas.delete(self.map.textures.obj_overlay)
+            self.game.canvcont.delete(self.map.textures.obj_overlay)
             self.map.textures.obj_overlay = None
         if not self.map.player == None:
             self.map.player.model.destroy()
@@ -360,11 +358,12 @@ class Engine:
                 self.map.invdisp.increment_slot(self.map.invdisp.selection_index, -1)
 
 class Entity:
-    def __init__(self, ent_name, map_path, engine, is_player = False):
+    def __init__(self, ent_name, map_path, engine, layer, is_player = False):
         self.ent_name = ent_name
         self.engine = engine
         self.map_path = map_path
         self.is_player = is_player
+        self.layer = layer
         
         self.running = True
         
@@ -389,7 +388,7 @@ class Entity:
         
         self.setpos_queue, pipe = mp.Pipe()
         
-        self.model = Model(self.ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvas)
+        self.model = Model(self.ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvcont, self.layer)
         
         threading.Thread(target = self._setpos_queue, name = 'Entity setpos queue', args = [pipe]).start()
         
@@ -566,12 +565,13 @@ class Entity:
         self.running = False
 
 class Model:
-    def __init__(self, ent_name, map_path, imageloader, canvas):
+    def __init__(self, ent_name, map_path, imageloader, canvcont, layer):
         self.ent_name = ent_name
         self.map_path = map_path
         self.ent_path = os.path.join(self.map_path, 'models', self.ent_name)
         self.imageloader = imageloader
-        self.canvas = canvas
+        self.canvcont = canvcont
+        self.layer = layer
         
         class graphics:
             x = 0
@@ -650,15 +650,15 @@ class Model:
             
         if self.graphics.displaytype == 'flat':
             if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
-                self.canvas.coords(self.obj_from_angle(self.graphics.prev_rotation), self.config['offscreen'][0], self.config['offscreen'][1])
-            self.canvas.coords(self.obj_from_angle(self.graphics.rotation), self.graphics.x, self.graphics.y)
+                self.canvcont.coords(self.obj_from_angle(self.graphics.prev_rotation), self.config['offscreen'][0], self.config['offscreen'][1])
+            self.canvcont.coords(self.obj_from_angle(self.graphics.rotation), self.graphics.x, self.graphics.y)
         elif self.graphics.displaytype == 'stack':
             i = 0
             if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
                 for canvobj in self.objset_from_angle(self.graphics.prev_rotation):
-                    self.canvas.coords(canvobj, self.config['offscreen'][0], self.config['offscreen'][1])
+                    self.canvcont.coords(canvobj, self.config['offscreen'][0], self.config['offscreen'][1])
             for canvobj in self.objset_from_angle(self.graphics.rotation):
-                self.canvas.coords(canvobj, self.graphics.x + (i * self.graphics.stack.offsets.x), self.graphics.y + (i * self.graphics.stack.offsets.y))
+                self.canvcont.coords(canvobj, self.graphics.x + (i * self.graphics.stack.offsets.x), self.graphics.y + (i * self.graphics.stack.offsets.y))
                 i += 1
     
     def create_rotations(self, num_rotations):
@@ -686,9 +686,9 @@ class Model:
                         loaded_image = self.imageloader(image = self.graphics.stack.textures[tex].rotate(angle))
                     else:
                         loaded_image = self.imageloader(image = self.graphics.stack.textures[tex])
-                    new_canv_obj = self.canvas.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image)
+                    new_canv_obj = self.canvcont.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image, layer = self.layer)
                     self.graphics.stack.canvobjs[i].append(new_canv_obj)
-                    self.canvas.coords(new_canv_obj, self.config['offscreen'][0], self.config['offscreen'][1])
+                    self.canvcont.coords(new_canv_obj, self.config['offscreen'][0], self.config['offscreen'][1])
                     
                     self.graphics.stack.imgobjs[i].append(loaded_image)
                 i += 1
@@ -700,7 +700,7 @@ class Model:
                     loaded_image = self.imageloader(image = self.graphics.flat.texture.rotate(0 - angle))
                 else:
                     loaded_image = self.imageloader(image = self.graphics.flat.texture)
-                new_canv_obj = self.canvas.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image)
+                new_canv_obj = self.canvcont.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image, layer = self.layer)
                 self.graphics.flat.canvobjs.append(new_canv_obj)
                 self.graphics.flat.textures.append(loaded_image)
     
@@ -713,11 +713,11 @@ class Model:
     def destroy(self):
         if self.graphics.displaytype == 'flat':
             for obj in self.graphics.flat.canvobjs:
-                self.canvas.delete(obj)
+                self.canvcont.delete(obj)
         else:
             for rotationset in self.graphics.stack.canvobjs:
                 for obj in rotationset:
-                    self.canvas.delete(obj)
+                    self.canvcont.delete(obj)
 
 class DBAccess:
     def __init__(self, address):
@@ -733,8 +733,8 @@ class DBAccess:
         self.connection.close()
         
 class CanvasMessages:
-    def __init__(self, canvas, pipe):
-        self.canvas = canvas
+    def __init__(self, canvcont, pipe):
+        self.canvcont = canvcont
         self.pipe = pipe
         
         self.messages = []
@@ -772,10 +772,10 @@ class CanvasMessages:
                 displaytext = data
             elif type(data) == list:
                 displaytext = self.graphical_properties.formatlib[self.graphical_properties.alignment].format(data[0], data[1])
-            self.messages.insert(0, {'text': displaytext, 'timestamp': time.time(), 'obj': self.canvas.create_text(0, 0, text = displaytext, fill = self.graphical_properties.colour, font = self.graphical_properties.font, anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment])})
+            self.messages.insert(0, {'text': displaytext, 'timestamp': time.time(), 'obj': self.canvcont.create_text(0, 0, text = displaytext, fill = self.graphical_properties.colour, font = self.graphical_properties.font, anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment], layer = 31)})
             if len(self.messages) > self.graphical_properties.maxlen:
                 for message in self.messages[self.graphical_properties.maxlen:]:
-                    self.canvas.delete(message['obj'])
+                    self.canvcont.delete(message['obj'])
                 self.messages = self.messages[:self.graphical_properties.maxlen]
     
     def graphics_handler(self):
@@ -785,12 +785,10 @@ class CanvasMessages:
             for i in range(len(msgs)):
                 message = msgs[i]
                 x, y = self.calc_coords(i)
-                self.canvas.coords(message['obj'], x, y)
+                self.canvcont.coords(message['obj'], x, y)
                 if time.time() - message['timestamp'] > self.graphical_properties.persist:
-                    self.canvas.delete(message['obj'])
+                    self.canvcont.delete(message['obj'])
                     todelete.insert(0, i)
-                else:
-                    self.canvas.tag_raise(message['obj'])
             for i in todelete:
                 self.messages.pop(i)
             time.sleep(self.graphical_properties.updatedelay)
@@ -799,11 +797,11 @@ class CanvasMessages:
         if self.graphical_properties.alignment == 'tl':
             return 10, 10 + (position * self.graphical_properties.height)
         elif self.graphical_properties.alignment == 'tr':
-            return self.canvas.winfo_width() - 10, 10 + (position * self.graphical_properties.height)
+            return self.canvcont.canvas.winfo_width() - 10, 10 + (position * self.graphical_properties.height)
         elif self.graphical_properties.alignment == 'bl':
-            return 10, self.canvas.winfo_height() - (position * self.graphical_properties.height) - 10
+            return 10, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - 10
         elif self.graphical_properties.alignment == 'br':
-            return self.canvas.winfo_width() - 10, self.canvas.winfo_height() - (position * self.graphical_properties.height) - 10
+            return self.canvcont.canvas.winfo_width() - 10, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - 10
         
     def stop(self):
         self.running = False
@@ -915,17 +913,19 @@ class KeyBind:
                 time.sleep(delay)
         
 class DisplayBar:
-    def __init__(self, canvas, min_value, max_value, coords, bg, fg):
-        self.canvas = canvas
+    def __init__(self, canvcont, min_value, max_value, coords, bg, fg):
+        self.canvcont = canvcont
         self.min_value = min_value
         self.max_value = max_value
         self.coords = coords
         self.bg = bg
         self.fg = fg
         
+        self.layer = 15
+        
         class objects:
-            background = self.canvas.create_rectangle(*coords, fill = self.bg, outline = self.bg, width = 5)
-            display = self.canvas.create_rectangle(*coords, fill = self.fg, outline = self.fg, width = 0)
+            background = self.canvcont.create_rectangle(*coords, fill = self.bg, outline = self.bg, width = 5, layer = self.layer)
+            display = self.canvcont.create_rectangle(*coords, fill = self.fg, outline = self.fg, width = 0, layer = self.layer)
         self.objects = objects
     
     def set_value(self, value):
@@ -934,15 +934,15 @@ class DisplayBar:
         if value > self.max_value:
             value = self.max_value
         
-        self.canvas.coords(self.objects.display, self.coords[0], self.coords[1], self.coords[0] + ((self.coords[2] - self.coords[0]) * ((value - self.min_value) / (self.max_value - self.min_value))), self.coords[3])
+        self.canvcont.coords(self.objects.display, self.coords[0], self.coords[1], self.coords[0] + ((self.coords[2] - self.coords[0]) * ((value - self.min_value) / (self.max_value - self.min_value))), self.coords[3])
     
     def destroy(self):
-        self.canvas.delete(self.objects.background)
-        self.canvas.delete(self.objects.display)
+        self.canvcont.delete(self.objects.background)
+        self.canvcont.delete(self.objects.display)
 
 class InventoryBar:
-    def __init__(self, canvas, coords, textures_path, items_path, rendermethod, num_slots = 5, sprite_dimensions = [64, 64], backingcolour = '#A0A0A0', outlinewidth = 5, divider_size = 10, backingcolour_selected = '#EAEAEA'):
-        self.canvas = canvas
+    def __init__(self, canvcont, coords, textures_path, items_path, rendermethod, num_slots = 5, sprite_dimensions = [64, 64], backingcolour = '#A0A0A0', outlinewidth = 5, divider_size = 10, backingcolour_selected = '#EAEAEA'):
+        self.canvcont = canvcont
         self.coords = coords #the coordinates for the top right of the inventory bar
         self.rendermethod = rendermethod
         self.num_slots = num_slots
@@ -951,6 +951,8 @@ class InventoryBar:
         self.backingcolour_selected = backingcolour_selected
         self.outlinewidth = outlinewidth
         self.divider_size = divider_size
+        
+        self.layer = 15
         
         class paths:
             textures = textures_path
@@ -982,18 +984,18 @@ class InventoryBar:
             x1 = x0 + self.sprite_dimensions[0]
             y0 = coords[1]
             y1 = y0 + self.sprite_dimensions[1]
-            self.slot_objs.append(self.canvas.create_rectangle(x0, y0, x1, y1, fill = self.backingcolour, outline = self.backingcolour))
+            self.slot_objs.append(self.canvcont.create_rectangle(x0, y0, x1, y1, fill = self.backingcolour, outline = self.backingcolour, layer = self.layer))
     
     def select_index(self, index, force_refresh = False):
         if index != self.selection_index and not force_refresh:
             if not self.selection_index == None:
-                self.canvas.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour, outline = self.backingcolour)
+                self.canvcont.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour, outline = self.backingcolour)
             self.selection_index = index
-            self.canvas.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour_selected, outline = self.backingcolour_selected)
+            self.canvcont.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour_selected, outline = self.backingcolour_selected)
     
     def destroy(self):
         for object in self.slot_objs:
-            self.canvas.delete(object)
+            self.canvcont.delete(object)
     
     def get_top_right_coords(self):
         x = self.coords[0] - ((self.sprite_dimensions[0] * (self.num_slots / 2)) + (self.divider_size * (self.num_slots / 2)))
@@ -1015,7 +1017,7 @@ class InventoryBar:
                 
                 if self.inv_items[index]['image'] == None:
                     coords = self.get_top_right_coords()
-                    self.inv_items[index]['image'] = self.canvas.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'])
+                    self.inv_items[index]['image'] = self.canvcont.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'], layer = self.layer)
     
     def get_item_info(self, item):
         return self.items_data[item]
@@ -1038,11 +1040,14 @@ class CanvasController:
         
     def create_rectangle(self, *coords, **args):
         'Wrapper function to provide tk canvas-like syntax'
-        self._create('rectangle', coords, args)
+        return self._create('rectangle', coords, args)
     
     def create_image(self, *coords, **args):
         'Wrapper function to provide tk canvas-like syntax'
-        self._create('image', coords, args)
+        return self._create('image', coords, args)
+    
+    def create_text(self, *coords, **args):
+        return self._create('text', coords, args)
     
     def _create(self, obj_type, coords, args):
         if not 'layer' in args:
@@ -1060,16 +1065,46 @@ class CanvasController:
             obj = self.canvas.create_rectangle(*coords, **filtered_args)
         elif obj_type == 'image':
             obj = self.canvas.create_image(*coords, **filtered_args)
+        elif obj_type == 'text':
+            obj = self.canvas.create_text(*coords, **filtered_args)
         
         self.layers[args['layer']].append({'object': obj})
         
         ## objects are always created on the top - find how many should
         ## be above and move the tag down by the required amount
         
-        layers_above = len(self.layers) - args['layer']
+        '''layers_above = len(self.layers) - args['layer']
         move_by = 0
-        for i in range(len(self.layers) - 1, args['layer'], -1):
+        for i in range(args['layer'] + 1, len(self.layers), 1):
             move_by += len(self.layers[i])
         
-        for i in range(move_by):
-            self.canvas.tag_lower(obj)
+        print(move_by, len(self.layers))'''
+        
+        if not len(self.layers) == args['layer'] + 1: ## check if top level
+            next_layer = None
+            for i in range(len(self.layers) - 1, args['layer'], -1):
+                if not len(self.layers[i]) == 0:
+                    next_layer = i
+            if next_layer == None:
+                if len(self.layers) == 1:
+                    lower_to = None
+                    for i in range(args['layer']):
+                        if not len(self.layers[i]) == 0:
+                            lower_to = self.layers[i][len(self.layers[args['layer']]) - 1]
+                    if not lower_to == None:
+                        self.canvas.tag_lower(obj, lower_to['object'])
+                else:
+                    self.canvas.tag_lower(obj, self.layers[args['layer']][len(self.layers[args['layer']]) - 2]['object'])
+            else:
+                self.canvas.tag_lower(obj, self.layers[next_layer][0]['object'])
+        
+        return obj
+    
+    def delete(self, obj):
+        self.canvas.delete(obj) ##will include optimisation in future
+    
+    def coords(self, obj, *coords):
+        self.canvas.coords(obj, *coords)
+    
+    def itemconfigure(self, obj, **args):
+        self.canvas.itemconfigure(obj, **args)
