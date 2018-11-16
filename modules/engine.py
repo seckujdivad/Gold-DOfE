@@ -1100,8 +1100,18 @@ class CanvasController:
         return obj
     
     def delete(self, obj):
-        self.canvas.delete(obj) ##will include memory optimisation in future
-    
+        to_remove = []
+        for a in range(len(self.layers)):
+            for b in range(len(self.layers[a])):
+                if self.layers[a][b]['object'] == obj:
+                    to_remove.append([a, b])
+        
+        self.canvas.delete(obj)
+        
+        to_remove.reverse()
+        for a, b in to_remove:
+            self.layers[a].pop(b)
+        
     def coords(self, obj, *coords):
         self.canvas.coords(obj, *coords)
     
