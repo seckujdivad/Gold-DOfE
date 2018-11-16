@@ -163,6 +163,8 @@ class Engine:
                 obj_base = None
                 obj_overlay = None
                 obj_scatter = []
+                
+                event_overlays = {}
             class layout:
                 data = {}
             class materials:
@@ -563,13 +565,14 @@ class Entity:
         self.running = False
 
 class Model:
-    def __init__(self, ent_name, map_path, imageloader, canvcont, layer):
+    def __init__(self, ent_name, map_path, imageloader, canvcont, layer, transparency_precision = 1):
         self.ent_name = ent_name
         self.map_path = map_path
         self.ent_path = os.path.join(self.map_path, 'models', self.ent_name)
         self.imageloader = imageloader
         self.canvcont = canvcont
         self.layer = layer
+        self.transparency_precision = max(1, transparency_precision)
         
         class graphics:
             x = 0
@@ -584,6 +587,7 @@ class Model:
                 textures = []
                 imgobj = None
                 canvobjs = []
+                transparency = 255
             class stack:
                 class offsets:
                     x = 0
@@ -707,6 +711,9 @@ class Model:
     
     def obj_from_angle(self, angle):
         return self.graphics.flat.canvobjs[int((angle / 360) * len(self.graphics.flat.canvobjs))]
+    
+    def tex_from_angle(self, angle):
+        return self.graphics.flat.textures[int((angle / 360) * len(self.graphics.flat.canvobjs))]
         
     def destroy(self):
         if self.graphics.displaytype == 'flat':
@@ -716,6 +723,11 @@ class Model:
             for rotationset in self.graphics.stack.canvobjs:
                 for obj in rotationset:
                     self.canvcont.delete(obj)
+                    
+    def set_transparency(self, transparency):
+        if self.graphics.displaytype == 'flat' and self.graphics.usesPIL:
+            self.graphics.flat.transparency = transparency % 256
+            print(self.tex_from_angle(self.graphics.rotation))
 
 class DBAccess:
     def __init__(self, address):

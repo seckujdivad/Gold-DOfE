@@ -13,7 +13,12 @@
 			"persist time": 8,
 			"position": 3,
 			"spacing": 20
-		}
+		},
+		"overlays": {
+			"damage": "damage.png",
+			"kill": "kill.png"
+		},
+		"overlay transparency precision": 10
 	},
 	"network": {
 		"default port": 4321,
