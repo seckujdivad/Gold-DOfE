@@ -2,7 +2,7 @@
 	"default window state": 0,
 	"graphics": {
 		"PILrender": true,
-		"stacked model quality": 1
+		"stacked model quality": 3
 	},
 	"hud": {
 		"chat": {
@@ -14,11 +14,11 @@
 			"position": 3,
 			"spacing": 20
 		},
+		"overlay transparency precision": 10,
 		"overlays": {
 			"damage": "overlays/damage",
 			"kill": "overlays/kill"
-		},
-		"overlay transparency precision": 10
+		}
 	},
 	"network": {
 		"default port": 4321,
