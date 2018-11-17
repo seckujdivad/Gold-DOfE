@@ -15,8 +15,8 @@
 			"spacing": 20
 		},
 		"overlays": {
-			"damage": "damage.png",
-			"kill": "kill.png"
+			"damage": "overlays/damage",
+			"kill": "overlays/kill"
 		},
 		"overlay transparency precision": 10
 	},

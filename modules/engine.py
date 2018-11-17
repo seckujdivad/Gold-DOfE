@@ -165,6 +165,7 @@ class Engine:
                 obj_scatter = []
                 
                 event_overlays = {}
+                event_overlays_models = {}
             class layout:
                 data = {}
             class materials:
@@ -220,6 +221,10 @@ class Engine:
             #render base layer
             self.map.textures.obj_base = self.game.canvcont.create_image(402, 302, image = self.map.textures.base, layer = 0)
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
+            
+            #load event textures into memory
+            self.map.textures.event_overlays['damage'] = Model(self.map.settingscfg['hud']['overlays']['damage'], self.map.path, self.map.rendermethod, self.game.canvcont, 33, transparency_precision = 10)
+            self.map.textures.event_overlays['damage'].setpos(-500, -500, 0, 0)
             
             #open layout
             with open(os.path.join(self.map.path, 'layout.json'), 'r') as file:
@@ -582,12 +587,13 @@ class Model:
             displaytype = None
             preimgloader = None
             usesPIL = False
+            transparency = 255
+            prev_transparency = None
             class flat:
                 texture = None
                 textures = []
                 imgobj = None
                 canvobjs = []
-                transparency = 255
             class stack:
                 class offsets:
                     x = 0
@@ -639,21 +645,29 @@ class Model:
 
         self.create_rotations(self.config['rotations'][self.userconfig['graphics']['stacked model quality']])
     
-    def setpos(self, x = None, y = None, rotation = None):
+    def setpos(self, x = None, y = None, rotation = None, transparency = None):
         if not x == None:
             self.graphics.x = x
         if not y == None:
             self.graphics.y = y
+            
         if rotation == None and self.graphics.rotation == None:
             rotation = 0
+        if self.graphics.transparency == None:
+            self.graphics.transparency = 0
+            
+        if not transparency == None:
+            self.graphics.prev_transparency = self.graphics.transparency
+            self.graphics.transparency = transparency
+            
         if not rotation == None:
             self.graphics.prev_rotation = self.graphics.rotation
             self.graphics.rotation = rotation
             
         if self.graphics.displaytype == 'flat':
             if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
-                self.canvcont.coords(self.obj_from_angle(self.graphics.prev_rotation), self.config['offscreen'][0], self.config['offscreen'][1])
-            self.canvcont.coords(self.obj_from_angle(self.graphics.rotation), self.graphics.x, self.graphics.y)
+                self.canvcont.coords(self.obj_from_angle(self.graphics.prev_rotation, self.graphics.prev_transparency), self.config['offscreen'][0], self.config['offscreen'][1])
+            self.canvcont.coords(self.obj_from_angle(self.graphics.rotation, self.graphics.transparency), self.graphics.x, self.graphics.y)
         elif self.graphics.displaytype == 'stack':
             i = 0
             if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
@@ -696,38 +710,50 @@ class Model:
                 i += 1
         else:
             angle_increment = 360 / num_rotations
+            transp_increment = 256 / self.transparency_precision
             for rot in range(num_rotations):
-                angle = angle_increment * rot
-                if self.graphics.usesPIL:
-                    loaded_image = self.imageloader(image = self.graphics.flat.texture.rotate(0 - angle))
-                else:
-                    loaded_image = self.imageloader(image = self.graphics.flat.texture)
-                new_canv_obj = self.canvcont.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image, layer = self.layer)
-                self.graphics.flat.canvobjs.append(new_canv_obj)
-                self.graphics.flat.textures.append(loaded_image)
+                transparency_list = []
+                for transp in range(self.transparency_precision + 1):
+                    angle = angle_increment * rot
+                    if self.graphics.usesPIL:
+                        img = self.graphics.flat.texture.rotate(0 - angle)
+                        img = self.alphamult_im(img, self.graphics.transparency / 256)
+                        loaded_image = self.imageloader(image = img)
+                    else:
+                        loaded_image = self.imageloader(image = self.graphics.flat.texture)
+                    new_canv_obj = self.canvcont.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image, layer = self.layer)
+                    transparency_list.append(new_canv_obj)
+                    self.graphics.flat.textures.append(loaded_image)
+                self.graphics.flat.canvobjs.append(transparency_list)
     
     def objset_from_angle(self, angle):
         return self.graphics.stack.canvobjs[int((angle / 360) * len(self.graphics.stack.canvobjs))]
     
-    def obj_from_angle(self, angle):
-        return self.graphics.flat.canvobjs[int((angle / 360) * len(self.graphics.flat.canvobjs))]
+    def obj_from_angle(self, angle, transparency):
+        objs = self.graphics.flat.canvobjs[int((angle / 360) * len(self.graphics.flat.canvobjs))]
+        return objs[int((transparency / 256) * len(objs))]
     
     def tex_from_angle(self, angle):
         return self.graphics.flat.textures[int((angle / 360) * len(self.graphics.flat.canvobjs))]
+    
+    def alphamult_im(self, im, mult):
+        def mult_if_not_empty(value):
+            if type(value) == tuple:
+                return (value[0], value[1], value[2], int(value[3] * mult))
+                
+        im.putdata([mult_if_not_empty(x) for x in im.getdata()])
+        return im
         
     def destroy(self):
         if self.graphics.displaytype == 'flat':
-            for obj in self.graphics.flat.canvobjs:
-                self.canvcont.delete(obj)
+            for objs in self.graphics.flat.canvobjs:
+                for obj in objs:
+                    self.canvcont.delete(obj)
         else:
             for rotationset in self.graphics.stack.canvobjs:
                 for obj in rotationset:
                     self.canvcont.delete(obj)
-                    
-    def set_transparency(self, transparency):
-        if self.graphics.displaytype == 'flat' and self.graphics.usesPIL:
-            self.graphics.flat.transparency = transparency % 256
-            print(self.tex_from_angle(self.graphics.rotation))
+            
 
 class DBAccess:
     def __init__(self, address):
