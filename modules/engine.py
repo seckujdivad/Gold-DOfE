@@ -181,6 +181,7 @@ class Engine:
             healthbar = None
             invdisp = None
             items = []
+            pulse_in_progress = False
         self.map = map
         
         #make keybind handler
@@ -224,7 +225,7 @@ class Engine:
             
             #load event textures into memory
             self.map.textures.event_overlays['damage'] = Model(self.map.settingscfg['hud']['overlays']['damage'], self.map.path, self.map.rendermethod, self.game.canvcont, 33, transparency_precision = 10)
-            self.map.textures.event_overlays['damage'].setpos(402, 302, 0, 128)
+            self.map.textures.event_overlays['damage'].setpos(402, 302, 0, 0)
             
             #open layout
             with open(os.path.join(self.map.path, 'layout.json'), 'r') as file:
@@ -362,6 +363,34 @@ class Engine:
                                 'position': [self.map.player.pos.x, self.map.player.pos.y]}))
             if not self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['unlimited']:
                 self.map.invdisp.increment_slot(self.map.invdisp.selection_index, -1)
+    
+    def pulse_item_transparency(self, model, timescale = 0.2):
+        if not self.map.pulse_in_progress:
+            self.map.pulse_in_progress = True
+            threading.Thread(target = self._pulse_item_transparency, args = [model, timescale], name = 'Item transparency pulse').start()
+    
+    def _pulse_item_transparency(self, model, timescale):
+        i = 0
+        upstroke = True
+        increment = 64
+        delay = timescale * (increment / 256)
+        
+        while upstroke or not i <= 0:
+            start = time.time()
+            
+            if upstroke:
+                i += increment
+                model.setpos(transparency = min(255, i))
+                if i >= 256: 
+                    upstroke = False
+            else:
+                i -= increment
+                model.setpos(transparency = min(255, i))
+                
+            time.sleep(max(0, delay - (time.time() - start)))
+            
+        model.setpos(transparency = 0)
+        self.map.pulse_in_progress = False
 
 class Entity:
     def __init__(self, ent_name, map_path, engine, layer, is_player = False):
@@ -372,6 +401,7 @@ class Entity:
         self.layer = layer
         
         self.running = True
+        self.health = None
         
         class pos:
             x = 0
@@ -546,6 +576,9 @@ class Entity:
                 time.sleep(delay)
     
     def set_health(self, value):
+        if (not self.health == None) and (not self.health == value) and self.is_player:
+            self.engine.pulse_item_transparency(self.engine.map.textures.event_overlays['damage'])
+    
         self.health = value
         if not self.engine.map.healthbar == None: #make sure healthbar has been created
             self.engine.map.healthbar.set_value(self.health)
@@ -582,7 +615,7 @@ class Model:
         class graphics:
             x = 0
             y = 0
-            rotation = None
+            rotation = 0
             prev_rotation = None
             displaytype = None
             preimgloader = None
@@ -655,11 +688,7 @@ class Model:
             self.graphics.x = x
         if not y == None:
             self.graphics.y = y
-            
-        if rotation == None and self.graphics.rotation == None:
-            rotation = 0
-        if self.graphics.transparency == None:
-            self.graphics.transparency = 0
+        
             
         if not transparency == None:
             self.graphics.prev_transparency = self.graphics.transparency
@@ -670,9 +699,9 @@ class Model:
             self.graphics.rotation = rotation
             
         if self.graphics.displaytype == 'flat':
-            if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
-                self.canvcont.coords(self.obj_from_angle(self.graphics.prev_rotation, self.graphics.prev_transparency), self.config['offscreen'][0], self.config['offscreen'][1])
             self.canvcont.coords(self.obj_from_angle(self.graphics.rotation, self.graphics.transparency), self.graphics.x, self.graphics.y)
+            if (self.graphics.prev_rotation != None and self.graphics.prev_rotation != self.graphics.rotation) or (self.graphics.prev_transparency != None and self.graphics.prev_transparency != self.graphics.transparency):
+                self.canvcont.coords(self.obj_from_angle(self.graphics.prev_rotation, self.graphics.prev_transparency), self.config['offscreen'][0], self.config['offscreen'][1])
         elif self.graphics.displaytype == 'stack':
             i = 0
             if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
