@@ -224,7 +224,7 @@ class Engine:
             
             #load event textures into memory
             self.map.textures.event_overlays['damage'] = Model(self.map.settingscfg['hud']['overlays']['damage'], self.map.path, self.map.rendermethod, self.game.canvcont, 33, transparency_precision = 10)
-            self.map.textures.event_overlays['damage'].setpos(-500, -500, 0, 0)
+            self.map.textures.event_overlays['damage'].setpos(402, 302, 0, 128)
             
             #open layout
             with open(os.path.join(self.map.path, 'layout.json'), 'r') as file:
@@ -717,7 +717,7 @@ class Model:
                     angle = angle_increment * rot
                     if self.graphics.usesPIL:
                         img = self.graphics.flat.texture.rotate(0 - angle)
-                        img = self.alphamult_im(img, self.graphics.transparency / 256)
+                        img = self.alphamult_im(img, (transp * transp_increment))
                         loaded_image = self.imageloader(image = img)
                     else:
                         loaded_image = self.imageloader(image = self.graphics.flat.texture)
@@ -731,18 +731,21 @@ class Model:
     
     def obj_from_angle(self, angle, transparency):
         objs = self.graphics.flat.canvobjs[int((angle / 360) * len(self.graphics.flat.canvobjs))]
-        return objs[int((transparency / 256) * len(objs))]
+        #print(objs[int((transparency / 256) * len(objs))])
+        if transparency == None:
+            return objs[0]
+        else:
+            return objs[int((transparency / 256) * len(objs))]
     
     def tex_from_angle(self, angle):
         return self.graphics.flat.textures[int((angle / 360) * len(self.graphics.flat.canvobjs))]
     
     def alphamult_im(self, im, mult):
-        def mult_if_not_empty(value):
-            if type(value) == tuple:
-                return (value[0], value[1], value[2], int(value[3] * mult))
-                
-        im.putdata([mult_if_not_empty(x) for x in im.getdata()])
-        return im
+        try:
+            return __import__('PIL.ImageChops').ImageChops.multiply(im, __import__('PIL.Image').Image.new('RGBA', im.size, color = (255, 255, 255, int(mult))))
+        except ValueError:
+            raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
+        
         
     def destroy(self):
         if self.graphics.displaytype == 'flat':
