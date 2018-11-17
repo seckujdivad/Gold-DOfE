@@ -589,6 +589,8 @@ class Model:
             usesPIL = False
             transparency = 255
             prev_transparency = None
+            PILImage = None
+            PILImageChops = None
             class flat:
                 texture = None
                 textures = []
@@ -605,7 +607,10 @@ class Model:
         self.graphics = graphics
         
         if not self.imageloader == tk.PhotoImage:
-            self.preimgloader = __import__('PIL.Image').Image.open
+            self.graphics.PILImageChops = __import__('PIL.ImageChops').ImageChops
+            self.graphics.PILImage = __import__('PIL.Image').Image
+            self.preimgloader = self.graphics.PILImage.open
+            
             self.graphics.usesPIL = True
         
         with open(os.path.join(self.ent_path, 'list.json'), 'r') as file:
@@ -742,10 +747,9 @@ class Model:
     
     def alphamult_im(self, im, mult):
         try:
-            return __import__('PIL.ImageChops').ImageChops.multiply(im, __import__('PIL.Image').Image.new('RGBA', im.size, color = (255, 255, 255, int(mult))))
+            return self.graphics.PILImageChops.multiply(im, self.graphics.PILImage.new('RGBA', im.size, color = (255, 255, 255, int(mult))))
         except ValueError:
             raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
-        
         
     def destroy(self):
         if self.graphics.displaytype == 'flat':
