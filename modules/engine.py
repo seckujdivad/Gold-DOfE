@@ -224,7 +224,7 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
             
             #load event textures into memory
-            self.map.textures.event_overlays['damage'] = Model(self.map.settingscfg['hud']['overlays']['damage'], self.map.path, self.map.rendermethod, self.game.canvcont, 33, transparency_precision = 10)
+            self.map.textures.event_overlays['damage'] = Model(self.map.settingscfg['hud']['overlays']['damage'], self.map.path, self.map.rendermethod, self.game.canvcont, 33)
             self.map.textures.event_overlays['damage'].setpos(402, 302, 0, 0)
             
             #open layout
@@ -603,14 +603,14 @@ class Entity:
         self.running = False
 
 class Model:
-    def __init__(self, ent_name, map_path, imageloader, canvcont, layer, transparency_precision = 1):
+    def __init__(self, ent_name, map_path, imageloader, canvcont, layer):
         self.ent_name = ent_name
         self.map_path = map_path
         self.ent_path = os.path.join(self.map_path, 'models', self.ent_name)
         self.imageloader = imageloader
         self.canvcont = canvcont
         self.layer = layer
-        self.transparency_precision = max(1, transparency_precision)
+        self.transparency_precision = 1
         
         class graphics:
             x = 0
@@ -651,6 +651,9 @@ class Model:
         
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             self.userconfig = json.load(file)
+        
+        if 'transparencies' in self.config:
+            self.transparency_precision = self.config['transparencies'][self.userconfig['graphics']['stacked model quality']]
         
         #load textures
         self.graphics.displaytype = self.config['type']
