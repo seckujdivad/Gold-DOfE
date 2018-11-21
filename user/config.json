@@ -18,6 +18,10 @@
 		"overlays": {
 			"damage": "overlays/damage",
 			"kill": "overlays/kill"
+		},
+		"popmsg": {
+			"colour": "#FFFFFF",
+			"font": ""
 		}
 	},
 	"network": {
