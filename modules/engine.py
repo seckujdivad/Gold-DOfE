@@ -1194,3 +1194,34 @@ class CanvasController:
     
     def itemconfigure(self, obj, **args):
         self.canvas.itemconfigure(obj, **args)
+
+class PopMessage:
+    def __init__(self, canvcont):
+        self.canvcont = canvcont
+        
+        self.canvobj = None
+        
+        self.message_queue, queue = mp.Pipe()
+        
+        threading.Thread(target = self._displayd, name = 'Message display daemon', args = [queue]).start()
+    
+    def queue_message(self, text, duration):
+        if duration < 0.5:
+            raise ValueError('Duration must be equal to or greater than 0.5')
+        self.message_queue.send([text, duration])
+    
+    def _displayd(self, queue):
+        while True:
+            text_, duration = queue.read()
+            
+            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = ('', 0))
+            
+            for i in range(0, 100, 10):
+                self.canvcont.itemconfigure(self.canvobj, font = ('', i))
+            time.sleep(duration)
+            
+            for i in range(100, 0, -10):
+                self.canvcont.itemconfigure(self.canvobj, font = ('', i))
+                
+            self.canvcont.delete(self.canvobj)
+            self.canvobj = None
