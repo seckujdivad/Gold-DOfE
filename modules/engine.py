@@ -154,6 +154,10 @@ class Game:
                                 i['object'].setpos(x = data['position'][0], y = data['position'][1])
                             if 'rotation' in data:
                                 i['object'].setpos(rotation = data['rotation'])
+        
+        elif request.command == 'popmsg':
+            if request.subcommand == 'welcome':
+                self.popmsg.queue_message(request.arguments['text'], 4)
 
 class Engine:
     def __init__(self, game):
