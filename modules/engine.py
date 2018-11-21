@@ -156,7 +156,9 @@ class Game:
                                 i['object'].setpos(rotation = data['rotation'])
         
         elif request.command == 'popmsg':
-            if request.subcommand == 'welcome':
+            if request.subcommand == 'general':
+                self.popmsg.queue_message(request.arguments['text'], 2)
+            elif request.subcommand == 'welcome':
                 self.popmsg.queue_message(request.arguments['text'], 4)
 
 class Engine:

@@ -207,9 +207,13 @@ sv_quit: destroy the server'''
                     output = 'Error while loading map \'{}\''.format(argstring)
             else:
                 output = 'No permissions'
-        elif name == 'say':
-            self.send_all(Request(command = 'say', arguments = {'text': argstring}))
-            output = 'Said \'{}\' to all users'.format(argstring)
+        elif name.startswith('say'):
+            if name == 'say':
+                self.send_all(Request(command = 'say', arguments = {'text': argstring}))
+                output = 'Said \'{}\' to all users'.format(argstring)
+            elif name == 'say_pop':
+                self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': argstring}))
+                output = 'Said \'{}\' to all users with a fullscreen message'.format(argstring)
         elif name.startswith('sv_'):
             if name == 'sv_kick_addr':
                 if source == 'internal':
