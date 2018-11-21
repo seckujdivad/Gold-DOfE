@@ -141,7 +141,7 @@ class Server:
                                                                           'y': req.arguments['y'],
                                                                           'rotation': req.arguments['rotation']}
                     elif req.subcommand == 'health': #client wants to update it's own health
-                        self.serverdata.conn_data[conn_id]['health'] = req.arguments['value']
+                        self.update_health(self.serverdata.conn_data[conn_id], req.arguments['value'])
                     
                     elif req.subcommand == 'username':
                         self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
@@ -367,7 +367,7 @@ sv_quit: destroy the server'''
                                 damage_dealt = True
                     
                     if damage_dealt:
-                        playerdata['health'] -= item['data']['damage']['player']
+                        self.increment_health(playerdata, 0 - item['data']['damage']['player'])
                         item['last damage'] = time.time()
                         
                         self.send(playerdata['connection'], Request(command = 'var update w', subcommand = 'health', arguments = {'value': playerdata['health']}))
@@ -396,6 +396,17 @@ sv_quit: destroy the server'''
     
     def distance_to_point(self, x0, y0, x1, y1):
         return math.hypot(x1 - x0, y1 - y0)
+    
+    def update_health(self, client_data, health):
+        old_health = client_data['health']
+        client_data['health'] = health
+        
+        if not old_health == client_data['health']:
+            if client_data['health'] <= 0:
+                print(client_data['username'], 'just died')
+    
+    def increment_health(self, client_data, health):
+        self.update_health(client_data, client_data['health'] + health)
 
 class Client:
     def __init__(self, host_, port_):
