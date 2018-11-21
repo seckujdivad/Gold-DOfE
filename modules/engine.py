@@ -1206,22 +1206,24 @@ class PopMessage:
         threading.Thread(target = self._displayd, name = 'Message display daemon', args = [queue]).start()
     
     def queue_message(self, text, duration):
-        if duration < 0.5:
-            raise ValueError('Duration must be equal to or greater than 0.5')
+        if duration < 0.2:
+            raise ValueError('Duration must be equal to or greater than 0.2')
         self.message_queue.send([text, duration])
     
     def _displayd(self, queue):
         while True:
-            text_, duration = queue.read()
+            text_, duration = queue.recv()
             
-            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = ('', 0))
+            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = ('', 0), layer = 32)
             
-            for i in range(0, 100, 10):
+            for i in range(0, 105, 5):
                 self.canvcont.itemconfigure(self.canvobj, font = ('', i))
-            time.sleep(duration)
+                time.sleep(0.001)
+            time.sleep(duration - 0.2)
             
-            for i in range(100, 0, -10):
+            for i in range(100, -5, -5):
                 self.canvcont.itemconfigure(self.canvobj, font = ('', i))
+                time.sleep(0.001)
                 
             self.canvcont.delete(self.canvobj)
             self.canvobj = None
