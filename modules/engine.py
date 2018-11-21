@@ -42,6 +42,10 @@ class Game:
         self.messagedisplay.graphical_properties.colour = self.settingsdict['hud']['chat']['colour']
         self.messagedisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['chat']['position']]
         
+        self.popmsg = PopMessage(self.canvcont)
+        self.popmsg.graphical_properties.font = self.settingsdict['hud']['popmsg']['font']
+        self.popmsg.graphical_properties.colour = self.settingsdict['hud']['popmsg']['colour']
+        
         self.engine = Engine(self)
 
         # display IP
@@ -1201,6 +1205,11 @@ class PopMessage:
         
         self.canvobj = None
         
+        class graphical_properties:
+            font = ''
+            colour = '#FFFFFF'
+        self.graphical_properties = graphical_properties
+        
         self.message_queue, queue = mp.Pipe()
         
         threading.Thread(target = self._displayd, name = 'Message display daemon', args = [queue]).start()
@@ -1214,16 +1223,16 @@ class PopMessage:
         while True:
             text_, duration = queue.recv()
             
-            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = ('', 0), layer = 32)
+            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = (self.graphical_properties.font, 0), fill = self.graphical_properties.colour, layer = 32)
             
-            for i in range(0, 105, 5):
-                self.canvcont.itemconfigure(self.canvobj, font = ('', i))
-                time.sleep(0.001)
+            for i in range(0, 52, 2):
+                self.canvcont.itemconfigure(self.canvobj, font = (self.graphical_properties.font, i))
+                time.sleep(0.008)
             time.sleep(duration - 0.2)
             
-            for i in range(100, -5, -5):
-                self.canvcont.itemconfigure(self.canvobj, font = ('', i))
-                time.sleep(0.001)
+            for i in range(50, -2, -2):
+                self.canvcont.itemconfigure(self.canvobj, font = (self.graphical_properties.font, i))
+                time.sleep(0.008)
                 
             self.canvcont.delete(self.canvobj)
             self.canvobj = None
