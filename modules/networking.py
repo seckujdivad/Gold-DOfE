@@ -189,7 +189,8 @@ class Server:
             output = '''Commands:
 map: load a map by name
 say: send a message to all players
-exec: exexute a script by name stored in the server/scripts directory
+say_pop: send a fullscreen message to all players
+exec: execute a script by name stored in the server/scripts directory
 echo: output the text given to the console
 clear: clear the console
 close_window: close the console
