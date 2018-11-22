@@ -1,5 +1,5 @@
-# Silver DOfE
-This is the project for the "skills" section of my Silver Duke of Edinburgh's Award.
+# Gold DOfE
+This is the project for the "skills" section of my Gold Duke of Edinburgh's Award.
 
 ## Current Features
 * Level editor
