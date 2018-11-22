@@ -153,6 +153,7 @@ class Server:
                     self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
                     
                     spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][self.serverdata.conn_data[conn_id]['team']])
+                    self.send(connection, Request(command = 'set mode', subcommand = 'player'))
                     self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
                     
                     self.send(connection, Request(command = 'popmsg', subcommand = 'welcome', arguments = {'text': self.settingsdata['welcome text']}))
@@ -414,6 +415,7 @@ sv_quit: destroy the server'''
             elif client_data['health'] <= 0 and old_health > 0: #this is the first death
                 client_data['health'] = 0
                 self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client_data['username']}))
+                self.send(client_data['connection'], Request(command = 'set mode', subcommand = 'spectator'))
                 self.send_all(Request(command = 'say', arguments = {'text': '{} died'.format(client_data['username']), 'category': 'death'}))
     
     def increment_health(self, client_data, health):
