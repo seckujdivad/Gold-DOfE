@@ -172,6 +172,8 @@ class Server:
                     self.serverdata.item_ticket += 1
                 
         self.serverdata.conn_data[conn_id]['active'] = False
+        
+        self.output_pipe.send('Player {} disconnected'.format(self.serverdata.conn_data[conn_id]['username']))
     
     def handle_command(self, command, source = 'internal'):
         if command == '' or command.startswith(' '):
@@ -417,6 +419,7 @@ sv_quit: destroy the server'''
                 self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client_data['username']}))
                 self.send(client_data['connection'], Request(command = 'set mode', subcommand = 'spectator'))
                 self.send_all(Request(command = 'say', arguments = {'text': '{} died'.format(client_data['username']), 'category': 'death'}))
+                self.output_pipe.send('Player {} died'.format(client_data['username']))
     
     def increment_health(self, client_data, health):
         self.update_health(client_data, client_data['health'] + health)

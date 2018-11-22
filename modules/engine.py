@@ -177,7 +177,6 @@ class Game:
                 if not self.engine.map.player.running:
                     self.engine.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 3, is_player = True)
                 self.engine.map.player.setpos(400, 300, 0)
-                print('what')
 
 class Engine:
     def __init__(self, game):
