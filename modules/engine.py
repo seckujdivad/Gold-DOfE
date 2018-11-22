@@ -166,7 +166,8 @@ class Game:
         
         elif request.command == 'event':
             if request.subcommand == 'death':
-                print('Player', request.arguments['username'], 'has died')
+                if request.arguments['username'] == self.engine.map.settingscfg['user']['name']:
+                    self.engine.map.player.destroy()
 
 class Engine:
     def __init__(self, game):
@@ -199,6 +200,7 @@ class Engine:
             invdisp = None
             items = []
             pulse_in_progress = False
+            settingscfg = None
         self.map = map
         
         #make keybind handler
