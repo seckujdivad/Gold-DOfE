@@ -144,6 +144,7 @@ class Server:
                         self.update_health(self.serverdata.conn_data[conn_id], req.arguments['value'])
                     
                     elif req.subcommand == 'username':
+                        self.output_pipe.send('{} changed name to {}'.format(self.serverdata.conn_data[conn_id]['username'], req.arguments['value']))
                         self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
                         self.database.user_connected(self.serverdata.conn_data[conn_id]['username'])
                         
@@ -153,7 +154,7 @@ class Server:
                     self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
                     
                     spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][self.serverdata.conn_data[conn_id]['team']])
-                    self.send(connection, Request(command = 'set mode', subcommand = 'player'))
+                    self.set_mode(self.serverdata.conn_data[conn_id], 'player')
                     self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
                     
                     self.send(connection, Request(command = 'popmsg', subcommand = 'welcome', arguments = {'text': self.settingsdata['welcome text']}))
@@ -414,15 +415,25 @@ sv_quit: destroy the server'''
         if not old_health == client_data['health']: #health has changed
             if (old_health == 0 and client_data['health'] < 0): #death has already occured
                 client_data['health'] = 0
-            elif client_data['health'] <= 0 and old_health > 0: #this is the first death
+            elif client_data['health'] <= 0 and old_health > 0: #this is the 'first death' (first time health reached 0)
                 client_data['health'] = 0
+                
                 self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client_data['username']}))
-                self.send(client_data['connection'], Request(command = 'set mode', subcommand = 'spectator'))
-                self.send_all(Request(command = 'say', arguments = {'text': '{} died'.format(client_data['username']), 'category': 'death'}))
                 self.output_pipe.send('Player {} died'.format(client_data['username']))
+                self.set_mode(client_data, 'spectator')
+                self.send_all(Request(command = 'say', arguments = {'text': '{} died'.format(client_data['username']), 'category': 'death'}))
+                
     
     def increment_health(self, client_data, health):
         self.update_health(client_data, client_data['health'] + health)
+    
+    def set_mode(self, client_data, client_mode):
+        self.send(client_data['connection'], Request(command = 'set mode', subcommand = client_mode))
+        
+        if client_mode == 'spectator':
+            self.output_pipe.send('{} is now spectating'.format(client_data['username']))
+        elif client_mode == 'player':
+            self.output_pipe.send('{} is now playing'.format(client_data['username']))
 
 class Client:
     def __init__(self, host_, port_):
