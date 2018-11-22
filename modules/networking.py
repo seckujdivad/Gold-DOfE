@@ -409,9 +409,9 @@ sv_quit: destroy the server'''
         client_data['health'] = health
         
         if not old_health == client_data['health']: #health has changed
-            if (old_health == 0 and client_data['health'] < 0): #health player death has occurred
+            if (old_health == 0 and client_data['health'] < 0): #death has already occured
                 client_data['health'] = 0
-            elif client_data['health'] <= 0:
+            elif client_data['health'] <= 0 and old_health > 0: #this is the first death
                 client_data['health'] = 0
                 self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client_data['username']}))
     
