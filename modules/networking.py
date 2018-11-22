@@ -414,6 +414,7 @@ sv_quit: destroy the server'''
             elif client_data['health'] <= 0 and old_health > 0: #this is the first death
                 client_data['health'] = 0
                 self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client_data['username']}))
+                self.send_all(Request(command = 'say', arguments = {'text': '{} died'.format(client_data['username']), 'category': 'death'}))
     
     def increment_health(self, client_data, health):
         self.update_health(client_data, client_data['health'] + health)

@@ -82,7 +82,10 @@ class Game:
             self.log.add('error', 'Error while reading JSON "{}"'.format(data))
         
         if request.command == 'say':
-            self.message_pipe.send(['chat', request.arguments['text']])
+            if 'category' in request.arguments:
+                self.message_pipe.send([request.arguments['category'], request.arguments['text']])
+            else:
+                self.message_pipe.send(['chat', request.arguments['text']])
         elif request.command == 'disconnect':
             if self.running == True:
                 print('Connection to server interrupted')
