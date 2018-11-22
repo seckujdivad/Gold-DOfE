@@ -131,7 +131,7 @@ class Server:
                     elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
                         output = []
                         for data in self.serverdata.conn_data:
-                            if data['active'] and 'position' in data and not data == self.serverdata.conn_data[conn_id]:
+                            if data['active'] and 'position' in data and not data == self.serverdata.conn_data[conn_id] and not data['health'] == 0:
                                 output.append(data['position'])
                         self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': output}))
                         
@@ -408,9 +408,12 @@ sv_quit: destroy the server'''
         old_health = client_data['health']
         client_data['health'] = health
         
-        if not old_health == client_data['health']:
-            if client_data['health'] <= 0:
-                print(client_data['username'], 'just died')
+        if not old_health == client_data['health']: #health has changed
+            if (old_health == 0 and client_data['health'] < 0): #health player death has occurred
+                client_data['health'] = 0
+            elif client_data['health'] <= 0:
+                client_data['health'] = 0
+                self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client_data['username']}))
     
     def increment_health(self, client_data, health):
         self.update_health(client_data, client_data['health'] + health)

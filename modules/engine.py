@@ -160,6 +160,10 @@ class Game:
                 self.popmsg.queue_message(request.arguments['text'], 2)
             elif request.subcommand == 'welcome':
                 self.popmsg.queue_message(request.arguments['text'], 4)
+        
+        elif request.command == 'event':
+            if request.subcommand == 'death':
+                print('Player', request.arguments['username'], 'has died')
 
 class Engine:
     def __init__(self, game):
