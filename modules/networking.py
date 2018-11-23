@@ -172,6 +172,9 @@ class Server:
                     
                     self.serverdata.item_ticket += 1
                 
+                elif req.command == 'say':
+                    self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.serverdata.conn_data[conn_id]['username'], req.arguments['text'])}))
+                
         self.serverdata.conn_data[conn_id]['active'] = False
         
         self.output_pipe.send('Player {} disconnected'.format(self.serverdata.conn_data[conn_id]['username']))
