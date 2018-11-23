@@ -8,16 +8,11 @@
 		"chat": {
 			"colour": "#000000",
 			"font": "Courier New",
-			"fontsize": 9,
-			"maxlen": 15,
+			"fontsize": 6,
+			"maxlen": 20,
 			"persist time": 8,
 			"position": 3,
-			"spacing": 20,
-			"input": {
-				"font": "",
-				"fontsize": 10,
-				"relief": "flat"
-			}
+			"spacing": 10
 		},
 		"overlay transparency precision": 10,
 		"overlays": {
