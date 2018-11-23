@@ -891,9 +891,10 @@ class CanvasMessages:
         
         self.textentry_var = tk.StringVar()
         self.textentry_entry = tk.Entry(self.canvcont.canvas, textvariable = self.textentry_var, width = 30, **self.canvcont.game.client.ui.styling.get(font_size = 'small', object_type = tk.Entry))
-        self.textentry_window = self.canvcont.canvas.create_window(*self.calc_coords(0, inset_x = 2, inset_y = 2),
-                                                                   anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment],
-                                                                   window = self.textentry_entry)
+        self.textentry_window = self.canvcont.create_window(*self.calc_coords(0, inset_x = 2, inset_y = 2),
+                                                            anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment],
+                                                            window = self.textentry_entry,
+                                                            layer = 31)
         self.textentry_entry.bind('<Return>', self.send_message)
         
         while self.running:
@@ -1179,6 +1180,9 @@ class CanvasController:
     def create_text(self, *coords, **args):
         return self._create('text', coords, args)
     
+    def create_window(self, *coords, **args):
+        return self._create('window', coords, args)
+    
     def _create(self, obj_type, coords, args):
         if not 'layer' in args:
             args['layer'] = 0
@@ -1197,6 +1201,8 @@ class CanvasController:
             obj = self.canvas.create_image(*coords, **filtered_args)
         elif obj_type == 'text':
             obj = self.canvas.create_text(*coords, **filtered_args)
+        elif obj_type == 'window':
+            obj = self.canvas.create_window(*coords, **filtered_args)
         
         self.layers[args['layer']].append({'object': obj})
         
