@@ -922,7 +922,10 @@ class CanvasMessages:
             return self.canvcont.canvas.winfo_width() - inset_x, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - inset_y
     
     def send_message(self, event = None):
-        print(self.textentry_var.get())
+        text = self.textentry_var.get()
+        
+        self.canvcont.game.client.send(modules.networking.Request(command = 'say', arguments = {'text': text}))
+        
         self.textentry_var.set('')
         
     def stop(self):
