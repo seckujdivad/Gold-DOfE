@@ -26,14 +26,14 @@ class UI:
         
         class styling: #consistent styling tools
             @classmethod
-            def get(self, font_size = 'medium', object_type = tk.Label, relief = 'default'):
+            def get(self, font_size = 'medium', object_type = tk.Label, relief = 'default', fonts = 'default'):
                 'Get styling for a specific type of widget'
                 output = {}
                 if object_type == tk.Button:
                     output['overrelief'] = self.reliefs[relief]['overrelief']
                 output['relief'] = self.reliefs[relief]['relief']
                 if not object_type in [tk.Canvas, tk.Scrollbar]:
-                    output['font'] = self.fonts[font_size]
+                    output['font'] = self.fonts[fonts][font_size]
                 return output
             
             @classmethod
@@ -45,12 +45,13 @@ class UI:
                     for cwidth in range(width):
                         if docolumns:
                             frame.columnconfigure(cwidth, weight = weight_)
-                
-            fonts = {'small': ('', 10),
-                     'medium': ('', 15),
-                     'large': ('', 25)} #default fonts
-            reliefs = {'default': {'relief': tk.FLAT,
-                                   'overrelief': tk.GROOVE}} #default reliefs
+            fonts = {}
+            reliefs = {}
+            with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+                settingsdata = json.load(file)
+            for style_type in settingsdata['styling']:
+                fonts[style_type] = settingsdata['styling'][style_type]['fonts']
+                reliefs[style_type] = settingsdata['styling'][style_type]['reliefs']
         self.styling = styling        
         
         class main: #store data to do with ui

@@ -12,7 +12,12 @@
 			"maxlen": 15,
 			"persist time": 8,
 			"position": 3,
-			"spacing": 20
+			"spacing": 20,
+			"input": {
+				"font": "",
+				"fontsize": 10,
+				"relief": "flat"
+			}
 		},
 		"overlay transparency precision": 10,
 		"overlays": {
@@ -55,5 +60,18 @@
 	},
 	"user": {
 		"name": "snekky"
+	},
+	"styling": {
+		"default": {
+			"fonts": {
+				"small": ["", 10],
+				"medium": ["", 15],
+				"large": ["", 25]
+			},
+			"reliefs": {
+				"relief": "flat",
+				"overrelief": "groove"
+			}
+		}
 	}
 }
