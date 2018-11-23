@@ -435,11 +435,13 @@ sv_quit: destroy the server'''
             self.output_pipe.send('{} is now playing'.format(client_data['username']))
 
 class Client:
-    def __init__(self, host_, port_):
+    def __init__(self, host_, port_, ui):
         class serverdata:
             host = host_
             port = port_
         self.serverdata = serverdata
+        
+        self.ui = ui
         
         self.recv_binds = [] #functions to be called when data is received
         

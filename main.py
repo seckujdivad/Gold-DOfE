@@ -57,9 +57,9 @@ class App:
                 self.server = modules.networking.Server(server_data['port'])
                 
         if server_data['port'] == 'normal':
-            self.client = modules.networking.Client(server_data['address'], settingsdata['network']['default port'])
+            self.client = modules.networking.Client(server_data['address'], settingsdata['network']['default port'], self.ui)
         else:
-            self.client = modules.networking.Client(server_data['address'], server_data['port'])
+            self.client = modules.networking.Client(server_data['address'], server_data['port'], self.ui)
         
         self.ui.load(self.ui.uiobjects.game)
     

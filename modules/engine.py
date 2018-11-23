@@ -31,7 +31,7 @@ class Game:
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             self.settingsdict = json.load(file)
         
-        self.canvcont = CanvasController(self.canvas)
+        self.canvcont = CanvasController(self.canvas, self)
         
         self.message_pipe, pipe = mp.Pipe()
         self.messagedisplay = CanvasMessages(self.canvcont, pipe)
@@ -41,6 +41,7 @@ class Game:
         self.messagedisplay.graphical_properties.height = self.settingsdict['hud']['chat']['spacing']
         self.messagedisplay.graphical_properties.colour = self.settingsdict['hud']['chat']['colour']
         self.messagedisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['chat']['position']]
+        self.messagedisplay.graphical_properties.is_ready = True
         
         self.popmsg = PopMessage(self.canvcont)
         self.popmsg.graphical_properties.font = self.settingsdict['hud']['popmsg']['font']
@@ -864,7 +865,9 @@ class CanvasMessages:
                          'tr': '{1} [{0:^16}]',
                          'bl': '[{0:^16}] {1}',
                          'br': '{1} [{0:^16}]'}
+            is_ready = False #hasn't been written to yet
         self.graphical_properties = graphical_properties
+        
         
         threading.Thread(target = self.pipe_receiver).start()
         threading.Thread(target = self.graphics_handler).start()
@@ -883,6 +886,15 @@ class CanvasMessages:
                 self.messages = self.messages[:self.graphical_properties.maxlen]
     
     def graphics_handler(self):
+        while not self.graphical_properties.is_ready:
+            time.sleep(0.05)
+        
+        self.textentry_var = tk.StringVar()
+        self.textentry_entry = tk.Entry(self.canvcont.canvas, textvariable = self.textentry_var, width = 30, **self.canvcont.game.client.ui.styling.get(font_size = 'small', object_type = tk.Entry))
+        self.textentry_window = self.canvcont.canvas.create_window(*self.calc_coords(0, inset_x = 2, inset_y = 2),
+                                                                   anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment],
+                                                                   window = self.textentry_entry)
+        
         while self.running:
             todelete = []
             msgs = self.messages.copy()
@@ -897,15 +909,15 @@ class CanvasMessages:
                 self.messages.pop(i)
             time.sleep(self.graphical_properties.updatedelay)
     
-    def calc_coords(self, position):
+    def calc_coords(self, position, inset_x = 10, inset_y = 30):
         if self.graphical_properties.alignment == 'tl':
-            return 10, 10 + (position * self.graphical_properties.height)
+            return inset_x, 10 + (position * self.graphical_properties.height)
         elif self.graphical_properties.alignment == 'tr':
-            return self.canvcont.canvas.winfo_width() - 10, 10 + (position * self.graphical_properties.height)
+            return self.canvcont.canvas.winfo_width() - inset_x, inset_y + (position * self.graphical_properties.height)
         elif self.graphical_properties.alignment == 'bl':
-            return 10, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - 10
+            return inset_x, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - inset_y
         elif self.graphical_properties.alignment == 'br':
-            return self.canvcont.canvas.winfo_width() - 10, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - 10
+            return self.canvcont.canvas.winfo_width() - inset_x, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - inset_y
         
     def stop(self):
         self.running = False
@@ -1144,8 +1156,9 @@ class InventoryBar:
         return data
 
 class CanvasController:
-    def __init__(self, canvas):
+    def __init__(self, canvas, game):
         self.canvas = canvas
+        self.game = game
         
         self.layers = []
         self.reserved_args = ['layer']
