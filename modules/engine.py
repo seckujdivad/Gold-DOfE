@@ -894,6 +894,7 @@ class CanvasMessages:
         self.textentry_window = self.canvcont.canvas.create_window(*self.calc_coords(0, inset_x = 2, inset_y = 2),
                                                                    anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment],
                                                                    window = self.textentry_entry)
+        self.textentry_entry.bind('<Return>', self.send_message)
         
         while self.running:
             todelete = []
@@ -918,6 +919,10 @@ class CanvasMessages:
             return inset_x, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - inset_y
         elif self.graphical_properties.alignment == 'br':
             return self.canvcont.canvas.winfo_width() - inset_x, self.canvcont.canvas.winfo_height() - (position * self.graphical_properties.height) - inset_y
+    
+    def send_message(self, event = None):
+        print(self.textentry_var.get())
+        self.textentry_var.set('')
         
     def stop(self):
         self.running = False
