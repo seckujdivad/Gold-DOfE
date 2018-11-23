@@ -422,7 +422,6 @@ sv_quit: destroy the server'''
                 self.output_pipe.send('Player {} died'.format(client_data['username']))
                 self.set_mode(client_data, 'spectator')
                 self.send_all(Request(command = 'say', arguments = {'text': '{} died'.format(client_data['username']), 'category': 'death'}))
-                
     
     def increment_health(self, client_data, health):
         self.update_health(client_data, client_data['health'] + health)
