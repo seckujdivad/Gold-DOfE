@@ -928,6 +928,8 @@ class CanvasMessages:
         
         self.textentry_var.set('')
         
+        self.canvcont.canvas.focus_set()
+        
     def stop(self):
         self.running = False
 
