@@ -861,10 +861,10 @@ class CanvasMessages:
                                  'tr': tk.NE,
                                  'bl': tk.SW,
                                  'br': tk.SE}
-            formatlib = {'tl': '[{0:^16}] {1}',
-                         'tr': '{1} [{0:^16}]',
-                         'bl': '[{0:^16}] {1}',
-                         'br': '{1} [{0:^16}]'}
+            formatlib = {'tl': '[{0:^8}] {1}',
+                         'tr': '{1} [{0:^8}]',
+                         'bl': '[{0:^8}] {1}',
+                         'br': '{1} [{0:^8}]'}
             is_ready = False #hasn't been written to yet
         self.graphical_properties = graphical_properties
         
