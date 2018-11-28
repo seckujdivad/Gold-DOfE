@@ -168,7 +168,8 @@ class Server:
                                                       'distance travelled': 0,
                                                       'rotation': req.arguments['rotation'],
                                                       'position': req.arguments['position'],
-                                                      'new': True})
+                                                      'new': True,
+                                                      'creator': self.serverdata.conn_data[conn_id]})
                     
                     self.serverdata.item_ticket += 1
                 
@@ -380,7 +381,7 @@ sv_quit: destroy the server'''
                             else:
                                 damage_dealt = True
                     
-                    if damage_dealt:
+                    if damage_dealt and not item['creator']['id'] == playerdata['id']:
                         self.increment_health(playerdata, 0 - item['data']['damage']['player'])
                         item['last damage'] = time.time()
                         
