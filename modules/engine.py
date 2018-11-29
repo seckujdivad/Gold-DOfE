@@ -104,7 +104,7 @@ class Game:
                         entity.model.destroy()
                     if len(new_ent_list) < len(positions):
                         for i in range(len(positions) - len(new_ent_list)):
-                            new_ent_list.append(Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 3, is_player = False))
+                            new_ent_list.append(Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = False))
                         self.engine.map.other_players.entities = new_ent_list
                 
                 for index in range(len(positions)):
@@ -132,7 +132,7 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine, 2)
+                        entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine, 'items')
                         entity.setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
                         self.engine.map.items.append({'ticket': data['ticket'],
                                                       'object': entity})
@@ -176,7 +176,7 @@ class Game:
                     self.engine.map.player.destroy()
             elif request.subcommand == 'player':
                 if not self.engine.map.player.running:
-                    self.engine.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 3, is_player = True)
+                    self.engine.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = True)
                 self.engine.map.player.setpos(400, 300, 0)
 
 class Engine:
@@ -249,11 +249,11 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
             
             #render base layer
-            self.map.textures.obj_base = self.game.canvcont.create_image(402, 302, image = self.map.textures.base, layer = 0)
+            self.map.textures.obj_base = self.game.canvcont.create_image(402, 302, image = self.map.textures.base, layer = 'base texture')
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
             
             #load event textures into memory
-            self.map.textures.event_overlays['damage'] = Model(self.map.settingscfg['hud']['overlays']['damage'], self.map.path, self.map.rendermethod, self.game.canvcont, 33)
+            self.map.textures.event_overlays['damage'] = Model(self.map.settingscfg['hud']['overlays']['damage'], self.map.path, self.map.rendermethod, self.game.canvcont, 'event overlays')
             self.map.textures.event_overlays['damage'].setpos(402, 302, 0, 0)
             
             #open layout
@@ -280,7 +280,7 @@ class Engine:
             for panel in self.map.layout.data['geometry']:
                 with open(os.path.join(self.map.path, 'materials', panel['material']), 'r') as file:
                     panel['material data'] = json.load(file)
-                panel['img obj'] = self.game.canvcont.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[panel['material data']['texture']['address']], layer = 1)
+                panel['img obj'] = self.game.canvcont.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[panel['material data']['texture']['address']], layer = 'map panels')
                 panel['scriptmodules'] = []
                 if 'scripts' in panel['material data']:
                     for script in panel['material data']['scripts']:
@@ -295,19 +295,19 @@ class Engine:
             self.map.textures.obj_scatter = []
             for i in range(int(self.map.cfg['background']['scatternum'] / len(self.map.cfg['background']['scatters']))):
                 for scatter in self.map.cfg['background']['scatters']:
-                    scattermdl = Model(random.choice(self.map.cfg['entity models'][scatter]), self.map.path, self.map.rendermethod, self.game.canvcont, 4)
+                    scattermdl = Model(random.choice(self.map.cfg['entity models'][scatter]), self.map.path, self.map.rendermethod, self.game.canvcont, 'scatters')
                     scattermdl.setpos(random.randint(0, 800), random.randint(0, 600))
                     self.map.textures.obj_scatter.append(scattermdl)
             self.game.message_pipe.send(['map load', 'Loaded scatters'])
             
             #load player
             self.game.message_pipe.send(['map load', 'Creating player model...'])
-            self.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.map.path, self, 3, is_player = True)
+            self.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.map.path, self, 'player models', is_player = True)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.map.player.setpos(400, 300, 0)
             
             #render overlay
-            self.map.textures.obj_overlay = self.game.canvcont.create_image(402, 302, image = self.map.textures.overlay, layer = 30)
+            self.map.textures.obj_overlay = self.game.canvcont.create_image(402, 302, image = self.map.textures.overlay, layer = 'overlay')
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
             
             #make healthbar
@@ -845,7 +845,7 @@ class CanvasMessages:
         
         self.messages = []
         self.running = True
-        self.layer = 31
+        self.layer = 'log text'
         
         class graphical_properties:
             updatedelay = 1
@@ -1058,7 +1058,7 @@ class DisplayBar:
         self.bg = bg
         self.fg = fg
         
-        self.layer = 32
+        self.layer = 'hud'
         
         class objects:
             background = self.canvcont.create_rectangle(*coords, fill = self.bg, outline = self.bg, width = 5, layer = self.layer)
@@ -1089,7 +1089,7 @@ class InventoryBar:
         self.outlinewidth = outlinewidth
         self.divider_size = divider_size
         
-        self.layer = 32
+        self.layer = 'hud'
         
         class paths:
             textures = textures_path
@@ -1293,7 +1293,7 @@ class PopMessage:
         while True:
             text_, duration = queue.recv()
             
-            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = (self.graphical_properties.font, 0), fill = self.graphical_properties.colour, layer = 32)
+            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = (self.graphical_properties.font, 0), fill = self.graphical_properties.colour, layer = 'hud')
             
             for i in range(0, 52, 2):
                 self.canvcont.itemconfigure(self.canvobj, font = (self.graphical_properties.font, i))
