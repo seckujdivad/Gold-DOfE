@@ -1,0 +1,39 @@
+{
+	"clip hitbox": true,
+	"display name": "Stone wall",
+	"entities": {
+		"player": {
+			"accelerate": 30,
+			"damage": 0,
+			"decelerate": 100,
+			"velcap": 20
+		}
+	},
+	"hitbox": [
+		[
+			-32,
+			-32
+		],
+		[
+			-32,
+			32
+		],
+		[
+			32,
+			32
+		],
+		[
+			32,
+			-32
+		]
+	],
+	"light": {
+		"block": 1,
+		"emit": 0
+	},
+	"texture": {
+		"address": "stone.png",
+		"animated": false,
+		"editor colour": "#909090"
+	}
+}
