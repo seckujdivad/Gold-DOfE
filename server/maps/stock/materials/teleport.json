@@ -37,6 +37,6 @@
 	},
 	"light": {
 		"emit": 0.2,
-		"block": 0,
+		"block": 0
 	}
 }
