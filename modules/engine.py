@@ -706,6 +706,8 @@ class Model:
         else:
             raise ValueError('Display type \'{}\' doesn\'t exist'.format(self.config['type']))
         self._render()
+        
+        self.setpos(x = self.config['offscreen'][0], y = self.config['offscreen'][1], transparency = 255, rotation = 0)
     
     def _render(self, x = None, y = None):
         if not x == None:
@@ -720,7 +722,6 @@ class Model:
             self.graphics.x = x
         if not y == None:
             self.graphics.y = y
-        
             
         if not transparency == None:
             self.graphics.prev_transparency = self.graphics.transparency
@@ -732,8 +733,9 @@ class Model:
             
         if self.graphics.displaytype == 'flat':
             self.canvcont.coords(self.obj_from_angle(self.graphics.rotation, self.graphics.transparency), self.graphics.x, self.graphics.y)
-            if (self.graphics.prev_rotation != None and self.graphics.prev_rotation != self.graphics.rotation) or (self.graphics.prev_transparency != None and self.graphics.prev_transparency != self.graphics.transparency):
+            if self.graphics.prev_rotation != None and self.graphics.prev_transparency != None and (self.graphics.prev_rotation != self.graphics.rotation or self.graphics.prev_transparency != self.graphics.transparency):
                 self.canvcont.coords(self.obj_from_angle(self.graphics.prev_rotation, self.graphics.prev_transparency), self.config['offscreen'][0], self.config['offscreen'][1])
+                
         elif self.graphics.displaytype == 'stack':
             i = 0
             if not (self.graphics.prev_rotation == None or self.graphics.prev_rotation == self.graphics.rotation):
