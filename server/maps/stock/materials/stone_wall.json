@@ -32,7 +32,7 @@
 		"emit": 0
 	},
 	"texture": {
-		"address": "stone.png",
+		"address": "stone_wall.png",
 		"animated": false,
 		"editor colour": "#909090"
 	}
