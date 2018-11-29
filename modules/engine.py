@@ -1182,6 +1182,9 @@ class CanvasController:
         self.layers = []
         self.reserved_args = ['layer']
         
+        with open(os.path.join(sys.path[0], 'user', 'layers.json'), 'r') as file:
+            self.layer_config = json.load(file)
+        
     def create_rectangle(self, *coords, **args):
         'Wrapper function to provide tk canvas-like syntax'
         return self._create('rectangle', coords, args)
@@ -1199,6 +1202,12 @@ class CanvasController:
     def _create(self, obj_type, coords, args):
         if not 'layer' in args:
             args['layer'] = 0
+        
+        if type(args['layer']) == str:
+            if args['layer'] in self.layer_config:
+                args['layer'] = self.layer_config[args['layer']]
+            else:
+                raise ValueError('Couldn\'t find layer name "{}" in config'.format(args['layer']))
             
         while not len(self.layers) >= args['layer'] + 1:
             self.layers.append([])
