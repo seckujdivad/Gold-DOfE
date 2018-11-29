@@ -1,0 +1,11 @@
+{
+	"base texture": 0,
+	"map panels": 1,
+	"items": 2,
+	"player models": 3,
+	"scatters": 4,
+	"overlay": 30,
+	"log text": 31,
+	"hud": 32,
+	"event overlays": 33
+}
