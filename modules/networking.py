@@ -370,11 +370,6 @@ sv_quit: destroy the server'''
                     damage_dealt = False
                     if playerdata['active']:
                         if self.item_touches_player(playerdata['position']['x'], playerdata['position']['y'], item):
-                            if item['data']['destroyed after damage']:
-                                to_send_loop['type'] = 'remove'
-                                to_send_loop['ticket'] = item['ticket']
-                                to_remove.append(i)
-                                
                             if 'last damage' in item and not item['last damage'] == None:
                                 if (time.time() - item['last damage']) > item['data']['damage cooldown']:
                                     damage_dealt = True
@@ -386,6 +381,11 @@ sv_quit: destroy the server'''
                         item['last damage'] = time.time()
                         
                         self.send(playerdata['connection'], Request(command = 'var update w', subcommand = 'health', arguments = {'value': playerdata['health']}))
+                        
+                        if item['data']['destroyed after damage']:
+                            to_send_loop['type'] = 'remove'
+                            to_send_loop['ticket'] = item['ticket']
+                            to_remove.append(i)
                 
                 if not to_send_loop == {}:
                     to_send_loop['ticket'] = item['ticket']

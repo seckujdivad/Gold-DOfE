@@ -1140,9 +1140,15 @@ class InventoryBar:
         return [x, y]
     
     def increment_slot(self, index, increment):
-        self.set_slot(index, quantity = self.inv_items[index]['quantity'] + increment)
+        self.set_slot(index, quantity = int(self.inv_items[index]['quantity'] + increment))
     
     def set_slot(self, index, item = None, quantity = 0):
+        if item == None:
+            if self.items_data[self.inv_items[index]['item']]['unlimited']:
+                quantity = max(quantity, 1)
+        elif self.items_data[item]['unlimited']:
+            quantity = max(quantity, 1)
+        
         if quantity < 1:
             if not self.inv_items[index]['image'] == None:
                 self.canvcont.delete(self.inv_items[index]['image'])
