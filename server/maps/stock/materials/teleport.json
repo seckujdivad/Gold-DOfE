@@ -33,5 +33,9 @@
 		"address": "teleport.png",
 		"animated": false,
 		"editor colour": "#DC00FF"
+	},
+	"light": {
+		"emit": 0.2,
+		"block": 0,
 	}
 }

@@ -30,5 +30,9 @@
 		"address": "stone.png",
 		"animated": false,
 		"editor colour": "#ADADAD"
+	},
+	"light": {
+		"emit": 0,
+		"block": 0,
 	}
 }
