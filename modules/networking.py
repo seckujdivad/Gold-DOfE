@@ -359,6 +359,7 @@ sv_quit: destroy the server'''
                     to_send_loop['type'] = 'update position'
                     
                     to_move = item['data']['speed'] / self.serverdata.tickrate
+                    item['distance travelled'] += to_move
 
                     item['position'][0] +=  to_move * math.cos(math.radians(item['rotation']))
                     item['position'][1] +=  to_move * math.sin(math.radians(item['rotation']))
