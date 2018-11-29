@@ -29,6 +29,7 @@
 	"scripts": [
 		"teleport.py"
 	],
+	"clip hitbox": false,
 	"texture": {
 		"address": "teleport.png",
 		"animated": false,

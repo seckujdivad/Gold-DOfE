@@ -26,6 +26,7 @@
 			-32
 		]
 	],
+	"clip hitbox": false,
 	"texture": {
 		"address": "lava.png",
 		"animated": false,
