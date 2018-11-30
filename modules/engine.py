@@ -108,7 +108,7 @@ class Game:
                         self.engine.map.other_players.entities = new_ent_list
                 
                 for index in range(len(positions)):
-                    self.engine.map.other_players.entities[index].setpos(positions[index]['x'], positions[index]['y'], positions[index]['rotation'])
+                    self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 0.1)
             elif request.subcommand == 'team':
                 self.vars['team'] = request.arguments['value']
             elif request.subcommand == 'client position':
@@ -626,6 +626,25 @@ class Entity:
             return (math.degrees(math.atan(dy / dx)) + 180) % 360
         else:
             return math.degrees(math.atan(dy / dx)) % 360
+    
+    def setpos_interpolate(self, x = None, y = None, rotation = None, time_ = 0, divisions = 10):
+        threading.Thread(target = self._setpos_interpolate, args = [x, y, rotation, time_, divisions], daemon = True, name = 'Setpos interpolator').start()
+    
+    def _setpos_interpolate(self, x, y, rotation, time_, divisions):
+        if x == None:
+            x = self.pos.x
+        if y == None:
+            y = self.pos.y
+        if rotation == None:
+            rotation = self.pos.rotation
+    
+        xincrement = (x - self.pos.x) / divisions
+        yincrement = (y - self.pos.y) / divisions
+        rotationincrement = (rotation - self.pos.rotation) / divisions
+        delay = time_ / divisions
+        for i in range(divisions):
+            self.setpos(x = self.pos.x + xincrement, y = self.pos.y + yincrement, rotation = self.pos.rotation)
+            time.sleep(delay)
     
     def destroy(self):
         self.model.destroy()
