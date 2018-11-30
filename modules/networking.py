@@ -402,6 +402,13 @@ sv_quit: destroy the server'''
             for conn_data in self.serverdata.conn_data:
                 self.send(conn_data['connection'], Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))
             
+            for conn_data in self.serverdata.conn_data:
+                output = []
+                for data in self.serverdata.conn_data:
+                    if data['active'] and 'position' in data and not data == conn_data and not data['health'] == 0:
+                        output.append(data['position'])
+                self.send(conn_data['connection'], Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': output}))
+            
             time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
     
     def item_touches_player(self, x, y, item):
