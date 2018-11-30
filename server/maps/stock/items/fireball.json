@@ -9,7 +9,7 @@
 	"destroyed after damage": false,
 	"damage cooldown": 1,
 	"range": null,
-	"speed": 50,
+	"speed": 500,
 	"hitbox": {
 		"type": "circular",
 		"radius": 32
