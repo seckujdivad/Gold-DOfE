@@ -687,7 +687,14 @@ class Model:
         #load textures
         self.graphics.displaytype = self.config['type']
         if self.graphics.displaytype == 'flat':
-            self.graphics.flat.texture = self.preimgloader(os.path.join(self.ent_path, self.config['texture']))
+            if self.graphics.usesPIL:
+                self.graphics.flat.texture = self.preimgloader(os.path.join(self.ent_path, self.config['texture']))
+            else:
+                tex_address = self.config['texture']
+                if 'no PIL texture' in self.config:
+                    tex_address = self.config['no PIL texture']
+                    
+                self.graphics.flat.texture = self.imageloader(file = os.path.join(self.ent_path, tex_address))
         elif self.graphics.displaytype == 'stack':
             if type(self.config['textures']) == list:
                 for img in self.config['textures']:
@@ -769,7 +776,7 @@ class Model:
                     if self.graphics.usesPIL:
                         loaded_image = self.imageloader(image = self.graphics.stack.textures[tex].rotate(angle))
                     else:
-                        loaded_image = self.imageloader(image = self.graphics.stack.textures[tex])
+                        loaded_image = self.graphics.stack.textures[tex]
                     new_canv_obj = self.canvcont.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image, layer = self.layer)
                     self.graphics.stack.canvobjs[i].append(new_canv_obj)
                     self.canvcont.coords(new_canv_obj, self.config['offscreen'][0], self.config['offscreen'][1])
@@ -788,7 +795,7 @@ class Model:
                         img = self.alphamult_im(img, (transp * transp_increment))
                         loaded_image = self.imageloader(image = img)
                     else:
-                        loaded_image = self.imageloader(image = self.graphics.flat.texture)
+                        loaded_image = self.graphics.flat.texture
                     new_canv_obj = self.canvcont.create_image(self.config['offscreen'][0], self.config['offscreen'][1], image = loaded_image, layer = self.layer)
                     transparency_list.append(new_canv_obj)
                     self.graphics.flat.textures.append(loaded_image)
