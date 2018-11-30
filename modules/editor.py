@@ -961,12 +961,70 @@ class Editor:
                 
                 def save(self):
                     pass
+            
+            class LightMap:
+                """
+                Generate a light map for the level
+                """
+                def __init__(self, frame, editorobj, tabobj):
+                    self.frame = frame
+                    self.editorobj = editorobj
+                    self.tabobj = tabobj
                     
+                    self.ui_styling = self.editorobj.uiobjs.ui_styling
+                    
+                    self.tabobj.set_title('loading...')
+                    
+                    with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+                        self.user_config = json.load(file)
+                    
+                    self.label_warning = tk.Label(self.frame, text = 'loading..', **self.ui_styling.get(font_size = 'medium', object_type = tk.Label))
+                    self.button_generate = tk.Button(self.frame, text = 'Generate', command = self.generate, **self.ui_styling.get(font_size = 'large', object_type = tk.Button))
+                    
+                    self.log_frame = tk.Frame(self.frame)
+                    self.log_list = tk.Listbox(self.log_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.log_scrollbar = tk.Scrollbar(self.log_frame, command = self.log_list.yview, **self.ui_styling.get(font_size = 'small', object_type = tk.Scrollbar))
+                    self.log_list.config(yscrollcommand = self.log_scrollbar.set)
+                    
+                    self.log_scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.log_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    self.label_warning.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.button_generate.grid(row = 1, column = 0, sticky = 'NESW')
+                    self.log_frame.grid(row = 2, column = 0, sticky = 'NESW')
+                    
+                    self.ui_styling.set_weight(self.frame, 1, 3, dorows = False)
+                    self.frame.rowconfigure(2, weight = 1)
+                    
+                    if self.user_config['graphics']['PILrender']:
+                        self.label_warning.config(text = 'PIL is enabled\nReady to generate light map')
+                    else:
+                        self.label_warning.config(text = 'PIL is not enabled\nInstall it and turn it on in settings')
+                        self.button_generate.config(state = tk.DISABLED)
+                        
+                    self.tabobj.set_title('ready')
+                
+                def generate(self):
+                    self.tabobj.set_title('generating...')
+                    self.log_list.delete(0, tk.END)
+                    self.log_list.insert(tk.END, 'Initialising...')
+                    
+                    self.log_list.insert(tk.END, 'Getting PIL Image object...')
+                    PILImage = __import__('PIL.Image').Image
+                    self.log_list.insert(tk.END, 'Done')
+                    
+                    self.log_list.insert(tk.END, 'Making blank lightmap...')
+                    image = PILImage.new('RGBA', (800, 600), 'black')
+                    self.log_list.insert(tk.END, 'Done')
+                    
+                    
+            
             library = {'Text': Text,
                        'Tree': Tree,
                        'Layout': Layout,
                        'Materials': MaterialEditor,
-                       'Config': ConfigEditor} #all the types of tab
+                       'Config': ConfigEditor,
+                       'Light maps': LightMap} #all the types of tab
             
             @classmethod
             def create_new(self, name):
