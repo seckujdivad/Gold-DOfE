@@ -67,7 +67,7 @@ class Game:
             time.sleep(0.05)
             if not self.engine.map.player == None:
                 self.client.send(modules.networking.Request(command = 'var update w', subcommand = 'position', arguments = {'x': self.engine.map.player.pos.x, 'y': self.engine.map.player.pos.y, 'rotation': self.engine.map.player.pos.rotation}))
-            self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'all player positions'))
+            #self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'all player positions'))
     
     def close(self):
         self.running = False
@@ -108,7 +108,7 @@ class Game:
                         self.engine.map.other_players.entities = new_ent_list
                 
                 for index in range(len(positions)):
-                    self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 0.1)
+                    self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 1 / self.engine.map.settingscfg['network']['tickrate'])
             elif request.subcommand == 'team':
                 self.vars['team'] = request.arguments['value']
             elif request.subcommand == 'client position':
