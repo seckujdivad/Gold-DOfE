@@ -53,20 +53,29 @@
 			}
 		]
 	},
-	"user": {
-		"name": "snekky"
-	},
 	"styling": {
 		"default": {
 			"fonts": {
-				"small": ["", 10],
-				"medium": ["", 15],
-				"large": ["", 25]
+				"large": [
+					"",
+					25
+				],
+				"medium": [
+					"",
+					15
+				],
+				"small": [
+					"",
+					10
+				]
 			},
 			"reliefs": {
-				"relief": "flat",
-				"overrelief": "groove"
+				"overrelief": "groove",
+				"relief": "flat"
 			}
 		}
+	},
+	"user": {
+		"name": "snekky"
 	}
 }
