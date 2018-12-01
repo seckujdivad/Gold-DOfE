@@ -31,28 +31,31 @@
 				"address": "david-juckes",
 				"internal": false,
 				"name": "Laptop",
-				"port": "normal"
+				"port": "normal",
+				"tickrate": 15
 			},
 			{
 				"address": "david-juckes-desktop",
 				"internal": false,
 				"name": "PC",
-				"port": "normal"
+				"port": "normal",
+				"tickrate": 15
 			},
 			{
 				"address": "localhost",
 				"internal": false,
 				"name": "Local PC",
-				"port": "normal"
+				"port": "normal",
+				"tickrate": 15
 			},
 			{
 				"address": "localhost",
 				"internal": true,
 				"name": "Local PC",
-				"port": "normal"
+				"port": "normal",
+				"tickrate": 15
 			}
 		],
-		"tickrate": 15,
 		"interpolations per second": 50
 	},
 	"styling": {

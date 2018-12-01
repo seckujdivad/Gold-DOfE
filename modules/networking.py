@@ -447,10 +447,11 @@ sv_quit: destroy the server'''
             self.output_pipe.send('{} is now playing'.format(client_data['username']))
 
 class Client:
-    def __init__(self, host_, port_, ui):
+    def __init__(self, server_data, ui):
         class serverdata:
-            host = host_
-            port = port_
+            raw = server_data
+            host = raw['address']
+            port = raw['port']
         self.serverdata = serverdata
         
         self.ui = ui

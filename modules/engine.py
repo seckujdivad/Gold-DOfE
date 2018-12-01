@@ -108,7 +108,7 @@ class Game:
                         self.engine.map.other_players.entities = new_ent_list
                 
                 for index in range(len(positions)):
-                    self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 1 / self.engine.map.settingscfg['network']['tickrate'], int(self.engine.map.settingscfg['network']['interpolations per second'] / self.engine.map.settingscfg['network']['tickrate']))
+                    self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 1 / self.engine.map.settingscfg['network']['tickrate'], int(self.engine.map.settingscfg['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
             elif request.subcommand == 'team':
                 self.vars['team'] = request.arguments['value']
             elif request.subcommand == 'client position':
