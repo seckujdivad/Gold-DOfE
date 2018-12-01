@@ -172,6 +172,7 @@ class UI:
                     settingsdict['hud']['chat']['maxlen'] = self.chatmaxlen_var.get()
                     settingsdict['hud']['chat']['persist time'] = self.chatpersisttime_var.get()
                     settingsdict['user']['name'] = self.username_var.get()
+                    settingsdict['network']['interpolations per second'] = self.interp_var.get()
                     settingsdict['default window state'] = self.windowzoom_flipswitch.state
                     
                     with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
@@ -193,6 +194,7 @@ class UI:
                     self.chatmaxlen_var.set(settingsdict['hud']['chat']['maxlen'])
                     self.chatpersisttime_var.set(settingsdict['hud']['chat']['persist time'])
                     self.username_var.set(settingsdict['user']['name'])
+                    self.interp_var.set(settingsdict['network']['interpolations per second'])
                     self.windowzoom_flipswitch.on_option_press(settingsdict['default window state'], run_binds = False)
                 
                 @classmethod
