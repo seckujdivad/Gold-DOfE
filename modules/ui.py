@@ -246,10 +246,13 @@ class UI:
                 chatpersisttime_spinbox = tk.Spinbox(settings_frame, from_ = 0, to = 128, textvariable = chatpersisttime_var,
                                                 **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
                 
-                cat_user_label = tk.Label(settings_frame, text = 'User', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                cat_user_label = tk.Label(settings_frame, text = 'Network', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 username_label = tk.Label(settings_frame, text = 'Username', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 username_var = tk.StringVar()
                 username_entry = tk.Entry(settings_frame, textvariable = username_var, **self.styling.get(font_size = 'medium', object_type = tk.Entry))
+                interp_label = tk.Label(settings_frame, text = 'Interpolations per second', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                interp_var = tk.IntVar()
+                interp_spinbox = tk.Spinbox(settings_frame, textvariable = interp_var, from_ = 0, to = 9999, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
                 
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
@@ -291,8 +294,10 @@ class UI:
                 cat_user_label.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
                 username_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
                 username_entry.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
+                interp_label.grid(row = widget_row + 2, column = 0, sticky = 'NESW')
+                interp_spinbox.grid(row = widget_row + 2, column = 1, sticky = 'NESW')
                 
-                widget_row += 2
+                widget_row += 3
                 
                 settings_frame.grid(row = 0, column = 0, columnspan = 3, sticky = 'NESW')
                 button_match_requirements.grid(row = 1, column = 0, columnspan = 3, sticky = 'NESW')
