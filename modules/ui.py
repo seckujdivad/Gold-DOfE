@@ -414,7 +414,7 @@ class UI:
                 addserver_address_label = tk.Label(addserver_frame, text = 'Address', **self.styling.get(font_size = 'small', object_type = tk.Label))
                 addserver_address_entry = tk.Entry(addserver_frame, textvariable = vars.address, **self.styling.get(font_size = 'small', object_type = tk.Entry))
                 addserver_port_label = tk.Label(addserver_frame, text = 'Port', **self.styling.get(font_size = 'small', object_type = tk.Label))
-                addserver_port_entry = tk.Entry(addserver_frame, textvariable = vars.port, **self.styling.get(font_size = 'small', object_type = tk.Entry))
+                addserver_port_spinbox = tk.Spinbox(addserver_frame, textvariable = vars.port, from_ = 1024, to = 65535, **self.styling.get(font_size = 'small', object_type = tk.Spinbox))
                 addserver_tickrate_label = tk.Label(addserver_frame, text = 'Tickrate', **self.styling.get(font_size = 'small', object_type = tk.Label))
                 addserver_tickrate_spinbox = tk.Spinbox(addserver_frame, textvariable = vars.tickrate, from_ = 1, to = 1024, **self.styling.get(font_size = 'small', object_type = tk.Spinbox))
                 addserver_islocal_flipswitch = TkFlipSwitch(addserver_frame, options = [{'text': 'Local machine only', 'command': print},
@@ -433,7 +433,7 @@ class UI:
                 addserver_address_label.grid(row = 1, column = 0, sticky = 'NESW')
                 addserver_address_entry.grid(row = 1, column = 1, sticky = 'NESW')
                 addserver_port_label.grid(row = 2, column = 0, sticky = 'NESW')
-                addserver_port_entry.grid(row = 2, column = 1, sticky = 'NESW')
+                addserver_port_spinbox.grid(row = 2, column = 1, sticky = 'NESW')
                 addserver_tickrate_label.grid(row = 3, column = 0, sticky = 'NESW')
                 addserver_tickrate_spinbox.grid(row = 3, column = 1, sticky = 'NESW')
                 addserver_islocal_flipswitch.grid(row = 4, column = 0, columnspan = 2, sticky = 'NESW')
