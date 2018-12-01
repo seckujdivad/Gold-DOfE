@@ -51,7 +51,9 @@
 				"name": "Local PC",
 				"port": "normal"
 			}
-		]
+		],
+		"tickrate": 15,
+		"interpolations per second": 50
 	},
 	"styling": {
 		"default": {

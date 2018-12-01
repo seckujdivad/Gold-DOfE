@@ -1009,14 +1009,24 @@ class Editor:
                     self.log_list.delete(0, tk.END)
                     self.log_list.insert(tk.END, 'Initialising...')
                     
+                    with open(os.path.join(self.editorobj.map.path, 'list.json'), 'r') as file:
+                        mapcfg = json.load(file)
+                    
                     self.log_list.insert(tk.END, 'Getting PIL Image object...')
                     PILImage = __import__('PIL.Image').Image
                     self.log_list.insert(tk.END, 'Done')
                     
                     self.log_list.insert(tk.END, 'Making blank lightmap...')
                     image = PILImage.new('RGBA', (800, 600), 'black')
+                    pixels = image.load()
                     self.log_list.insert(tk.END, 'Done')
                     
+                    self.log_list.insert(tk.END, 'Loading map data...')
+                    with open(os.path.join(self.editorobj.map.path, 'list.json'), 'r') as file:
+                        map_data = json.load(file)
+                    self.log_list.insert(tk.END, 'Done')
+                    
+                    pixels[1, 1] = (0, 0, 0, 128)
                     
             
             library = {'Text': Text,

@@ -108,7 +108,7 @@ class Game:
                         self.engine.map.other_players.entities = new_ent_list
                 
                 for index in range(len(positions)):
-                    self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 1 / self.engine.map.settingscfg['network']['tickrate'])
+                    self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 1 / self.engine.map.settingscfg['network']['tickrate'], int(self.engine.map.settingscfg['network']['interpolations per second'] / self.engine.map.settingscfg['network']['tickrate']))
             elif request.subcommand == 'team':
                 self.vars['team'] = request.arguments['value']
             elif request.subcommand == 'client position':
@@ -631,20 +631,23 @@ class Entity:
         threading.Thread(target = self._setpos_interpolate, args = [x, y, rotation, time_, divisions], daemon = True, name = 'Setpos interpolator').start()
     
     def _setpos_interpolate(self, x, y, rotation, time_, divisions):
-        if x == None:
-            x = self.pos.x
-        if y == None:
-            y = self.pos.y
-        if rotation == None:
-            rotation = self.pos.rotation
-    
-        xincrement = (x - self.pos.x) / divisions
-        yincrement = (y - self.pos.y) / divisions
-        rotationincrement = (rotation - self.pos.rotation) / divisions
-        delay = time_ / divisions
-        for i in range(divisions):
-            self.setpos(x = self.pos.x + xincrement, y = self.pos.y + yincrement, rotation = self.pos.rotation)
-            time.sleep(delay)
+        if divisions > 0:
+            if x == None:
+                x = self.pos.x
+            if y == None:
+                y = self.pos.y
+            if rotation == None:
+                rotation = self.pos.rotation
+
+            xincrement = (x - self.pos.x) / divisions
+            yincrement = (y - self.pos.y) / divisions
+            rotationincrement = (rotation - self.pos.rotation) / divisions
+            delay = time_ / divisions
+            for i in range(divisions):
+                self.setpos(x = self.pos.x + xincrement, y = self.pos.y + yincrement, rotation = self.pos.rotation)
+                time.sleep(delay)
+        else:
+            self.setpos(x = x, y = y, rotation = rotation)
     
     def destroy(self):
         self.model.destroy()
