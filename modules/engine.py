@@ -154,10 +154,12 @@ class Game:
                                 to_update.append(i)
                                 
                         for i in to_update:
-                            if 'position' in data:
-                                i['object'].setpos(x = data['position'][0], y = data['position'][1])
-                            if 'rotation' in data:
-                                i['object'].setpos(rotation = data['rotation'])
+                            if not 'position' in data:
+                                data['position'] = [None, None]
+                            if not 'rotation' in data:
+                                data['rotation'] = None
+                                
+                            i['object'].setpos_interpolate(data['position'][0], data['position'][1], data['rotation'], 1 / self.client.serverdata.raw['tickrate'], int(self.engine.map.settingscfg['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
         
         elif request.command == 'popmsg':
             if request.subcommand == 'general':
