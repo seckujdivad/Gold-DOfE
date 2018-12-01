@@ -326,6 +326,12 @@ class UI:
                     
                     self.button_back.config(command = self.return_to_menu)
                     self.button_connect.config(command = self.choose_server)
+                    
+                    with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+                        settingsdata = json.load(file)
+                    
+                    self.vars.tickrate.set(settingsdata['network']['default tickrate'])
+                    self.vars.port.set(settingsdata['network']['default port'])
                 
                 @classmethod
                 def on_close(self):
@@ -368,7 +374,8 @@ class UI:
                     sv_dict = {'address': self.vars.address.get(),
                                'internal': not bool(self.addserver_islocal_flipswitch.state),
                                'name': self.vars.name.get(),
-                               'port': self.vars.port.get()}
+                               'port': self.vars.port.get(),
+                               'tickrate': self.vars.tickrate.get()}
                     try:
                         sv_dict['port'] = int(sv_dict['port'])
                     except: #is a word (normal), do nothing
@@ -380,13 +387,15 @@ class UI:
                 
                     self.populate_server_list()
                     self.vars.address.set('')
-                    self.vars.port.set('')
                     self.vars.name.set('')
+                    self.vars.tickrate.set(settingsdata['network']['default tickrate'])
+                    self.vars.port.set(settingsdata['network']['default port'])
                 
                 class vars:
                     address = tk.StringVar()
                     port = tk.StringVar()
                     name = tk.StringVar()
+                    tickrate = tk.IntVar()
                 
                 frame = tk.Frame(main.page_frame)
                 
@@ -406,6 +415,8 @@ class UI:
                 addserver_address_entry = tk.Entry(addserver_frame, textvariable = vars.address, **self.styling.get(font_size = 'small', object_type = tk.Entry))
                 addserver_port_label = tk.Label(addserver_frame, text = 'Port', **self.styling.get(font_size = 'small', object_type = tk.Label))
                 addserver_port_entry = tk.Entry(addserver_frame, textvariable = vars.port, **self.styling.get(font_size = 'small', object_type = tk.Entry))
+                addserver_tickrate_label = tk.Label(addserver_frame, text = 'Tickrate', **self.styling.get(font_size = 'small', object_type = tk.Label))
+                addserver_tickrate_spinbox = tk.Spinbox(addserver_frame, textvariable = vars.tickrate, from_ = 1, to = 1024, **self.styling.get(font_size = 'small', object_type = tk.Spinbox))
                 addserver_islocal_flipswitch = TkFlipSwitch(addserver_frame, options = [{'text': 'Local machine only', 'command': print},
                                                                                         {'text': 'Open to LAN', 'command': print}], **self.styling.get(font_size = 'small', object_type = tk.Button))
                 
@@ -423,12 +434,15 @@ class UI:
                 addserver_address_entry.grid(row = 1, column = 1, sticky = 'NESW')
                 addserver_port_label.grid(row = 2, column = 0, sticky = 'NESW')
                 addserver_port_entry.grid(row = 2, column = 1, sticky = 'NESW')
-                addserver_islocal_flipswitch.grid(row = 3, column = 0, columnspan = 2, sticky = 'NESW')
+                addserver_tickrate_label.grid(row = 3, column = 0, sticky = 'NESW')
+                addserver_tickrate_spinbox.grid(row = 3, column = 1, sticky = 'NESW')
+                addserver_islocal_flipswitch.grid(row = 4, column = 0, columnspan = 2, sticky = 'NESW')
                 addserver_choose_button.grid(row = 0, column = 2, rowspan = 4, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 2, 3)
+                self.styling.set_weight(frame, 2, 4)
                 frame.rowconfigure(1, weight = 0)
                 frame.rowconfigure(2, weight = 0)
+                frame.rowconfigure(3, weight = 0)
                 
                 self.styling.set_weight(addserver_frame, 3, 4)
                 

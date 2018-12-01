@@ -26,6 +26,7 @@
 	},
 	"network": {
 		"default port": 4321,
+		"default tickrate": 15,
 		"servers": [
 			{
 				"address": "david-juckes",
