@@ -13,7 +13,7 @@ class Interface:
         self.pipe.send(['play', [freq dura]])
     
     def schedule(self, timestamp, freq, dura):
-        self.pipe.send(['schedule', [freq, dura])
+        self.pipe.send(['schedule', [freq, dura], timestamp)
     
     def stop(self):
         self.pipe.send(['stop'])
@@ -29,7 +29,8 @@ class Controller:
     
     def handler(self):
         while self.cont:
-            data = self.pipe.recv()
+            if data == None:
+                data = self.pipe.recv()
             
             if data[0] == 'stop':
                 self.cont = False
@@ -38,9 +39,24 @@ class Controller:
                     self.sound_queue['next'] = [data[1]]
                 else:
                     self.sound_queue['next'].append(data[1])
+                data = None
             elif data[0] == 'schedule':
-                
+                if data[2] < time.time():
+                    data[0] = 'play'
+                    data.pop(2)
+                else:
+                    
+                    data = None
     
     def player(self):
         while self.cont:
-            
+            pass
+    
+    def get_stamp(self, timestamp, bias = 0):
+        'Bias of 0 means low, 1 means high'
+        timestamp = timestamp / self.resolution
+        if bias == 0:
+            timestamp = math.floor(timestamp)
+        else:
+            timestamp = math.ceil(timestamp)
+        return timestamp * self.resolution
