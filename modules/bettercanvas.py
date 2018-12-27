@@ -105,20 +105,24 @@ class Model:
     Model:
     Similar in function to canvas.create_image
     canvas_controller - CanvasController object to render to
-    ent_name - name of entity in map files
+    mdl_name - name of model in map files
     map_path - path to map files
     layer - string or int for canvas controller
     img_mode - 'pil' or 'tk', PIL requires pillow
     '''
-    def __init__(self, canvas_controller, ent_name, map_path, layer, img_mode = 'pil'):
-        self.ent_name = ent_name
+    def __init__(self, canvas_controller, mdl_name, map_path, layer):
+        self.mdl_name = mdl_name
         self.map_path = map_path
         self.canvas_controller = canvas_controller
         self.layer = layer
-        self.img_mode = img_mode
         
+        ## make data structures
         class attributes:
             class pos: #current coordinates
+                x = 0
+                y = 0
+                
+            class offscreen: #coordinates where the model is guaranteed to be offscreen
                 x = 0
                 y = 0
                 
@@ -132,12 +136,53 @@ class Model:
                 x = 0
                 y = 0
             
-            images = []
-            imageobjs = [] #image objects that can be used to create 
-            canvasobjs = [] #objects created from imageobjs
+            baseimages = [] #images before any effects have been applied to them
+            imageobjs = [] #image objects with effects that can be used to create canvas objects
+            canvasobjs = [] #references to canvas objects created from imageobjs
+            
+            uses_PIL = False
+            is_animated = False
+            
+            render_quality = 0 #0-3 - render quality as defined in the user's config
         self.attributes = attributes
         
         class cfgs:
             model = {}
             user = {}
+            map = {}
         self.cfgs = cfgs
+        
+        class pillow:
+            image = None
+            image_chops = None
+        self.pillow = pillow
+        
+        ## load data into structures
+        #load configs
+        with open(os.path.join(self.map_path, 'models', self.mdl_name, 'list.json'), 'r') as file:
+            self.cfgs.model = json.load(file)
+        
+        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+            self.cfgs.user = json.load(file)
+        
+        with open(os.path.join(self.map_path, 'list.json'), 'r') as file:
+            self.cfgs.map = json.load(file)
+        
+        #translate data from cfgs into model data structures
+        self.attributes.offscreen.x = self.cfgs.model['offscreen'][0]
+        self.attributes.offscreen.y = self.cfgs.model['offscreen'][1]
+        
+        self.attributes.pos.x = self.attributes.offscreen.x
+        self.attributes.pos.y = self.attributes.offscreen.y
+        
+        self.attributes.uses_PIL = self.cfgs.user['graphics']['PILRender']
+        self.attributes.is_animated = self.cfgs.model['animated']
+        self.attributes.render_quality = self.cfgs.user['graphics']['model quality']
+        self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
+        
+        if 'transparencies' in self.cfgs.model:
+            self.attributes.transparency_steps = self.cfgs.model['transparencies'][self.attributes.render_quality]
+        else:
+            self.attributes.transparency_steps = 1
+        
+        
