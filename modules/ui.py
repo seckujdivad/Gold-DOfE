@@ -164,7 +164,7 @@ class UI:
                         settingsdict = json.load(file)
                         
                     settingsdict['graphics']['PILrender'] = [True, False][self.pilrender_flipswitch.state]
-                    settingsdict['graphics']['stacked model quality'] = self.mdlquality_flipswitch.state
+                    settingsdict['graphics']['model quality'] = self.mdlquality_flipswitch.state
                     settingsdict['hud']['chat']['position'] = self.chatalign_flipswitch.state
                     settingsdict['hud']['chat']['colour'] = self.chatcol_var.get()
                     settingsdict['hud']['chat']['fontsize'] = self.chatsize_var.get()
@@ -186,7 +186,7 @@ class UI:
                         self.pilrender_flipswitch.on_option_press(0, run_binds = False)
                     else:
                         self.pilrender_flipswitch.on_option_press(1, run_binds = False)
-                    self.mdlquality_flipswitch.on_option_press(settingsdict['graphics']['stacked model quality'], run_binds = False)
+                    self.mdlquality_flipswitch.on_option_press(settingsdict['graphics']['model quality'], run_binds = False)
                     self.chatalign_flipswitch.on_option_press(settingsdict['hud']['chat']['position'], run_binds = False)
                     self.chatcol_var.set(settingsdict['hud']['chat']['colour'])
                     self.chatsize_var.set(settingsdict['hud']['chat']['fontsize'])

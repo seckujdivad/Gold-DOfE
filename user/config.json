@@ -2,7 +2,7 @@
 	"default window state": 0,
 	"graphics": {
 		"PILrender": true,
-		"stacked model quality": 3
+		"model quality": 3
 	},
 	"hud": {
 		"chat": {
