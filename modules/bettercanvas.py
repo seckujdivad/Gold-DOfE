@@ -344,3 +344,5 @@ class Model:
             for transparencies in rotations:
                 for obj in transparencies:
                     self.canvas_controller.delete(obj)
+    
+    setpos = set
