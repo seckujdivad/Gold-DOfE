@@ -230,13 +230,18 @@ class Model:
         for image in self.attributes.baseimages:
             if self.attributes.uses_PIL:
                 rotations = []
-                for rot in range(self.attributes.rotation_steps):
+                for rot in range(1, self.attributes.rotation_steps + 1, 1):
                     current_rotation = rot / (self.attributes.rotation_steps / 360)
                     image_rotated = self.apply_rotation(image, current_rotation)
                     
-                    transparencies = []
-                    for transp in range(self.attributes.transparency_steps):
-                        transparencies.append(self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256))))
+                    
+                    if self.attributes.transparency_steps == 1:
+                        transparencies = [self.pillow.photoimage(image_rotated)]
+                    else:
+                        transparencies = []
+                        
+                        for transp in range(0, self.attributes.transparency_steps, 1):
+                            transparencies.append(self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256))))
                         
                     rotations.append(transparencies)
                     
@@ -256,7 +261,7 @@ class Model:
             self.attributes.canvobjs.append(new_rotations)
     
     def apply_rotation(self, image_, angle):
-        return image_.rotate(angle)
+        return image_.rotate(0 - angle)
     
     def apply_transparency(self, image_, transparency):
         try:
@@ -337,7 +342,7 @@ class Model:
                 self.canvas_controller.coords(self.get_object(i, self.attributes.rotation, self.attributes.transparency), self.attributes.pos.x, self.attributes.pos.y)
     
     def get_object(self, index, rotation, transparency):
-        return self.attributes.canvobjs[index][int(rotation / 360)][int(transparency / 256)]
+        return self.attributes.canvobjs[index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)]
     
     def destroy(self):
         for rotations in self.attributes.canvobjs:
