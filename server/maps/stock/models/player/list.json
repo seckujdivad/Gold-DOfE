@@ -1,8 +1,11 @@
 {
-	"textures": "texture.png",
+	"textures": "Sprite-0001.gif",
 	"offscreen": [-100, -100],
 	"rotations": [1, 1, 1, 1],
 	"transparencies": [1, 1, 1, 1],
 	"layers": [1, 1, 1, 1],
-	"animated": false
+	"animation": {
+		"frames": 2,
+		"delay": 0.1
+	}
 }
