@@ -307,7 +307,7 @@ class Model:
             return None
         
         #check if only the positions were changed
-        if (rotation == None ^ rotation == prev_rotation) and (transparency == None ^ transparency == prev_transparency):
+        if ((rotation == None) ^ (rotation == prev_rotation)) and ((transparency == None) ^ (transparency == prev_transparency)):
             for i in range(len(self.attributes.canvobjs)):
                 self.canvas_controller.coords(self.get_object(i, self.attributes.rotation, self.attributes.transparency), self.attributes.pos.x, self.attributes.pos.y)
         else: #too many parameters were changed, replace all images
