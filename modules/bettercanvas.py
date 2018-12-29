@@ -1,6 +1,7 @@
 import tkinter as tk
 import os
 import sys
+import json
 
 class CanvasController:
     def __init__(self, canvas, game):
@@ -175,7 +176,7 @@ class Model:
         self.attributes.pos.x = self.attributes.offscreen.x
         self.attributes.pos.y = self.attributes.offscreen.y
         
-        self.attributes.uses_PIL = self.cfgs.user['graphics']['PILRender']
+        self.attributes.uses_PIL = self.cfgs.user['graphics']['PILrender']
         self.attributes.is_animated = self.cfgs.model['animated']
         self.attributes.render_quality = self.cfgs.user['graphics']['model quality']
         self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
@@ -293,7 +294,7 @@ class Model:
             prev_rotation = self.attributes.rotation
             self.attributes.rotation = rotation
         
-        if transparency = None:
+        if transparency == None:
             prev_transparency = None
         else:
             prev_transparency = self.attributes.transparency
