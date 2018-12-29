@@ -274,3 +274,60 @@ class Model:
             
         self.set(**args)
     
+    def set(self, x = None, y = None, rotation = None, transparency = None):
+        if x == None:
+            prev_x = None
+        else:
+            prev_x = self.attributes.pos.x
+            self.attributes.pos.x = x
+        
+        if y == None:
+            prev_y = None
+        else:
+            prev_y = self.attributes.pos.y
+            self.attributes.pos.y = y
+        
+        if rotation == None:
+            prev_rotation = None
+        else:
+            prev_rotation = self.attributes.rotation
+            self.attributes.rotation = rotation
+        
+        if transparency = None:
+            prev_transparency = None
+        else:
+            prev_transparency = self.attributes.transparency
+            self.attributes.transparency = transparency
+        
+        #check if the function has been called with any arguments at all
+        if x == None and y == None and rotation == None and transparency == None:
+            return None
+        
+        #check if only the positions were changed
+        if (rotation == None ^ rotation == prev_rotation) and (transparency == None ^ transparency == prev_transparency):
+            for i in range(len(self.attributes.canvobjs)):
+                self.canvas_controller.coords(self.get_object(i, self.attributes.rotation, self.attributes.transparency), self.attributes.pos.x, self.attributes.pos.y)
+        else: #too many parameters were changed, replace all images
+            #if previous is equal to current, set to current
+            if prev_x == None:
+                prev_x = self.attributes.pos.x
+            
+            if prev_y == None:
+                prev_y = self.attributes.pos.y
+            
+            if prev_rotation == None:
+                prev_rotation = self.attributes.rotation
+            
+            if prev_transparency == None:
+                prev_transparency = self.attributes.transparency
+            
+            #move currently onscreen objects offscreen
+            for i in range(len(self.attributes.canvobjs)):
+                self.canvas_controller.coords(self.get_object(i, prev_rotation, prev_transparency), self.attributes.offscreen.x, self.attributes.offscreen.y)
+            
+            #move currently offscreen objects offscreen
+            for i in range(len(self.attributes.canvobjs)):
+                self.canvas_controller.coords(self.get_object(i, self.attributes.rotation, self.attributes.transparency), self.attributes.pos.x, self.attributes.pos.y)
+    
+    def get_object(self, index, rotation, transparency):
+        return self.attributes.canvobjs[index][int(rotation / 360)][int(transparency / 256)]
