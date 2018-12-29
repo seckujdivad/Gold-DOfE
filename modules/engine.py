@@ -256,8 +256,8 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
             
             #load event textures into memory
-            self.map.textures.event_overlays['damage'] = Model(self.map.settingscfg['hud']['overlays']['damage'], self.map.path, self.map.rendermethod, self.game.canvcont, 'event overlays')
-            self.map.textures.event_overlays['damage'].setpos(402, 302, 0, 0)
+            self.map.textures.event_overlays['damage'] = modules.bettercanvas.Model(self.game.canvcont, self.map.settingscfg['hud']['overlays']['damage'], self.map.path, 'event overlays')
+            self.map.textures.event_overlays['damage'].set(402, 302, 0, 0)
             
             #open layout
             with open(os.path.join(self.map.path, 'layout.json'), 'r') as file:
@@ -298,8 +298,8 @@ class Engine:
             self.map.textures.obj_scatter = []
             for i in range(int(self.map.cfg['background']['scatternum'] / len(self.map.cfg['background']['scatters']))):
                 for scatter in self.map.cfg['background']['scatters']:
-                    scattermdl = Model(random.choice(self.map.cfg['entity models'][scatter]), self.map.path, self.map.rendermethod, self.game.canvcont, 'scatters')
-                    scattermdl.setpos(random.randint(0, 800), random.randint(0, 600))
+                    scattermdl = modules.bettercanvas.Model(self.game.canvcont, random.choice(self.map.cfg['entity models'][scatter]), self.map.path, 'scatters')
+                    scattermdl.set(random.randint(0, 800), random.randint(0, 600))
                     self.map.textures.obj_scatter.append(scattermdl)
             self.game.message_pipe.send(['map load', 'Loaded scatters'])
             
@@ -412,16 +412,16 @@ class Engine:
             
             if upstroke:
                 i += increment
-                model.setpos(transparency = min(255, i))
+                model.set(transparency = min(255, i))
                 if i >= 256: 
                     upstroke = False
             else:
                 i -= increment
-                model.setpos(transparency = min(255, i))
+                model.set(transparency = min(255, i))
                 
             time.sleep(max(0, delay - (time.time() - start)))
             
-        model.setpos(transparency = 0)
+        model.set(transparency = 0)
         self.map.pulse_in_progress = False
 
 class Entity:
@@ -439,6 +439,7 @@ class Entity:
             x = 0
             y = 0
             rotation = 0
+            transparency = 255
             class momentum: #doesn't do anything when not player
                 base_increment = 1
                 xmomentum = 0
@@ -456,7 +457,7 @@ class Entity:
         
         self.setpos_queue, pipe = mp.Pipe()
         
-        self.model = Model(self.ent_name, self.map_path, self.engine.map.rendermethod, self.engine.game.canvcont, self.layer)
+        self.model = modules.bettercanvas.Model(self.engine.game.canvcont, self.ent_name, self.map_path, self.layer)
         
         threading.Thread(target = self._setpos_queue, name = 'Entity setpos queue', args = [pipe]).start()
         
@@ -466,26 +467,28 @@ class Entity:
         
         self.setpos(100, 100)
     
-    def setpos(self, x = None, y = None, rotation = None):
-        self.setpos_queue.send([time.time(), x, y, rotation])
+    def setpos(self, x = None, y = None, rotation = None, transparency = None):
+        self.setpos_queue.send([time.time(), x, y, rotation, transparency])
         
     def _setpos_queue(self, pipe):
         while True:
-            timestamp, x, y, rotation = pipe.recv()
+            timestamp, x, y, rotation, transparency = pipe.recv()
             if time.time() - timestamp < 1: #block older inputs
                 event = threading.Event()
                 event.clear()
-                threading.Thread(target = self._setpos, args = [event, x, y, rotation]).start()
+                threading.Thread(target = self._setpos, args = [event, x, y, rotation, transparency]).start()
                 event.wait()
     
-    def _setpos(self, event, x = None, y = None, rotation = None):
+    def _setpos(self, event, x = None, y = None, rotation = None, transparency = None):
         if not x == None:
             self.pos.x = x
         if not y == None:
             self.pos.y = y
         if not rotation == None:
             self.pos.rotation = rotation % 360
-        self.model.setpos(self.pos.x, self.pos.y, self.pos.rotation)
+        if not transparency == None:
+            self.pos.transparency = transparency
+        self.model.set(self.pos.x, self.pos.y, self.pos.rotation, self.pos.transparency)
             
         event.set()
     
