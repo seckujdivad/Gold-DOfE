@@ -156,6 +156,7 @@ class Model:
         class pillow:
             image = None
             image_chops = None
+            photoimage = None
         self.pillow = pillow
         
         ## load data into structures
@@ -200,6 +201,7 @@ class Model:
         if self.attributes.uses_PIL:
             self.pillow.image = __import__('PIL.Image').Image
             self.pillow.image_chops = __import__('PIL.ImageChops').ImageChops
+            self.pillow.photoimage = __import__('PIL.ImageTk').ImageTk.PhotoImage
         
         ##load textures
         #check for no PIL textures
@@ -234,7 +236,7 @@ class Model:
                     
                     transparencies = []
                     for transp in range(self.attributes.transparency_steps):
-                        transparencies.append(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256)))
+                        transparencies.append(self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256))))
                         
                     rotations.append(transparencies)
                     
@@ -250,7 +252,7 @@ class Model:
                     self.attributes.canvobjs.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
     
     def apply_rotation(self, image_, angle):
-        return self.pillow.image.open(image = image_.rotate(angle))
+        return image_.rotate(angle)
     
     def apply_transparency(self, image_, transparency):
         try:
