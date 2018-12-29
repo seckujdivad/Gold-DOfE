@@ -621,7 +621,7 @@ class Entity:
         dy = y - self.pos.y
         
         if dx == 0:
-            if dy > 0:
+            if dy < 0:
                 return 270
             else:
                 return 90
