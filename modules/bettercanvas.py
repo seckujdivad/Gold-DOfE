@@ -257,3 +257,20 @@ class Model:
         except ValueError:
             raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
+    def increment(self, x = None, y = None, rotation = None, transparency = None):
+        args = {}
+        
+        if not x == None:
+            args['x'] = self.attributes.pos.x + x
+            
+        if not y == None:
+            args['y'] = self.attributes.pos.y + y
+            
+        if not rotation == None:
+            args['rotation'] = self.attributes.rotation + rotation
+            
+        if not transparency == None:
+            args['transparency'] = self.attributes.transparency + transparency
+            
+        self.set(**args)
+    
