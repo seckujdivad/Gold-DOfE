@@ -2,6 +2,8 @@ import tkinter as tk
 import os
 import sys
 import json
+import threading
+import time
 
 class CanvasController:
     def __init__(self, canvas, game):
@@ -142,8 +144,12 @@ class Model:
             canvobjs = [] #references to canvas objects created from imageobjs
             
             uses_PIL = False
-            animation_frames = 1
             
+            class animation:
+                frames = 1
+                delay = 1
+                current_frame = 0
+                
             render_quality = 0 #0-3 - render quality as defined in the user's config
         self.attributes = attributes
         
@@ -178,9 +184,12 @@ class Model:
         self.attributes.pos.y = self.attributes.offscreen.y
         
         self.attributes.uses_PIL = self.cfgs.user['graphics']['PILrender']
-        self.attributes.is_animated = self.cfgs.model['animated']
         self.attributes.render_quality = self.cfgs.user['graphics']['model quality']
         self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
+        
+        if 'animation' in self.cfgs.model:
+            self.attributes.animation.frames = self.cfgs.model['animation']['frames']
+            self.attributes.animation.delay = self.cfgs.model['animation']['delay']
         
         if 'transparencies' in self.cfgs.model:
             self.attributes.transparency_steps = self.cfgs.model['transparencies'][self.attributes.render_quality]
@@ -224,7 +233,10 @@ class Model:
             if self.attributes.uses_PIL:
                 self.attributes.baseimages.append(self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name)))
             else:
-                self.attributes.baseimages.append(tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name)))
+                if self.attributes.animation.frames == 1:
+                    self.attributes.baseimages.append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name))])
+                else:
+                    self.attributes.baseimages.append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name), format = 'gif -index {}'.format(i)) for i in range(self.attributes.animation.frames)])
         
         #apply transformations to textures
         for image in self.attributes.baseimages:
@@ -236,12 +248,21 @@ class Model:
                     
                     
                     if self.attributes.transparency_steps == 1:
-                        transparencies = [self.pillow.photoimage(image_rotated)]
+                        if self.attributes.animation.frames == 1:
+                            transparencies = [[self.pillow.photoimage(image_rotated)]]
+                        else:
+                            transparencies = [[self.pillow.photoimage(image_rotated, format = 'gif -index {}'.format(i)) for i in range(self.attributes.animation.frames)]]
                     else:
                         transparencies = []
                         
                         for transp in range(0, self.attributes.transparency_steps, 1):
-                            transparencies.append(self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256))))
+                            if self.attributes.animation.frames == 1:
+                                transparencies.append([self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256)))])
+                            else:
+                                frames = []
+                                for i in range(self.attributes.animation.frames):
+                                    frames.append(self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256)), format = 'gif -index {}'.format(i)))
+                                transparencies.append(frames)
                         
                     rotations.append(transparencies)
                     
@@ -255,10 +276,17 @@ class Model:
             new_rotations = []
             for transparencies in rotations:
                 new_transparencies = []
-                for image_ in transparencies:
-                    new_transparencies.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
+                for frames in transparencies:
+                    new_frames = []
+                    for image_ in frames:
+                        new_frames.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
+                    new_transparencies.append(new_frames)
                 new_rotations.append(new_transparencies)
             self.attributes.canvobjs.append(new_rotations)
+        
+        ## start animation player if necessary
+        if self.attributes.animation.frames > 1:
+            threading.Thread(target = self._anim_player, name = 'Model animation player', daemon = True).start()
     
     def apply_rotation(self, image_, angle):
         return image_.rotate(0 - angle)
@@ -269,7 +297,7 @@ class Model:
         except ValueError:
             raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
-    def increment(self, x = None, y = None, rotation = None, transparency = None):
+    def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None):
         args = {}
         
         if not x == None:
@@ -283,10 +311,12 @@ class Model:
             
         if not transparency == None:
             args['transparency'] = self.attributes.transparency + transparency
+        if not frame == None:
+            args['frame'] = (self.attributes.animation.current_frame + frame) % self.attributes.animation.frames
             
         self.set(**args)
     
-    def set(self, x = None, y = None, rotation = None, transparency = None):
+    def set(self, x = None, y = None, rotation = None, transparency = None, frame = None):
         if x == None:
             prev_x = None
         else:
@@ -311,14 +341,20 @@ class Model:
             prev_transparency = self.attributes.transparency
             self.attributes.transparency = transparency
         
+        if frame == None:
+            prev_frame = None
+        else:
+            prev_frame = self.attributes.animation.current_frame
+            self.attributes.animation.current_frame = frame
+        
         #check if the function has been called with any arguments at all
-        if x == None and y == None and rotation == None and transparency == None:
+        if x == None and y == None and rotation == None and transparency == None and frame == None:
             return None
         
         #check if only the positions were changed
-        if ((rotation == None) ^ (rotation == prev_rotation)) and ((transparency == None) ^ (transparency == prev_transparency)):
+        if ((rotation == None) ^ (rotation == prev_rotation)) and ((transparency == None) ^ (transparency == prev_transparency)) and ((frame == None) ^ (frame == prev_frame)):
             for i in range(len(self.attributes.canvobjs)):
-                self.canvas_controller.coords(self.get_object(i, self.attributes.rotation, self.attributes.transparency), self.attributes.pos.x, self.attributes.pos.y)
+                self.canvas_controller.coords(self.get_object(i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.pos.x, self.attributes.pos.y)
         else: #too many parameters were changed, replace all images
             #if previous is equal to current, set to current
             if prev_x == None:
@@ -333,21 +369,31 @@ class Model:
             if prev_transparency == None:
                 prev_transparency = self.attributes.transparency
             
+            if prev_frame == None:
+                prev_frame = self.attributes.animation.current_frame
+            
             #move currently onscreen objects offscreen
             for i in range(len(self.attributes.canvobjs)):
-                self.canvas_controller.coords(self.get_object(i, prev_rotation, prev_transparency), self.attributes.offscreen.x, self.attributes.offscreen.y)
+                self.canvas_controller.coords(self.get_object(i, prev_rotation, prev_transparency, prev_frame), self.attributes.offscreen.x, self.attributes.offscreen.y)
             
             #move currently offscreen objects offscreen
             for i in range(len(self.attributes.canvobjs)):
-                self.canvas_controller.coords(self.get_object(i, self.attributes.rotation, self.attributes.transparency), self.attributes.pos.x, self.attributes.pos.y)
+                self.canvas_controller.coords(self.get_object(i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.pos.x, self.attributes.pos.y)
     
-    def get_object(self, index, rotation, transparency):
-        return self.attributes.canvobjs[index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)]
+    def get_object(self, index, rotation, transparency, frame):
+        return self.attributes.canvobjs[index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)][frame]
     
     def destroy(self):
         for rotations in self.attributes.canvobjs:
             for transparencies in rotations:
                 for obj in transparencies:
                     self.canvas_controller.delete(obj)
+    
+    def _anim_player(self):
+        while True:
+            time.sleep(self.attributes.animation.delay)
+            
+            print('hi', self.attributes.animation.current_frame, len(self.attributes.canvobjs[0][0][0]))
+            self.increment(frame = 1)
     
     setpos = set
