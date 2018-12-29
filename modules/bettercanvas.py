@@ -331,3 +331,9 @@ class Model:
     
     def get_object(self, index, rotation, transparency):
         return self.attributes.canvobjs[index][int(rotation / 360)][int(transparency / 256)]
+    
+    def destroy(self):
+        for rotations in self.attributes.canvobjs:
+            for transparencies in rotations:
+                for obj in transparencies:
+                    self.canvas_controller.delete(obj)
