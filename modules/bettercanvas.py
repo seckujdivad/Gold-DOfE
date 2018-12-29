@@ -231,7 +231,16 @@ class Model:
         #load textures
         for name in tex_names:
             if self.attributes.uses_PIL:
-                self.attributes.baseimages.append(self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name)))
+                if self.attributes.animation.frames == 1:
+                    self.attributes.baseimages.append([self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name))])
+                else:
+                    frames = []
+                    for i in range(self.attributes.animation.frames):
+                        frame = self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name))
+                        frame.seek(i)
+                        frames.append(frame)
+                    
+                    self.attributes.baseimages.append(frames)
             else:
                 if self.attributes.animation.frames == 1:
                     self.attributes.baseimages.append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name))])
@@ -239,30 +248,24 @@ class Model:
                     self.attributes.baseimages.append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name), format = 'gif -index {}'.format(i)) for i in range(self.attributes.animation.frames)])
         
         #apply transformations to textures
-        for image in self.attributes.baseimages:
+        for images in self.attributes.baseimages:
             if self.attributes.uses_PIL:
                 rotations = []
                 for rot in range(1, self.attributes.rotation_steps + 1, 1):
                     current_rotation = rot / (self.attributes.rotation_steps / 360)
-                    image_rotated = self.apply_rotation(image, current_rotation)
+                    
+                    images_rotated = []
+                    for image in images:
+                        images_rotated.append(self.apply_rotation(image, current_rotation))
                     
                     
                     if self.attributes.transparency_steps == 1:
-                        if self.attributes.animation.frames == 1:
-                            transparencies = [[self.pillow.photoimage(image_rotated)]]
-                        else:
-                            transparencies = [[self.pillow.photoimage(image_rotated, format = 'gif -index {}'.format(i)) for i in range(self.attributes.animation.frames)]]
+                        transparencies = [[self.pillow.photoimage(image_rotated) for image_rotated in images_rotated]]
                     else:
                         transparencies = []
                         
-                        for transp in range(0, self.attributes.transparency_steps, 1):
-                            if self.attributes.animation.frames == 1:
-                                transparencies.append([self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256)))])
-                            else:
-                                frames = []
-                                for i in range(self.attributes.animation.frames):
-                                    frames.append(self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256)), format = 'gif -index {}'.format(i)))
-                                transparencies.append(frames)
+                        for transp in range(self.attributes.transparency_steps):
+                            transparencies.append([self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256))) for image_rotated in images_rotated])
                         
                     rotations.append(transparencies)
                     
@@ -392,8 +395,6 @@ class Model:
     def _anim_player(self):
         while True:
             time.sleep(self.attributes.animation.delay)
-            
-            print('hi', self.attributes.animation.current_frame, len(self.attributes.canvobjs[0][0][0]))
             self.increment(frame = 1)
     
     setpos = set
