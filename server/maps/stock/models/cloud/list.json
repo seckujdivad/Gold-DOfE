@@ -1,11 +1,14 @@
 {
 	"textures": {
-		"idle": "texture.png"
+		"idle": "cloud_idle.gif"
 	},
 	"default textures": "idle",
 	"offscreen": [-100, -100],
 	"rotations": [1, 1, 1, 1],
 	"transparencies": [1, 1, 1, 1],
 	"layers": [1, 1, 1, 1],
-	"animated": false
+	"animation": {
+		"frames": 2,
+		"delay": 0.8
+	}
 }
