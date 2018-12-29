@@ -1,5 +1,5 @@
 {
-	"textures": "texture.png",
+	"textures": "fireball_sprite.png",
 	"offscreen": [-100, -100],
 	"rotations": [8, 16, 32, 64],
 	"transparencies": [1, 1, 1, 1],
