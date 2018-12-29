@@ -1,5 +1,8 @@
 {
-	"textures": "texture.png",
+	"textures": {
+		"idle": "texture.png"
+	},
+	"default textures": "idle",
 	"offscreen": [-500, -500],
 	"rotations": [1, 1, 1, 1],
 	"transparencies": [2, 4, 8, 16],

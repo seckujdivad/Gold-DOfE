@@ -1,5 +1,8 @@
 {
-	"textures": "swordswipe_sprite.png",
+	"textures": {
+		"idle": "swordswipe_sprite.png"
+	},
+	"default textures": "idle",
 	"offscreen": [-100, -100],
 	"rotations": [8, 16, 32, 64],
 	"transparencies": [1, 1, 1, 1],
