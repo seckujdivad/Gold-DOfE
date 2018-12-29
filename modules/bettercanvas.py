@@ -247,9 +247,13 @@ class Model:
         
         #make canvas objects
         for rotations in self.attributes.imageobjs:
+            new_rotations = []
             for transparencies in rotations:
+                new_transparencies = []
                 for image_ in transparencies:
-                    self.attributes.canvobjs.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
+                    new_transparencies.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
+                new_rotations.append(new_transparencies)
+            self.attributes.canvobjs.append(new_rotations)
     
     def apply_rotation(self, image_, angle):
         return image_.rotate(angle)
