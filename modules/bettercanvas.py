@@ -414,10 +414,12 @@ class Model:
         return self.attributes.canvobjs[image_set][index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)][frame]
     
     def destroy(self):
-        for rotations in self.attributes.canvobjs:
-            for transparencies in rotations:
-                for obj in transparencies:
-                    self.canvas_controller.delete(obj)
+        for image_set in self.attributes.canvobjs:
+            for layers in self.attributes.canvobjs[image_set]:
+                for rotations in layers:
+                    for transparencies in rotations:
+                        for obj in transparencies:
+                            self.canvas_controller.delete(obj)
     
     def _anim_player(self):
         while True:
