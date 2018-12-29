@@ -1,6 +1,8 @@
 {
-	"type": "flat",
-	"texture": "fireball_sprite.png",
+	"textures": "texture.png",
 	"offscreen": [-100, -100],
-	"rotations": [8, 16, 32, 64]
+	"rotations": [8, 16, 32, 64],
+	"transparencies": [1, 1, 1, 1],
+	"layers": [1, 1, 1, 1],
+	"animated": false
 }
