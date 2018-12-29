@@ -4,6 +4,7 @@ import sys
 import json
 import threading
 import time
+import random
 
 class CanvasController:
     def __init__(self, canvas, game):
@@ -149,6 +150,7 @@ class Model:
                 frames = 1
                 delay = 1
                 current_frame = 0
+                variation = 0
                 
             render_quality = 0 #0-3 - render quality as defined in the user's config
             image_set = None
@@ -191,6 +193,7 @@ class Model:
         if 'animation' in self.cfgs.model:
             self.attributes.animation.frames = self.cfgs.model['animation']['frames']
             self.attributes.animation.delay = self.cfgs.model['animation']['delay']
+            self.attributes.animation.variation = self.cfgs.model['animation']['variation']
         
         if 'transparencies' in self.cfgs.model:
             self.attributes.transparency_steps = self.cfgs.model['transparencies'][self.attributes.render_quality]
@@ -423,7 +426,7 @@ class Model:
     
     def _anim_player(self):
         while True:
-            time.sleep(self.attributes.animation.delay)
+            time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
             self.increment(frame = 1)
     
     setpos = set
