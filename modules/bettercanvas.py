@@ -138,10 +138,10 @@ class Model:
             
             baseimages = [] #images before any effects have been applied to them
             imageobjs = [] #image objects with effects that can be used to create canvas objects
-            canvasobjs = [] #references to canvas objects created from imageobjs
+            canvobjs = [] #references to canvas objects created from imageobjs
             
             uses_PIL = False
-            is_animated = False
+            animation_frames = 1
             
             render_quality = 0 #0-3 - render quality as defined in the user's config
         self.attributes = attributes
@@ -185,4 +185,75 @@ class Model:
         else:
             self.attributes.transparency_steps = 1
         
+        if 'rotations' in self.cfgs.model:
+            self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
+        else:
+            self.attributes.rotation_steps = 1
         
+        if 'frames' in self.cfgs.model:
+            self.attributes.animation_frames = self.cfgs.model['frames'][self.attributes.render_quality]
+        else:
+            self.attributes.animation_frames = 1
+            
+        #load PIL modules
+        if self.attributes.uses_PIL:
+            self.pillow.image = __import__('PIL.Image').Image
+            self.pillow.image_chops = __import__('PIL.ImageChops').ImageChops
+        
+        ##load textures
+        #check for no PIL textures
+        if not self.attributes.uses_PIL:
+            if 'no PIL textures' in self.cfgs.model:
+                self.cfgs.model['textures'] = self.cfgs.model['no PIL textures']
+                
+        #get names of textures
+        tex_names = []
+        if type(self.cfgs.model['textures']) == str:
+            if os.path.isdir(os.path.join(self.map_path, 'models', self.mdl_name, self.cfgs.model['textures'])):
+                tex_names = os.listdir(os.path.join(self.map_path, 'models', self.mdl_name, self.cfgs.model['textures']))
+            else:
+                tex_names = [self.cfgs.model['textures']]
+        else:
+            tex_names = self.cfgs.model['textures']
+        
+        #load textures
+        for name in tex_names:
+            if self.attributes.uses_PIL:
+                self.attributes.baseimages.append(self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name)))
+            else:
+                self.attributes.baseimages.append(tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name)))
+        
+        #apply transformations to textures
+        for image in self.attributes.baseimages:
+            if self.attributes.uses_PIL:
+                rotations = []
+                for rot in range(self.attributes.rotation_steps):
+                    current_rotation = rot / (self.attributes.rotation_steps / 360)
+                    image_rotated = self.apply_rotation(image, current_rotation)
+                    
+                    transparencies = []
+                    for transp in range(self.attributes.transparency_steps):
+                        transparencies.append(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256)))
+                        
+                    rotations.append(transparencies)
+                    
+                self.attributes.imageobjs.append(rotations)
+                    
+            else:
+                self.attributes.imageobjs.append([[image]]) #no PIL means no transformations can be applied
+        
+        #make canvas objects
+        for rotations in self.attributes.imageobjs:
+            for transparencies in rotations:
+                for image_ in transparencies:
+                    self.attributes.canvobjs.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
+    
+    def apply_rotation(self, image_, angle):
+        return self.pillow.image.open(image = image_.rotate(angle))
+    
+    def apply_transparency(self, image_, transparency):
+        try:
+            return self.pillow.image_chops.multiply(image_, self.pillow.image.new('RGBA', image_.size, color = (255, 255, 255, int(transparency))))
+        except ValueError:
+            raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
+    
