@@ -1,6 +1,5 @@
 {
-	"type": "flat",
-	"texture": "swordswipe_sprite.png",
+	"textures": "swordswipe_sprite.png",
 	"offscreen": [-100, -100],
 	"rotations": [8, 16, 32, 64],
 	"transparencies": [1, 1, 1, 1],

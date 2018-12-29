@@ -1,5 +1,4 @@
 {
-	"type": "stack",
 	"textures": "stack",
 	"offsets": [0, -0.8],
 	"rotations": [8, 16, 32, 64],
