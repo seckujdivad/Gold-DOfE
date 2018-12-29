@@ -27,6 +27,7 @@
 	"network": {
 		"default port": 4321,
 		"default tickrate": 15,
+		"interpolations per second": 50,
 		"servers": [
 			{
 				"address": "david-juckes",
@@ -56,8 +57,7 @@
 				"port": "normal",
 				"tickrate": 15
 			}
-		],
-		"interpolations per second": 50
+		]
 	},
 	"styling": {
 		"default": {
