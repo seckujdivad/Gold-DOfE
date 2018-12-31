@@ -112,7 +112,6 @@ class Model:
     mdl_name - name of model in map files
     map_path - path to map files
     layer - string or int for canvas controller
-    img_mode - 'pil' or 'tk', PIL requires pillow
     '''
     def __init__(self, canvas_controller, mdl_name, map_path, layer):
         self.mdl_name = mdl_name
