@@ -436,8 +436,8 @@ class Model:
             return self.attributes.canvobjs[image_set][index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)][frame]
     
     def get_offsets(self, i):
-        real_pos = int(i * (self.attributes.num_layers_total / self.attributes.num_layers))
-        return self.attributes.offset.x * real_pos, self.attributes.offset.y * real_pos
+        real_index = int(i * (self.attributes.num_layers_total / self.attributes.num_layers))
+        return self.attributes.offset.x * real_index, self.attributes.offset.y * real_index
     
     def destroy(self):
         for image_set in self.attributes.canvobjs:
