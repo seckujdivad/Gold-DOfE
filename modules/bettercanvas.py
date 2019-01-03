@@ -187,6 +187,10 @@ class Model:
         self.attributes.offscreen.x = self.cfgs.model['offscreen'][0]
         self.attributes.offscreen.y = self.cfgs.model['offscreen'][1]
         
+        if 'offsets' in self.cfgs.model:
+            self.attributes.offset.x = self.cfgs.model['offsets'][0]
+            self.attributes.offset.y = self.cfgs.model['offsets'][1]
+        
         self.attributes.pos.x = self.attributes.offscreen.x
         self.attributes.pos.y = self.attributes.offscreen.y
         
