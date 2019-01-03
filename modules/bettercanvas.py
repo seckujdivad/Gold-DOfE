@@ -166,6 +166,7 @@ class Model:
             image = None
             image_chops = None
             photoimage = None
+            gifimage = None
         self.pillow = pillow
         
         ## load data into structures
@@ -215,6 +216,7 @@ class Model:
             self.pillow.image = __import__('PIL.Image').Image
             self.pillow.image_chops = __import__('PIL.ImageChops').ImageChops
             self.pillow.photoimage = __import__('PIL.ImageTk').ImageTk.PhotoImage
+            self.pillow.gifimage = __import__('PIL.GifImagePlugin').GifImagePlugin.GifImageFile
         
         ##load textures
         #check for no PIL textures
@@ -250,7 +252,7 @@ class Model:
                     else:
                         frames = []
                         for i in range(self.attributes.animation.frames):
-                            frame = self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name))
+                            frame = self.pillow.gifimage(os.path.join(self.map_path, 'models', self.mdl_name, name))
                             frame.seek(i)
                             frames.append(frame)
                         
