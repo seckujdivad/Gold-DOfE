@@ -2,10 +2,12 @@
 	"textures": {
 		"idle": "texture.png"
 	},
+	"no PIL textures": {
+		"idle": "texture_nopil.png"
+	},
 	"default textures": "idle",
 	"offscreen": [-500, -500],
 	"rotations": [1, 1, 1, 1],
 	"transparencies": [2, 4, 8, 16],
-	"no PIL textures": "texture_nopil.png",
 	"layers": [1, 1, 1, 1]
 }
