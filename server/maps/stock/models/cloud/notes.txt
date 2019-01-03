@@ -1,0 +1,7 @@
+# Notes on pillow gif rendering
+Pillow doesn't seem to handle the dirty rectangle algorithm like everything else. The dirty rectangle can be seen in GIMP when editing the GIF. This resulted in the cloud idle animation leaving part of the first frame in the second frame at the top, where the dirty rectangle doesn't extend high enough.
+
+This doesn't affect non-PIL rendering.
+
+# Fix
+The idle animation uses a pixel with alpha 1 in the second frame to extend the dirty rectangle to include the top half of the image. This means that it no longer 'ghosts' the first frame. Unfortunately, there is no clean fix I have found yet. I will have to look for this bug in all animations that I create in future.
