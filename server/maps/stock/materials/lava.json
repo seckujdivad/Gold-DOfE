@@ -1,11 +1,18 @@
 {
+	"clip hitbox": false,
 	"display name": "Lava",
 	"entities": {
 		"player": {
-			"accelerate": 10,
-			"damage": 100,
-			"decelerate": 2,
-			"velcap": 5
+			"accelerate": 10.0,
+			"damage": 100.0,
+			"decelerate": 2.0,
+			"velcap": 5.0
+		},
+		"player3d": {
+			"accelerate": 10.0,
+			"damage": 100.0,
+			"decelerate": 2.0,
+			"velcap": 5.0
 		}
 	},
 	"hitbox": [
@@ -26,14 +33,13 @@
 			-32
 		]
 	],
-	"clip hitbox": false,
+	"light": {
+		"block": 0,
+		"emit": 0.5
+	},
 	"texture": {
 		"address": "lava.png",
 		"animated": false,
 		"editor colour": "#FF7700"
-	},
-	"light": {
-		"emit": 0.5,
-		"block": 0
 	}
 }

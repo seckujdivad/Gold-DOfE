@@ -3,10 +3,16 @@
 	"display name": "Stone wall",
 	"entities": {
 		"player": {
-			"accelerate": 30,
+			"accelerate": 30.0,
+			"damage": 0.0,
+			"decelerate": 100.0,
+			"velcap": 20.0
+		},
+		"player3d": {
+			"accelerate": 0,
 			"damage": 0,
-			"decelerate": 100,
-			"velcap": 20
+			"decelerate": 0,
+			"velcap": 0
 		}
 	},
 	"hitbox": [

@@ -1,11 +1,18 @@
 {
+	"clip hitbox": false,
 	"display name": "Teleport",
 	"entities": {
 		"player": {
-			"accelerate": 0,
-			"damage": 0,
-			"decelerate": 0,
-			"velcap": 0
+			"accelerate": 0.0,
+			"damage": 0.0,
+			"decelerate": 0.0,
+			"velcap": 0.0
+		},
+		"player3d": {
+			"accelerate": 0.0,
+			"damage": 0.0,
+			"decelerate": 0.0,
+			"velcap": 0.0
 		}
 	},
 	"hitbox": [
@@ -26,17 +33,16 @@
 			-32
 		]
 	],
+	"light": {
+		"block": 0,
+		"emit": 0.2
+	},
 	"scripts": [
 		"teleport.py"
 	],
-	"clip hitbox": false,
 	"texture": {
 		"address": "teleport.png",
 		"animated": false,
 		"editor colour": "#DC00FF"
-	},
-	"light": {
-		"emit": 0.2,
-		"block": 0
 	}
 }

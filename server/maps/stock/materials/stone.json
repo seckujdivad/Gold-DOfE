@@ -1,11 +1,18 @@
 {
+	"clip hitbox": false,
 	"display name": "Stone",
 	"entities": {
 		"player": {
-			"accelerate": 30,
-			"damage": 0,
-			"decelerate": 5,
-			"velcap": 20
+			"accelerate": 30.0,
+			"damage": 0.0,
+			"decelerate": 5.0,
+			"velcap": 20.0
+		},
+		"player3d": {
+			"accelerate": 0.0,
+			"damage": 0.0,
+			"decelerate": 0.0,
+			"velcap": 0.0
 		}
 	},
 	"hitbox": [
@@ -26,14 +33,13 @@
 			-32
 		]
 	],
-	"clip hitbox": false,
+	"light": {
+		"block": 0,
+		"emit": 0
+	},
 	"texture": {
 		"address": "stone.png",
 		"animated": false,
 		"editor colour": "#ADADAD"
-	},
-	"light": {
-		"emit": 0,
-		"block": 0
 	}
 }
