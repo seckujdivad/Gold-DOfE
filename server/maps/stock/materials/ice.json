@@ -9,10 +9,10 @@
 			"velcap": 20.0
 		},
 		"player3d": {
-			"accelerate": 0.0,
+			"accelerate": 15.0,
 			"damage": 0.0,
-			"decelerate": 0.0,
-			"velcap": 0.0
+			"decelerate": 2.0,
+			"velcap": 20.0
 		}
 	},
 	"hitbox": [
