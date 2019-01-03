@@ -287,7 +287,7 @@ class Model:
                     self.attributes.imageobjs[tex_set].append(rotations)
                         
                 else:
-                    self.attributes.imageobjs[tex_set].append([[image]]) #no PIL means no transformations can be applied
+                    self.attributes.imageobjs[tex_set].append([[images]]) #no PIL means no transformations can be applied
         
         #make canvas objects
         for tex_set in self.attributes.imageobjs:
@@ -414,7 +414,10 @@ class Model:
                 self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.pos.x, self.attributes.pos.y)
     
     def get_object(self, image_set, index, rotation, transparency, frame):
-        return self.attributes.canvobjs[image_set][index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)][frame]
+        if not self.attributes.uses_PIL:
+            return self.attributes.canvobjs[image_set][index][0][0][frame]
+        else:
+            return self.attributes.canvobjs[image_set][index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)][frame]
     
     def destroy(self):
         for image_set in self.attributes.canvobjs:
