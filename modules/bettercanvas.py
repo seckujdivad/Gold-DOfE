@@ -150,6 +150,7 @@ class Model:
                 delay = 1
                 current_frame = 0
                 variation = 0
+                cont = True
                 
             render_quality = 0 #0-3 - render quality as defined in the user's config
             image_set = None
@@ -422,9 +423,11 @@ class Model:
                     for transparencies in rotations:
                         for obj in transparencies:
                             self.canvas_controller.delete(obj)
+        
+        self.attributes.animation.cont = False
     
     def _anim_player(self):
-        while True:
+        while self.attributes.animation.cont:
             time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
             self.increment(frame = 1)
     
