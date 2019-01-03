@@ -153,7 +153,10 @@ class Model:
                 cont = True
                 
             render_quality = 0 #0-3 - render quality as defined in the user's config
-            image_set = None
+            image_set = None #e.g. idle
+            
+            num_layers = 0 #number of image layers loaded into memory
+            num_layers_total = 0 #number of image layers that exist on the disk
         self.attributes = attributes
         
         class cfgs:
@@ -190,6 +193,7 @@ class Model:
         self.attributes.uses_PIL = self.cfgs.user['graphics']['PILrender']
         self.attributes.render_quality = self.cfgs.user['graphics']['model quality']
         self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
+        self.attributes.num_layers = self.cfgs.model['layers'][self.attributes.render_quality]
         
         if 'animation' in self.cfgs.model:
             self.attributes.animation.frames = self.cfgs.model['animation']['frames']
@@ -230,7 +234,7 @@ class Model:
             tex_names[tex_set] = []
             if type(self.cfgs.model['textures'][tex_set]) == str:
                 if os.path.isdir(os.path.join(self.map_path, 'models', self.mdl_name, self.cfgs.model['textures'][tex_set])):
-                    tex_names[tex_set] = os.listdir(os.path.join(self.map_path, 'models', self.mdl_name, self.cfgs.model['textures'][tex_set]))
+                    tex_names[tex_set] = [os.path.join(self.cfgs.model['textures'][tex_set], path) for path in os.listdir(os.path.join(self.map_path, 'models', self.mdl_name, self.cfgs.model['textures'][tex_set]))]
                 else:
                     tex_names[tex_set] = [self.cfgs.model['textures'][tex_set]]
             else:
@@ -239,6 +243,16 @@ class Model:
             self.attributes.baseimages[tex_set] = []
             self.attributes.imageobjs[tex_set] = []
             self.attributes.canvobjs[tex_set] = []
+        
+        filtered_tex_names = {}
+        for name in tex_names:
+            self.attributes.num_layers_total = len(tex_names[name])
+            mult = self.attributes.num_layers_total / self.attributes.num_layers
+            filtered_tex_names[name] = []
+            for i in range(self.attributes.num_layers):
+                filtered_tex_names[name].append(tex_names[name][int(i * mult)])
+        
+        tex_names = filtered_tex_names
         
         #write in default texture name
         self.attributes.image_set = self.cfgs.model['default textures']
@@ -408,18 +422,22 @@ class Model:
                 prev_image_set = self.attributes.image_set
             
             #move currently onscreen objects offscreen
-            for i in range(len(self.attributes.canvobjs)):
+            for i in range(len(self.attributes.canvobjs[prev_image_set])):
                 self.canvas_controller.coords(self.get_object(prev_image_set, i, prev_rotation, prev_transparency, prev_frame), self.attributes.offscreen.x, self.attributes.offscreen.y)
             
             #move currently offscreen objects offscreen
-            for i in range(len(self.attributes.canvobjs)):
-                self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.pos.x, self.attributes.pos.y)
+            for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
+                self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.pos.x + self.get_offsets(i)[0], self.attributes.pos.y + self.get_offsets(i)[1])
     
     def get_object(self, image_set, index, rotation, transparency, frame):
         if not self.attributes.uses_PIL:
             return self.attributes.canvobjs[image_set][index][0][0][frame]
         else:
             return self.attributes.canvobjs[image_set][index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)][frame]
+    
+    def get_offsets(self, i):
+        real_pos = int(i * (self.attributes.num_layers_total / self.attributes.num_layers))
+        return self.attributes.offset.x * real_pos, self.attributes.offset.y * real_pos
     
     def destroy(self):
         for image_set in self.attributes.canvobjs:
