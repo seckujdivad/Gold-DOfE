@@ -823,6 +823,8 @@ class Editor:
                         self.ent_list.insert(tk.END, entity_name)
                 
                 def save_all(self, event = None):
+                    self._choose_entity()
+                
                     for name in self.material_dicts:
                         self.editorobj.map.write_json(os.path.join('materials', name), self.material_dicts[name])
                 
