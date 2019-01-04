@@ -1007,7 +1007,10 @@ class Editor:
                         
                     self.tabobj.set_title('ready')
                 
-                def generate(self):
+                def generate(self, event = None):
+                    threading.Thread(target = self._generate, name = 'Lightmap generator').start()
+                
+                def _generate(self):
                     self.tabobj.set_title('generating...')
                     self.log_list.delete(0, tk.END)
                     self.log_list.insert(tk.END, 'Initialising...')
