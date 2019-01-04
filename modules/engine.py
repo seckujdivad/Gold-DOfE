@@ -214,6 +214,7 @@ class Engine:
             items = []
             pulse_in_progress = False
             settingscfg = None
+            lightmap = None
         self.map = map
         
         #make keybind handler
@@ -254,6 +255,10 @@ class Engine:
             #render base layer
             self.map.textures.obj_base = self.game.canvcont.create_image(402, 302, image = self.map.textures.base, layer = 'base texture')
             self.game.message_pipe.send(['map load', 'Rendered base texture'])
+            
+            #create lightmap model
+            self.map.lightmap = modules.bettercanvas.Model(self.game.canvcont, os.path.join('system', 'lightmap'), self.map.path, 'lightmap')
+            self.map.lightmap.setpos(402, 302)
             
             #load event textures into memory
             self.map.textures.event_overlays['damage'] = modules.bettercanvas.Model(self.game.canvcont, self.map.settingscfg['hud']['overlays']['damage'], self.map.path, 'event overlays')
