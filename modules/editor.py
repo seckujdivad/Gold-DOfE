@@ -1058,7 +1058,7 @@ class Editor:
                     
                     self.log_list.insert(tk.END, 'Done')
                     
-                    self.map_data['lighting']['map'] = 'lightmap.png'
+                    self.map_data['lighting']['map'] = os.path.join('models', 'system', 'lightmap', 'lightmap.png')
                     
                     self.log_list.insert(tk.END, 'Saving lightmap...')
                     image.save(os.path.join(self.editorobj.map.path, self.map_data['lighting']['map']))

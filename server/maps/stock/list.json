@@ -32,7 +32,7 @@
 		"background": 0.5,
 		"dist mult": 0.02,
 		"dynamic range": 1,
-		"map": "lightmap.png"
+		"map": "models\\system\\lightmap\\lightmap.png"
 	},
 	"player": {
 		"entity": "player",
