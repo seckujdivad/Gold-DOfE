@@ -1056,12 +1056,22 @@ class Editor:
                         for y in range(1, 600, 1):
                             pixels[x, y] = (0, 0, 0, 255 - self.calc_light(x, y))
                     
+                    self.log_list.insert(tk.END, 'Done')
+                    
                     self.map_data['lighting']['map'] = 'lightmap.png'
                     
+                    self.log_list.insert(tk.END, 'Saving lightmap...')
                     image.save(os.path.join(self.editorobj.map.path, self.map_data['lighting']['map']))
+                    self.log_list.insert(tk.END, 'Done')
                     
+                    self.log_list.insert(tk.END, 'Saving config...')
                     with open(os.path.join(self.editorobj.map.path, 'list.json'), 'w') as file:
                         json.dump(self.map_data, file, sort_keys = True, indent = '\t')
+                    self.log_list.insert(tk.END, 'Done')
+                    
+                    self.log_list.insert(tk.END, 'Lightmap is complete')
+                    
+                    self.tabobj.set_title('ready')
                 
                 def calc_light(self, x, y):
                     light_level = self.map_data['lighting']['background']
