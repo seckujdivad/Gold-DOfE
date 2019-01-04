@@ -247,10 +247,17 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Loaded map cfg'])
             
             #load base and overlay into memory
-            self.map.textures.base = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['base']))
-            self.game.message_pipe.send(['map load', 'Loaded base texture'])
-            self.map.textures.overlay = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['overlay']))
-            self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
+            if self.map.cfg['background']['base'] == None:
+                self.game.message_pipe.send(['map load', 'No base texture'])
+            else:
+                self.map.textures.base = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['base']))
+                self.game.message_pipe.send(['map load', 'Loaded base texture'])
+            
+            if self.map.cfg['background']['overlay'] == None:
+                self.game.message_pipe.send(['map load', 'No overlay texture'])
+            else:
+                self.map.textures.overlay = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['overlay']))
+                self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
             
             #render base layer
             self.map.textures.obj_base = self.game.canvcont.create_image(402, 302, image = self.map.textures.base, layer = 'base texture')
