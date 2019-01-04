@@ -1,7 +1,7 @@
 {
 	"background": {
 		"base": "textures/background/base.png",
-		"overlay": "textures/background/overlay.png",
+		"overlay": null,
 		"scatternum": 10,
 		"scatters": [
 			"cloud"
