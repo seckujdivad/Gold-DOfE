@@ -2,22 +2,61 @@
 	"background": {
 		"base": "textures/background/base.png",
 		"overlay": "textures/background/overlay.png",
-		"scatters": ["cloud"],
-		"scatternum": 10
+		"scatternum": 10,
+		"scatters": [
+			"cloud"
+		]
 	},
-	"layout": "layout.json",
 	"entity models": {
-		"player": ["player"],
-		"cloud": ["cloud"]
+		"cloud": [
+			"cloud"
+		],
+		"player": [
+			"player"
+		]
+	},
+	"events": {
+		"player": {
+			"outside map": [
+				"teleport.py"
+			],
+			"uses item": []
+		}
+	},
+	"geometry": [
+		800,
+		600
+	],
+	"layout": "layout.json",
+	"lighting": {
+		"background": 0.5,
+		"dist mult": 0.02,
+		"dynamic range": 1,
+		"map": "lightmap.png"
 	},
 	"player": {
 		"entity": "player",
+		"spawnpoints": [
+			[
+				[
+					400,
+					500
+				]
+			],
+			[
+				[
+					400,
+					100
+				]
+			]
+		],
 		"starting items": [
 			[
 				{
 					"item": "fireball.json",
 					"quantity": 5
-				}, {
+				},
+				{
 					"item": "swordswipe.json",
 					"quantity": 1
 				}
@@ -26,26 +65,12 @@
 				{
 					"item": "fireball.json",
 					"quantity": 5
-				}, {
+				},
+				{
 					"item": "swordswipe.json",
 					"quantity": 1
 				}
 			]
-		],
-		"spawnpoints": [
-			[
-				[400, 500]
-			],
-			[
-				[400, 100]
-			]
 		]
-	},
-	"events": {
-		"player": {
-			"outside map": ["teleport.py"],
-			"uses item": []
-		}
-	},
-	"geometry": [800, 600]
+	}
 }

@@ -5,6 +5,7 @@ import functools
 import json
 import time
 import threading
+import math
 
 import modules.engine
 
@@ -1025,11 +1026,49 @@ class Editor:
                     
                     self.log_list.insert(tk.END, 'Loading map data...')
                     with open(os.path.join(self.editorobj.map.path, 'list.json'), 'r') as file:
-                        map_data = json.load(file)
+                        self.map_data = json.load(file)
                     self.log_list.insert(tk.END, 'Done')
                     
-                    pixels[1, 1] = (0, 0, 0, 128)
+                    self.log_list.insert(tk.END, 'Loading layout data...')
+                    with open(os.path.join(self.editorobj.map.path, self.map_data['layout']), 'r') as file:
+                        self.layout_data = json.load(file)
+                    self.log_list.insert(tk.END, 'Done')
                     
+                    self.log_list.insert(tk.END, 'Loading materials...')
+                    self.materials = {}
+                    for mat in os.listdir(os.path.join(self.editorobj.map.path, 'materials')):
+                        with open(os.path.join(self.editorobj.map.path, 'materials', mat), 'r') as file:
+                            self.materials[mat] = json.load(file)
+                    self.log_list.insert(tk.END, 'Done')
+                    
+                    self.log_list.insert(tk.END, 'Identifying light sources...')
+                    self.light_sources = []
+                    for panel in self.layout_data['geometry']:
+                        if self.materials[panel['material']]['light']['emit'] > 0:
+                            self.light_sources.append(panel)
+                    self.log_list.insert(tk.END, 'Done')
+                    
+                    self.log_list.insert(tk.END, 'Generating simple lightmap...')
+                    for x in range(1, 800, 1):
+                        for y in range(1, 600, 1):
+                            pixels[x, y] = (0, 0, 0, 255 - self.calc_light(x, y))
+                    
+                    self.map_data['lighting']['map'] = 'lightmap.png'
+                    
+                    image.save(os.path.join(self.editorobj.map.path, self.map_data['lighting']['map']))
+                    
+                    with open(os.path.join(self.editorobj.map.path, 'list.json'), 'w') as file:
+                        json.dump(self.map_data, file, sort_keys = True, indent = '\t')
+                
+                def calc_light(self, x, y):
+                    light_level = self.map_data['lighting']['background']
+                    for source in self.light_sources:
+                        dist = math.hypot(x - source['coordinates'][0], y - source['coordinates'][1]) * self.map_data['lighting']['dist mult']
+                        if dist == 0:
+                            light_level = self.map_data['lighting']['dynamic range']
+                        else:
+                            light_level += (1 / pow(dist, 2)) * self.materials[source['material']]['light']['emit']
+                    return int((min(light_level, self.map_data['lighting']['dynamic range']) / self.map_data['lighting']['dynamic range']) * 255)
             
             library = {'Text': Text,
                        'Tree': Tree,
