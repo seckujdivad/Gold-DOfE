@@ -7,7 +7,7 @@ import time
 import random
 
 class CanvasController:
-    def __init__(self, canvas, game):
+    def __init__(self, canvas, game = None):
         self.canvas = canvas
         self.game = game
         
