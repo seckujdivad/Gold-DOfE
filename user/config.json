@@ -83,5 +83,17 @@
 	},
 	"user": {
 		"name": "snekky"
+	},
+	"editor": {
+		"lightmap": {
+			"render shadows": true
+		},
+		"hitbox": {
+			"grab handles": {
+				"size": 16,
+				"grabbed": "#000000",
+				"normal": "#FFFFFF"
+			}
+		}
 	}
 }
