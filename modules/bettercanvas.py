@@ -13,6 +13,8 @@ class CanvasController:
         
         self.winfo_width = self.canvas.winfo_width
         self.winfo_height = self.canvas.winfo_height
+        self.find_overlapping = self.canvas.find_overlapping
+        self.config = self.canvas.config
         
         self.layers = []
         self.reserved_args = ['layer']
