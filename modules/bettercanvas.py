@@ -11,6 +11,9 @@ class CanvasController:
         self.canvas = canvas
         self.game = game
         
+        self.winfo_width = self.canvas.winfo_width
+        self.winfo_height = self.canvas.winfo_height
+        
         self.layers = []
         self.reserved_args = ['layer']
         
