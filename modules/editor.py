@@ -1,4 +1,5 @@
 import tkinter as tk
+import multiprocessing as mp
 import os
 import sys
 import functools
@@ -8,6 +9,7 @@ import threading
 import math
 
 import modules.engine
+import modules.lightcalc
 
 class Map:
     def __init__(self, name):
@@ -1053,11 +1055,38 @@ class Editor:
                             self.light_sources.append(panel)
                     self.log_list.insert(tk.END, 'Done')
                     
-                    self.log_list.insert(tk.END, 'Generating simple lightmap...')
-                    for x in range(1, 800, 1):
-                        for y in range(1, 600, 1):
-                            pixels[x, y] = (0, 0, 0, 255 - self.calc_light(x, y))
+                    self.log_list.insert(tk.END, 'Identifying blocking panels...')
+                    self.blocking_panels = []
+                    for panel in self.layout_data['geometry']:
+                        if self.materials[panel['material']]['light']['block'] > 0:
+                            self.blocking_panels.append(panel)
+                    self.log_list.insert(tk.END, 'Done')
                     
+                    self.log_list.insert(tk.END, 'Allocating calculation processes...')
+                    pipe, process_pipe = mp.Pipe()
+                    
+                    for x0, x1 in [[1, 100], [100, 200], [200, 300], [300, 400], [400, 500], [500, 600], [600, 700], [700, 800]]:
+                        self.log_list.insert(tk.END, 'Allocated segment x = {}-{}'.format(x0, x1))
+                        mp.Process(target = modules.lightcalc.CalcSegment, args = [x0, x1, process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels]).start()
+                    
+                    self.log_list.insert(tk.END, 'Done')
+                    
+                    self.log_list.insert(tk.END, 'Generating lightmap...')
+                    command = None
+                    checked_in = 0
+                    while not command == 'exit':
+                        command = pipe.recv()
+                        
+                        if command == 'done':
+                            checked_in += 1
+                            self.log_list.insert(tk.END, 'Segments complete: {}'.format(checked_in))
+                            if checked_in >= 8:
+                                command = 'exit'
+                        elif command[0] == 'message':
+                            self.log_list.insert(tk.END, command[1])
+                            self._see_bottom()
+                        else:
+                            pixels[command[0][0], command[0][1]] = (0, 0, 0, 255 - command[1])
                     self.log_list.insert(tk.END, 'Done')
                     
                     self.map_data['lighting']['map'] = os.path.join('models', 'system', 'lightmap', 'lightmap.png')
@@ -1076,17 +1105,13 @@ class Editor:
                     self.tabobj.set_title('ready')
                     
                     self.button_generate.config(state = tk.ACTIVE)
+                    
+                    self._see_bottom()
                 
-                def calc_light(self, x, y):
-                    light_level = self.map_data['lighting']['background']
-                    for source in self.light_sources:
-                        dist = math.hypot(x - source['coordinates'][0], y - source['coordinates'][1]) * self.map_data['lighting']['dist mult']
-                        if dist == 0:
-                            light_level = self.map_data['lighting']['dynamic range']
-                        else:
-                            light_level += (1 / pow(dist, 2)) * self.materials[source['material']]['light']['emit']
-                    return int((min(light_level, self.map_data['lighting']['dynamic range']) / self.map_data['lighting']['dynamic range']) * 255)
-            
+                
+                def _see_bottom(self, event = None):
+                    self.log_list.see(tk.END)
+                    
             library = {'Text': Text,
                        'Tree': Tree,
                        'Layout': Layout,
