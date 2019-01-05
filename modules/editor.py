@@ -1011,6 +1011,8 @@ class Editor:
                     threading.Thread(target = self._generate, name = 'Lightmap generator').start()
                 
                 def _generate(self):
+                    self.button_generate.config(state = tk.DISABLED)
+                
                     self.tabobj.set_title('generating...')
                     self.log_list.delete(0, tk.END)
                     self.log_list.insert(tk.END, 'Initialising...')
@@ -1072,6 +1074,8 @@ class Editor:
                     self.log_list.insert(tk.END, 'Lightmap is complete')
                     
                     self.tabobj.set_title('ready')
+                    
+                    self.button_generate.config(state = tk.ACTIVE)
                 
                 def calc_light(self, x, y):
                     light_level = self.map_data['lighting']['background']
