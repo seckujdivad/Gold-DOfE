@@ -1134,7 +1134,6 @@ class Editor:
                     
                     self.canvas = tk.Canvas(self.frame, bg = 'white', **self.ui_styling.get(font_size = 'small', object_type = tk.Canvas))
                     
-                    
                     #display elements
                     self.mat_frame.grid(row = 0, column = 0, sticky = 'NESW')
                     self.canvas.grid(row = 0, column = 1, sticky = 'NESW')
@@ -1143,10 +1142,28 @@ class Editor:
                     self.ui_styling.set_weight(self.frame, 2, 1)
                     self.frame.columnconfigure(0, weight = 0)
                     
+                    #populate materials list
                     self.materials = {}
                     for name in os.listdir(os.path.join(self.editorobj.map.path, 'materials')):
                         self.materials[name] = self.editorobj.map.get_json(os.path.join('materials', name))
                         self.mat_list.insert(tk.END, name)
+                    
+                    #make keybinds
+                    self.mat_list.bind('<Button-1>', self.mat_selected)
+                
+                def mat_selected(self, event = None):
+                    threading.Thread(target = self._mat_selected, args = [event]).start()
+                
+                def _mat_selected(self, event):
+                    time.sleep(0.05)
+                    
+                    curselection = self.mat_list.curselection()
+                    if not curselection == ():
+                        material = self.mat_list.get(curselection[0])
+                        self.tabobj.set_title(material)
+                        
+                        material_data = self.materials[material]
+                        
                     
             library = {'Text': Text,
                        'Tree': Tree,
