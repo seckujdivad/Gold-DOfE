@@ -1019,6 +1019,15 @@ class Editor:
                     self.log_list.delete(0, tk.END)
                     self.log_list.insert(tk.END, 'Initialising...')
                     
+                    if self.user_config['editor']['lightmap']['render shadows']:
+                        self.log_list.insert(tk.END, 'Shadows are turned ON')
+                        self.log_list.insert(tk.END, 'This will result in a better image at the cost of a long render time')
+                    else:
+                        self.log_list.insert(tk.END, 'Shadows are turned OFF')
+                        self.log_list.insert(tk.END, 'This will result in a shorter render time at the cost of a lower quality image')
+                    
+                    self.log_list.insert(tk.END, 'Allocating calculation processes...')
+                    
                     with open(os.path.join(self.editorobj.map.path, 'list.json'), 'r') as file:
                         mapcfg = json.load(file)
                     
@@ -1067,7 +1076,7 @@ class Editor:
                     
                     for x0, x1 in [[1, 100], [100, 200], [200, 300], [300, 400], [400, 500], [500, 600], [600, 700], [700, 800]]:
                         self.log_list.insert(tk.END, 'Allocated segment x = {}-{}'.format(x0, x1))
-                        mp.Process(target = modules.lightcalc.CalcSegment, args = [x0, x1, process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels]).start()
+                        mp.Process(target = modules.lightcalc.CalcSegment, args = [x0, x1, process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels, self.user_config['editor']['lightmap']['render shadows']]).start()
                     
                     self.log_list.insert(tk.END, 'Done')
                     
