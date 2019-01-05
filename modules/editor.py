@@ -1112,12 +1112,49 @@ class Editor:
                 def _see_bottom(self, event = None):
                     self.log_list.see(tk.END)
                     
+            class PanelHitbox:
+                """
+                Edit the hitboxes for the panels in the level
+                """
+                def __init__(self, frame, editorobj, tabobj):
+                    self.frame = frame
+                    self.editorobj = editorobj
+                    self.tabobj = tabobj
+                    
+                    self.ui_styling = self.editorobj.uiobjs.ui_styling
+                    
+                    #create elements
+                    self.mat_frame = tk.Frame(self.frame)
+                    self.mat_list = tk.Listbox(self.mat_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
+                    self.mat_scrollbar = tk.Scrollbar(self.mat_frame, command = self.mat_list.yview, **self.ui_styling.get(font_size = 'small', object_type = tk.Scrollbar))
+                    self.mat_list.config(yscrollcommand = self.mat_scrollbar.set)
+                    
+                    self.mat_scrollbar.pack(side = tk.RIGHT, fill = tk.Y)
+                    self.mat_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+                    
+                    self.canvas = tk.Canvas(self.frame, bg = 'white', **self.ui_styling.get(font_size = 'small', object_type = tk.Canvas))
+                    
+                    
+                    #display elements
+                    self.mat_frame.grid(row = 0, column = 0, sticky = 'NESW')
+                    self.canvas.grid(row = 0, column = 1, sticky = 'NESW')
+                    
+                    #set weighting
+                    self.ui_styling.set_weight(self.frame, 2, 1)
+                    self.frame.columnconfigure(0, weight = 0)
+                    
+                    self.materials = {}
+                    for name in os.listdir(os.path.join(self.editorobj.map.path, 'materials')):
+                        self.materials[name] = self.editorobj.map.get_json(os.path.join('materials', name))
+                        self.mat_list.insert(tk.END, name)
+                    
             library = {'Text': Text,
                        'Tree': Tree,
                        'Layout': Layout,
                        'Materials': MaterialEditor,
                        'Config': ConfigEditor,
-                       'Light maps': LightMap} #all the types of tab
+                       'Light maps': LightMap,
+                       'Panel hitboxes': PanelHitbox} #all the types of tab
             
             @classmethod
             def create_new(self, name):
