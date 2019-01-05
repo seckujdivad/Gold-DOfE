@@ -15,6 +15,9 @@ class CanvasController:
         self.winfo_height = self.canvas.winfo_height
         self.find_overlapping = self.canvas.find_overlapping
         self.config = self.canvas.config
+        self.bind = self.canvas.bind
+        self.unbind = self.canvas.unbind
+        self.unbind_all = self.canvas.unbind_all
         
         self.layers = []
         self.reserved_args = ['layer']
