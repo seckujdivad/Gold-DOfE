@@ -10,6 +10,7 @@ import math
 
 import modules.engine
 import modules.lightcalc
+import modules.bettercanvas
 
 class Map:
     def __init__(self, name):
@@ -1132,6 +1133,25 @@ class Editor:
                     
                     self.ui_styling = self.editorobj.uiobjs.ui_styling
                     
+                    class editor:
+                        current_img = None
+                        current_img_obj = None
+                        current_points = []
+                        selected_point = None
+                        current_material = None
+                        
+                        selection_x = tk.StringVar()
+                        selection_y = tk.StringVar()
+                        
+                        class centre:
+                            x = None
+                            y = None
+                        self.centre = centre
+                    self.editor = editor
+                    
+                    with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+                        self.user_config = json.load(file)
+                    
                     #create elements
                     self.mat_frame = tk.Frame(self.frame)
                     self.mat_list = tk.Listbox(self.mat_frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Listbox))
@@ -1142,14 +1162,28 @@ class Editor:
                     self.mat_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     self.canvas = tk.Canvas(self.frame, bg = 'white', **self.ui_styling.get(font_size = 'small', object_type = tk.Canvas))
+                    self.canvcont = modules.bettercanvas.CanvasController(self.canvas)
+                    
+                    self.coordx_label = tk.Label(self.frame, text = 'X:', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.coordx_spinbox = tk.Spinbox(self.frame, textvariable = self.editor.selection_x, from_ = -999, to = 999, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.coordy_label = tk.Label(self.frame, text = 'Y:', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.coordy_spinbox = tk.Spinbox(self.frame, textvariable = self.editor.selection_y, from_ = -999, to = 999, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    
+                    self.editor.selection_x.set('----')
+                    self.editor.selection_y.set('----')
                     
                     #display elements
-                    self.mat_frame.grid(row = 0, column = 0, sticky = 'NESW')
-                    self.canvas.grid(row = 0, column = 1, sticky = 'NESW')
+                    self.mat_frame.grid(row = 0, column = 0, rowspan = 2, sticky = 'NESW')
+                    self.canvas.grid(row = 0, column = 1, columnspan = 4, sticky = 'NESW')
+                    self.coordx_label.grid(row = 1, column = 1, sticky = 'NESW')
+                    self.coordx_spinbox.grid(row = 1, column = 2, sticky = 'NESW')
+                    self.coordy_label.grid(row = 1, column = 3, sticky = 'NESW')
+                    self.coordy_spinbox.grid(row = 1, column = 4, sticky = 'NESW')
                     
                     #set weighting
-                    self.ui_styling.set_weight(self.frame, 2, 1)
+                    self.ui_styling.set_weight(self.frame, 5, 2)
                     self.frame.columnconfigure(0, weight = 0)
+                    self.frame.rowconfigure(1, weight = 0)
                     
                     #populate materials list
                     self.materials = {}
@@ -1159,6 +1193,7 @@ class Editor:
                     
                     #make keybinds
                     self.mat_list.bind('<Button-1>', self.mat_selected)
+                    self.canvcont.bind('<Button-1>', self.canvas_clicked)
                 
                 def mat_selected(self, event = None):
                     threading.Thread(target = self._mat_selected, args = [event]).start()
@@ -1173,6 +1208,61 @@ class Editor:
                         
                         material_data = self.materials[material]
                         
+                        self.editor.current_img = tk.PhotoImage(file = os.path.join(self.editorobj.map.path, 'textures', material_data['texture']['address']))
+                        
+                        if not self.editor.current_img_obj == None:
+                            self.canvcont.delete(self.editor.current_img_obj)
+                        
+                        for obj, x, y in self.editor.current_points:
+                            self.canvcont.delete(obj)
+                            
+                        self.editor.centre.x = int(self.canvcont.winfo_width() / 2)
+                        self.editor.centre.y = int(self.canvcont.winfo_height() / 2)
+                        
+                        self.editor.current_img_obj = self.canvcont.create_image(self.editor.centre.x, self.editor.centre.y, image = self.editor.current_img, layer = 0)
+                        
+                        self.editor.current_material = material
+                        
+                        self.editor.current_points = []
+                        for x, y in material_data['hitbox']:
+                            self.editor.current_points.append([self.canvcont.create_rectangle(self.editor.centre.x + x + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.x + x - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), fill = self.user_config['editor']['hitbox']['grab handles']['normal'], outline = self.user_config['editor']['hitbox']['grab handles']['outline']), x, y])
+                
+                def canvas_clicked(self, event):
+                    overlapping = self.canvcont.find_overlapping(event.x - 1, event.y - 1, event.x + 1, event.y + 1)
+                    if not len(overlapping) == 0:
+                        overlapping = overlapping[0]
+                        
+                        is_current_point = False
+                        i = 0
+                        c_x = None
+                        c_y = None
+                        for obj, x, y in self.editor.current_points:
+                            if obj == overlapping:
+                                is_current_point = True
+                                index = i
+                                c_x = x
+                                c_y = y
+                            i += 1
+                        
+                        if is_current_point:
+                            if not self.editor.selected_point == None:
+                                self.canvcont.itemconfigure(self.editor.current_points[self.editor.selected_point][0], fill = self.user_config['editor']['hitbox']['grab handles']['normal'])
+                            self.canvcont.itemconfigure(overlapping, fill = self.user_config['editor']['hitbox']['grab handles']['grabbed'])
+                            
+                            if not self.editor.selection_x.get() == '----':
+                                self.editor.current_points[self.editor.selected_point][1] = int(self.editor.selection_x.get())
+                                self.editor.current_points[self.editor.selected_point][2] = int(self.editor.selection_y.get())
+                            
+                            self.editor.selection_x.set(c_x)
+                            self.editor.selection_y.set(c_y)
+                            
+                            self.editor.selected_point = index
+                    
+                def spinbox_updated(self, event = None):
+                    self.editor.current_points[self.editor.selected_point][1] = self.editor.selection_x.get()
+                    self.editor.current_points[self.editor.selected_point][2] = self.editor.selection_y.get()
+                    
+                    self.editor.current_points[self.editor.selected_point][0]
                     
             library = {'Text': Text,
                        'Tree': Tree,

@@ -90,9 +90,10 @@
 		},
 		"hitbox": {
 			"grab handles": {
-				"size": 16,
-				"grabbed": "#000000",
-				"normal": "#FFFFFF"
+				"size": 8,
+				"grabbed": "#555555",
+				"normal": "#AAAAAA",
+				"outline": "#000000"
 			}
 		}
 	}
