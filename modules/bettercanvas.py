@@ -39,6 +39,9 @@ class CanvasController:
     def create_window(self, *coords, **args):
         return self._create('window', coords, args)
     
+    def create_line(self, *coords, **args):
+        return self._create('line', coords, args)
+    
     def _create(self, obj_type, coords, args):
         if not 'layer' in args:
             args['layer'] = 0
@@ -65,6 +68,8 @@ class CanvasController:
             obj = self.canvas.create_text(*coords, **filtered_args)
         elif obj_type == 'window':
             obj = self.canvas.create_window(*coords, **filtered_args)
+        elif obj_type == 'line':
+            obj = self.canvas.create_line(*coords, **filtered_args)
         
         self.layers[args['layer']].append({'object': obj})
         

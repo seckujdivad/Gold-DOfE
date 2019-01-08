@@ -1139,6 +1139,7 @@ class Editor:
                         current_points = []
                         selected_point = None
                         current_material = None
+                        hitbox_poly = []
                         
                         selection_x = tk.StringVar()
                         selection_y = tk.StringVar()
@@ -1226,8 +1227,19 @@ class Editor:
                         self.editor.current_material = material
                         
                         self.editor.current_points = []
+                        last_x = None
+                        lasy_y = None
                         for x, y in material_data['hitbox']:
                             self.editor.current_points.append([self.canvcont.create_rectangle(self.editor.centre.x + x + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.x + x - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), fill = self.user_config['editor']['hitbox']['grab handles']['normal'], outline = self.user_config['editor']['hitbox']['grab handles']['outline']), x, y])
+                            
+                            
+                            if not last_x == None:
+                                self.editor.hitbox_poly.append(self.canvcont.create_line(self.editor.centre.x + last_x, self.editor.centre.y + last_y, self.editor.centre.x + x, self.editor.centre.y + y, fill = '#000000'))
+                            
+                            last_x = x
+                            last_y = y
+                        
+                        self.editor.hitbox_poly.append(self.canvcont.create_line(self.editor.centre.x + last_x, self.editor.centre.y + last_y, self.editor.centre.x + material_data['hitbox'][0][0], self.editor.centre.y + material_data['hitbox'][0][1], fill = '#000000'))
                 
                 def canvas_clicked(self, event):
                     overlapping = self.canvcont.find_overlapping(event.x - 1, event.y - 1, event.x + 1, event.y + 1)
