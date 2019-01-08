@@ -1244,33 +1244,40 @@ class Editor:
                 def canvas_clicked(self, event):
                     overlapping = self.canvcont.find_overlapping(event.x - 1, event.y - 1, event.x + 1, event.y + 1)
                     if not len(overlapping) == 0:
-                        overlapping = overlapping[0]
+                        item_overlapping = None
+                        for item in overlapping:
+                            if item_overlapping == None:
+                                for item_b in self.editor.current_points:
+                                    if item == item_b[0]:
+                                        item_overlapping = item
                         
-                        is_current_point = False
-                        i = 0
-                        c_x = None
-                        c_y = None
-                        for obj, x, y in self.editor.current_points:
-                            if obj == overlapping:
-                                is_current_point = True
-                                index = i
-                                c_x = x
-                                c_y = y
-                            i += 1
-                        
-                        if is_current_point:
-                            if not self.editor.selected_point == None:
-                                self.canvcont.itemconfigure(self.editor.current_points[self.editor.selected_point][0], fill = self.user_config['editor']['hitbox']['grab handles']['normal'])
-                            self.canvcont.itemconfigure(overlapping, fill = self.user_config['editor']['hitbox']['grab handles']['grabbed'])
+                        if not item_overlapping == None:
+                            overlapping = item_overlapping
+                            is_current_point = False
+                            i = 0
+                            c_x = None
+                            c_y = None
+                            for obj, x, y in self.editor.current_points:
+                                if obj == overlapping:
+                                    is_current_point = True
+                                    index = i
+                                    c_x = x
+                                    c_y = y
+                                i += 1
                             
-                            if not self.editor.selection_x.get() == '----':
-                                self.editor.current_points[self.editor.selected_point][1] = int(self.editor.selection_x.get())
-                                self.editor.current_points[self.editor.selected_point][2] = int(self.editor.selection_y.get())
-                            
-                            self.editor.selection_x.set(c_x)
-                            self.editor.selection_y.set(c_y)
-                            
-                            self.editor.selected_point = index
+                            if is_current_point:
+                                if not self.editor.selected_point == None:
+                                    self.canvcont.itemconfigure(self.editor.current_points[self.editor.selected_point][0], fill = self.user_config['editor']['hitbox']['grab handles']['normal'])
+                                self.canvcont.itemconfigure(overlapping, fill = self.user_config['editor']['hitbox']['grab handles']['grabbed'])
+                                
+                                if not self.editor.selection_x.get() == '----':
+                                    self.editor.current_points[self.editor.selected_point][1] = int(self.editor.selection_x.get())
+                                    self.editor.current_points[self.editor.selected_point][2] = int(self.editor.selection_y.get())
+                                
+                                self.editor.selection_x.set(c_x)
+                                self.editor.selection_y.set(c_y)
+                                
+                                self.editor.selected_point = index
                     
                 def spinbox_updated(self, event = None):
                     self.editor.current_points[self.editor.selected_point][1] = self.editor.selection_x.get()
