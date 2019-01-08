@@ -1165,9 +1165,9 @@ class Editor:
                     self.canvcont = modules.bettercanvas.CanvasController(self.canvas)
                     
                     self.coordx_label = tk.Label(self.frame, text = 'X:', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.coordx_spinbox = tk.Spinbox(self.frame, textvariable = self.editor.selection_x, from_ = -999, to = 999, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.coordx_spinbox = tk.Spinbox(self.frame, textvariable = self.editor.selection_x, from_ = -999, to = 999, command = self.spinbox_updated, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
                     self.coordy_label = tk.Label(self.frame, text = 'Y:', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.coordy_spinbox = tk.Spinbox(self.frame, textvariable = self.editor.selection_y, from_ = -999, to = 999, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
+                    self.coordy_spinbox = tk.Spinbox(self.frame, textvariable = self.editor.selection_y, from_ = -999, to = 999, command = self.spinbox_updated, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
                     
                     self.editor.selection_x.set('----')
                     self.editor.selection_y.set('----')
@@ -1194,6 +1194,8 @@ class Editor:
                     #make keybinds
                     self.mat_list.bind('<Button-1>', self.mat_selected)
                     self.canvcont.bind('<Button-1>', self.canvas_clicked)
+                    self.coordx_spinbox.bind('<Return>', self.spinbox_updated)
+                    self.coordy_spinbox.bind('<Return>', self.spinbox_updated)
                 
                 def mat_selected(self, event = None):
                     threading.Thread(target = self._mat_selected, args = [event]).start()
@@ -1262,7 +1264,12 @@ class Editor:
                     self.editor.current_points[self.editor.selected_point][1] = self.editor.selection_x.get()
                     self.editor.current_points[self.editor.selected_point][2] = self.editor.selection_y.get()
                     
-                    self.editor.current_points[self.editor.selected_point][0]
+                    topx = int(self.editor.selection_x.get()) + self.editor.centre.x + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2)
+                    bottomx = int(self.editor.selection_x.get()) + self.editor.centre.x - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2)
+                    topy = int(self.editor.selection_y.get()) + self.editor.centre.y + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2)
+                    bottomy = int(self.editor.selection_y.get()) + self.editor.centre.y - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2)
+                    
+                    self.canvcont.coords(self.editor.current_points[self.editor.selected_point][0], topx, topy, bottomx, bottomy)
                     
             library = {'Text': Text,
                        'Tree': Tree,
