@@ -1283,6 +1283,20 @@ class Editor:
                     self.editor.current_points[self.editor.selected_point][1] = self.editor.selection_x.get()
                     self.editor.current_points[self.editor.selected_point][2] = self.editor.selection_y.get()
                     
+                    
+                    obj, x1, y1 = self.editor.current_points[len(self.editor.current_points) - 1]
+                    x1 = int(x1)
+                    y1 = int(y1)
+                        
+                    for i in range(len(self.editor.hitbox_poly)):
+                        x0, y0 = x1, y1
+                        obj, x1, y1 = self.editor.current_points[i]
+                        
+                        x1 = int(x1)
+                        y1 = int(y1)
+                        
+                        self.canvcont.coords(self.editor.hitbox_poly[i], self.editor.centre.x + x0, self.editor.centre.y + y0, self.editor.centre.x + x1, self.editor.centre.y + y1)
+                    
                     topx = int(self.editor.selection_x.get()) + self.editor.centre.x + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2)
                     bottomx = int(self.editor.selection_x.get()) + self.editor.centre.x - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2)
                     topy = int(self.editor.selection_y.get()) + self.editor.centre.y + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2)
