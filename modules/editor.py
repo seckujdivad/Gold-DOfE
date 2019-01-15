@@ -1203,6 +1203,8 @@ class Editor:
                     self.canvcont.bind('<Tab>', self.select_next)
                     self.canvcont.bind('<Shift-Tab>', self.select_prev)
                     
+                    self.canvcont.bind('<F1>', self.show_help)
+                    
                     self.coordx_spinbox.bind('<Return>', self.spinbox_updated)
                     self.coordy_spinbox.bind('<Return>', self.spinbox_updated)
                     
@@ -1350,6 +1352,27 @@ class Editor:
                     else:
                         self.choose_handle((self.editor.selected_point - 1) % len(self.editor.current_points))
                     self.canvas.focus_set()
+                
+                def show_help(self, event = None):
+                    threading.Thread(target = self._show_help).start()
+                
+                def _show_help(self):
+                    root = tk.Tk()
+                    
+                    text = tk.Text(root, height = 10, width = 50, **self.ui_styling.get(font_size = 'small', object_type = tk.Text))
+                    
+                    text.insert(tk.END, """How to use:
+Click on a grab handle to select it, then use the arrow keys or the spinboxes to move the vertices of the hitbox around.
+
+M: Remove selected vertex and merge adjacent
+S: Subdivide between selected and next vertex""")
+
+                    text.config(state = tk.DISABLED)
+                    text.pack(fill = tk.BOTH, expand = True)
+                    
+                    root.title('Help')
+                    
+                    root.mainloop()
                     
             library = {'Text': Text,
                        'Tree': Tree,
