@@ -1336,10 +1336,16 @@ class Editor:
                         self.spinbox_updated()
                 
                 def select_next(self, event = None):
-                    pass
+                    if self.editor.selected_point == None:
+                        self.choose_handle(0)
+                    else:
+                        self.choose_handle((self.editor.selected_point + 1) % len(self.editor.current_points))
                 
                 def select_prev(self, event = None):
-                    pass
+                    if self.editor.selected_point == None:
+                        self.choose_handle(0)
+                    else:
+                        self.choose_handle((self.editor.selected_point - 1) % len(self.editor.current_points))
                     
             library = {'Text': Text,
                        'Tree': Tree,
