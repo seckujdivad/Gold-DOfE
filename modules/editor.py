@@ -1195,6 +1195,12 @@ class Editor:
                     #make keybinds
                     self.mat_list.bind('<Button-1>', self.mat_selected)
                     self.canvcont.bind('<Button-1>', self.canvas_clicked)
+                    
+                    self.canvcont.bind('<Up>', self.move_up)
+                    self.canvcont.bind('<Down>', self.move_down)
+                    self.canvcont.bind('<Left>', self.move_left)
+                    self.canvcont.bind('<Right>', self.move_right)
+                    
                     self.coordx_spinbox.bind('<Return>', self.spinbox_updated)
                     self.coordy_spinbox.bind('<Return>', self.spinbox_updated)
                     
