@@ -1271,23 +1271,24 @@ class Editor:
                                 if obj == overlapping:
                                     is_current_point = True
                                     index = i
-                                    c_x = x
-                                    c_y = y
                                 i += 1
                             
                             if is_current_point:
-                                if not self.editor.selected_point == None:
-                                    self.canvcont.itemconfigure(self.editor.current_points[self.editor.selected_point][0], fill = self.user_config['editor']['hitbox']['grab handles']['normal'])
-                                self.canvcont.itemconfigure(overlapping, fill = self.user_config['editor']['hitbox']['grab handles']['grabbed'])
-                                
-                                if not self.editor.selection_x.get() == '----':
-                                    self.editor.current_points[self.editor.selected_point][1] = int(self.editor.selection_x.get())
-                                    self.editor.current_points[self.editor.selected_point][2] = int(self.editor.selection_y.get())
-                                
-                                self.editor.selection_x.set(c_x)
-                                self.editor.selection_y.set(c_y)
-                                
-                                self.editor.selected_point = index
+                                self.choose_handle(index)
+                
+                def choose_handle(self, index):
+                    if not self.editor.selected_point == None:
+                        self.canvcont.itemconfigure(self.editor.current_points[self.editor.selected_point][0], fill = self.user_config['editor']['hitbox']['grab handles']['normal'])
+                    self.canvcont.itemconfigure(self.editor.current_points[index][0], fill = self.user_config['editor']['hitbox']['grab handles']['grabbed'])
+                    
+                    if not self.editor.selection_x.get() == '----':
+                        self.editor.current_points[self.editor.selected_point][1] = int(self.editor.selection_x.get())
+                        self.editor.current_points[self.editor.selected_point][2] = int(self.editor.selection_y.get())
+                    
+                    self.editor.selection_x.set(self.editor.current_points[index][1])
+                    self.editor.selection_y.set(self.editor.current_points[index][2])
+                    
+                    self.editor.selected_point = index
                     
                 def spinbox_updated(self, event = None):
                     self.editor.current_points[self.editor.selected_point][1] = self.editor.selection_x.get()
