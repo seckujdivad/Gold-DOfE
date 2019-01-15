@@ -1303,6 +1303,32 @@ class Editor:
                     bottomy = int(self.editor.selection_y.get()) + self.editor.centre.y - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2)
                     
                     self.canvcont.coords(self.editor.current_points[self.editor.selected_point][0], topx, topy, bottomx, bottomy)
+                
+                def move_up(self, event = None):
+                    if not self.editor.selection_y.get() == '----':
+                        self.editor.selection_y.set(int(self.editor.selection_y.get()) - 1)
+                        self.spinbox_updated()
+                
+                def move_down(self, event = None):
+                    if not self.editor.selection_y.get() == '----':
+                        self.editor.selection_y.set(int(self.editor.selection_y.get()) + 1)
+                        self.spinbox_updated()
+                
+                def move_left(self, event = None):
+                    if not self.editor.selection_x.get() == '----':
+                        self.editor.selection_x.set(int(self.editor.selection_x.get()) - 1)
+                        self.spinbox_updated()
+                
+                def move_right(self, event = None):
+                    if not self.editor.selection_x.get() == '----':
+                        self.editor.selection_x.set(int(self.editor.selection_x.get()) + 1)
+                        self.spinbox_updated()
+                
+                def select_next(self, event = None):
+                    pass
+                
+                def select_prev(self, event = None):
+                    pass
                     
             library = {'Text': Text,
                        'Tree': Tree,
