@@ -1197,6 +1197,10 @@ class Editor:
                     self.canvcont.bind('<Button-1>', self.canvas_clicked)
                     self.coordx_spinbox.bind('<Return>', self.spinbox_updated)
                     self.coordy_spinbox.bind('<Return>', self.spinbox_updated)
+                    
+                    #make canvas take focus when the mouse enters, and lose it when it leaves
+                    self.canvas.bind('<Enter>', lambda event: self.canvas.focus_set())
+                    self.canvas.bind('<Leave>', lambda event: self.canvas.nametowidget('.').focus_set())
                 
                 def mat_selected(self, event = None):
                     threading.Thread(target = self._mat_selected, args = [event]).start()
