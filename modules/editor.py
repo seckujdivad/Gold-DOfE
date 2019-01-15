@@ -1200,6 +1200,8 @@ class Editor:
                     self.canvcont.bind('<Down>', self.move_down)
                     self.canvcont.bind('<Left>', self.move_left)
                     self.canvcont.bind('<Right>', self.move_right)
+                    self.canvcont.bind('<Tab>', self.select_next)
+                    self.canvcont.bind('<Shift-Tab>', self.select_prev)
                     
                     self.coordx_spinbox.bind('<Return>', self.spinbox_updated)
                     self.coordy_spinbox.bind('<Return>', self.spinbox_updated)
@@ -1340,12 +1342,14 @@ class Editor:
                         self.choose_handle(0)
                     else:
                         self.choose_handle((self.editor.selected_point + 1) % len(self.editor.current_points))
+                    self.canvas.focus_set()
                 
                 def select_prev(self, event = None):
                     if self.editor.selected_point == None:
                         self.choose_handle(0)
                     else:
                         self.choose_handle((self.editor.selected_point - 1) % len(self.editor.current_points))
+                    self.canvas.focus_set()
                     
             library = {'Text': Text,
                        'Tree': Tree,
