@@ -1173,18 +1173,22 @@ class Editor:
                     self.editor.selection_x.set('----')
                     self.editor.selection_y.set('----')
                     
+                    self.help_label = tk.Label(self.frame, text = 'For help, press F1', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    
                     #display elements
-                    self.mat_frame.grid(row = 0, column = 0, rowspan = 2, sticky = 'NESW')
+                    self.mat_frame.grid(row = 0, column = 0, rowspan = 3, sticky = 'NESW')
                     self.canvas.grid(row = 0, column = 1, columnspan = 4, sticky = 'NESW')
                     self.coordx_label.grid(row = 1, column = 1, sticky = 'NESW')
                     self.coordx_spinbox.grid(row = 1, column = 2, sticky = 'NESW')
                     self.coordy_label.grid(row = 1, column = 3, sticky = 'NESW')
                     self.coordy_spinbox.grid(row = 1, column = 4, sticky = 'NESW')
+                    self.help_label.grid(row = 2, column = 1, columnspan = 4, sticky = 'NESW')
                     
                     #set weighting
-                    self.ui_styling.set_weight(self.frame, 5, 2)
+                    self.ui_styling.set_weight(self.frame, 5, 3)
                     self.frame.columnconfigure(0, weight = 0)
                     self.frame.rowconfigure(1, weight = 0)
+                    self.frame.rowconfigure(2, weight = 0)
                     
                     #populate materials list
                     self.materials = {}
