@@ -1206,6 +1206,7 @@ class Editor:
                     self.canvcont.bind('<Right>', self.move_right)
                     self.canvcont.bind('<Tab>', self.select_next)
                     self.canvcont.bind('<Shift-Tab>', self.select_prev)
+                    self.canvcont.bind('<m>', self.remove_selected)
                     
                     self.canvcont.bind('<F1>', self.show_help)
                     
@@ -1298,9 +1299,13 @@ class Editor:
                     
                     self.editor.selected_point = index
                     
-                def spinbox_updated(self, event = None):
-                    self.editor.current_points[self.editor.selected_point][1] = self.editor.selection_x.get()
-                    self.editor.current_points[self.editor.selected_point][2] = self.editor.selection_y.get()
+                def spinbox_updated(self, event = None, use_values = True):
+                    if use_values:
+                        self.editor.current_points[self.editor.selected_point][1] = int(self.editor.selection_x.get())
+                        self.editor.current_points[self.editor.selected_point][2] = int(self.editor.selection_y.get())
+                    else:
+                        self.editor.selection_x.set(self.editor.current_points[self.editor.selected_point][1])
+                        self.editor.selection_y.set(self.editor.current_points[self.editor.selected_point][2])
                     
                     
                     obj, x1, y1 = self.editor.current_points[len(self.editor.current_points) - 1]
@@ -1377,6 +1382,23 @@ S: Subdivide between selected and next vertex""")
                     root.title('Help')
                     
                     root.mainloop()
+                
+                def remove_selected(self, event = None):
+                    if not self.editor.selected_point == None:
+                        self.remove(self.editor.selected_point)
+               
+                def remove(self, index):
+                    if len(self.editor.current_points) > 3:
+                        del_point = index
+                        
+                        self.choose_handle((index - 1) % (len(self.editor.current_points) - 1))
+                        
+                        self.canvcont.delete(self.editor.current_points[del_point][0])
+                        self.canvcont.delete(self.editor.hitbox_poly[del_point])
+                        self.editor.current_points.pop(del_point)
+                        self.editor.hitbox_poly.pop(del_point)
+                        
+                        self.spinbox_updated(use_values = False)
                     
             library = {'Text': Text,
                        'Tree': Tree,
