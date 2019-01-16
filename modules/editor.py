@@ -1207,6 +1207,7 @@ class Editor:
                     self.canvcont.bind('<Tab>', self.select_next)
                     self.canvcont.bind('<Shift-Tab>', self.select_prev)
                     self.canvcont.bind('<m>', self.remove_selected)
+                    self.canvcont.bind('<s>', self.subdivide_selected)
                     
                     self.canvcont.bind('<F1>', self.show_help)
                     
@@ -1249,16 +1250,21 @@ class Editor:
                         last_x = None
                         lasy_y = None
                         for x, y in material_data['hitbox']:
-                            self.editor.current_points.append([self.canvcont.create_rectangle(self.editor.centre.x + x + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.x + x - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), fill = self.user_config['editor']['hitbox']['grab handles']['normal'], outline = self.user_config['editor']['hitbox']['grab handles']['outline']), x, y])
-                            
+                            self.editor.current_points.append([self.make_handle(x, y), x, y])
                             
                             if not last_x == None:
-                                self.editor.hitbox_poly.append(self.canvcont.create_line(self.editor.centre.x + last_x, self.editor.centre.y + last_y, self.editor.centre.x + x, self.editor.centre.y + y, fill = '#000000'))
+                                self.editor.hitbox_poly.append(self.make_hitbox_line(last_x, last_y, x, y))
                             
                             last_x = x
                             last_y = y
                         
-                        self.editor.hitbox_poly.append(self.canvcont.create_line(self.editor.centre.x + last_x, self.editor.centre.y + last_y, self.editor.centre.x + material_data['hitbox'][0][0], self.editor.centre.y + material_data['hitbox'][0][1], fill = '#000000'))
+                        self.editor.hitbox_poly.append(self.make_hitbox_line(last_x, last_y, material_data['hitbox'][0][0], material_data['hitbox'][0][1]))
+                
+                def make_hitbox_line(self, x0, y0, x1, y1):
+                    return self.canvcont.create_line(self.editor.centre.x + x0, self.editor.centre.y + y0, self.editor.centre.x + x1, self.editor.centre.y + y1, fill = '#000000')
+                
+                def make_handle(self, x, y):
+                    return self.canvcont.create_rectangle(self.editor.centre.x + x + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.x + x - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), fill = self.user_config['editor']['hitbox']['grab handles']['normal'], outline = self.user_config['editor']['hitbox']['grab handles']['outline'])
                 
                 def canvas_clicked(self, event):
                     overlapping = self.canvcont.find_overlapping(event.x - 1, event.y - 1, event.x + 1, event.y + 1)
@@ -1399,6 +1405,23 @@ S: Subdivide between selected and next vertex""")
                         self.editor.hitbox_poly.pop(del_point)
                         
                         self.spinbox_updated(use_values = False)
+                
+                def subdivide_selected(self, event = None):
+                    if not self.editor.selected_point == None:
+                        self.subdivide(self.editor.selected_point, (self.editor.selected_point + 1) % len(self.editor.current_points))
+                
+                def subdivide(self, index0, index1):
+                    cpoints = self.editor.current_points
+                    
+                    x = int(cpoints[index0][0] + ((cpoints[index1][0] - cpoints[index0][0]) / 2))
+                    y = int(cpoints[index0][1] + ((cpoints[index1][1] - cpoints[index0][1]) / 2))
+                
+                    self.editor.current_points.insert(index1, [self.make_handle(x, y), x, y])
+                    self.editor.hitbox_poly.append(self.make_hitbox_line(0, 0, 1, 1))
+                    
+                    self.choose_handle(index1)
+                    
+                    self.spinbox_updated(use_values = False)
                     
             library = {'Text': Text,
                        'Tree': Tree,
