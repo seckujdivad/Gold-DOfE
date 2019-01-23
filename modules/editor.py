@@ -1294,15 +1294,20 @@ class Editor:
                 def choose_handle(self, index):
                     if not self.editor.selected_point == None:
                         self.canvcont.itemconfigure(self.editor.current_points[self.editor.selected_point][0], fill = self.user_config['editor']['hitbox']['grab handles']['normal'])
-                    self.canvcont.itemconfigure(self.editor.current_points[index][0], fill = self.user_config['editor']['hitbox']['grab handles']['grabbed'])
+                        
+                    if index == None:
+                        self.editor.selection_x.set('----')
+                        self.editor.selection_y.set('----')
+                    else:
+                        self.canvcont.itemconfigure(self.editor.current_points[index][0], fill = self.user_config['editor']['hitbox']['grab handles']['grabbed'])
                     
-                    if not self.editor.selection_x.get() == '----':
-                        self.editor.current_points[self.editor.selected_point][1] = int(self.editor.selection_x.get())
-                        self.editor.current_points[self.editor.selected_point][2] = int(self.editor.selection_y.get())
-                    
-                    self.editor.selection_x.set(self.editor.current_points[index][1])
-                    self.editor.selection_y.set(self.editor.current_points[index][2])
-                    
+                        if not self.editor.selection_x.get() == '----':
+                            self.editor.current_points[self.editor.selected_point][1] = int(self.editor.selection_x.get())
+                            self.editor.current_points[self.editor.selected_point][2] = int(self.editor.selection_y.get())
+                        
+                        self.editor.selection_x.set(self.editor.current_points[index][1])
+                        self.editor.selection_y.set(self.editor.current_points[index][2])
+                        
                     self.editor.selected_point = index
                     
                 def spinbox_updated(self, event = None, use_values = True):
@@ -1413,15 +1418,22 @@ S: Subdivide between selected and next vertex""")
                 def subdivide(self, index0, index1):
                     cpoints = self.editor.current_points
                     
-                    x = int(cpoints[index0][0] + ((cpoints[index1][0] - cpoints[index0][0]) / 2))
-                    y = int(cpoints[index0][1] + ((cpoints[index1][1] - cpoints[index0][1]) / 2))
+                    x = int(cpoints[index0][1] + ((cpoints[index1][1] - cpoints[index0][1]) / 2))
+                    y = int(cpoints[index0][2] + ((cpoints[index1][2] - cpoints[index0][2]) / 2))
+                    
+                    self.choose_handle(None)
+                    
+                    print(x, y)
                 
-                    self.editor.current_points.insert(index1, [self.make_handle(x, y), x, y])
+                    self.editor.current_points.insert((index0 + 1) % len(self.editor.current_points), [self.make_handle(x, y), x, y])
                     self.editor.hitbox_poly.append(self.make_hitbox_line(0, 0, 1, 1))
                     
-                    self.choose_handle(index1)
+                    self.choose_handle((index0 + 1) % len(self.editor.current_points))
                     
-                    self.spinbox_updated(use_values = False)
+                    #self.editor.selection_x.set(x)
+                    #self.editor.selection_y.set(y)
+                    
+                    self.spinbox_updated(use_values = True)
                     
             library = {'Text': Text,
                        'Tree': Tree,
