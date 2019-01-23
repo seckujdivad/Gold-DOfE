@@ -1423,15 +1423,10 @@ S: Subdivide between selected and next vertex""")
                     
                     self.choose_handle(None)
                     
-                    print(x, y)
-                
                     self.editor.current_points.insert((index0 + 1) % len(self.editor.current_points), [self.make_handle(x, y), x, y])
                     self.editor.hitbox_poly.append(self.make_hitbox_line(0, 0, 1, 1))
                     
                     self.choose_handle((index0 + 1) % len(self.editor.current_points))
-                    
-                    #self.editor.selection_x.set(x)
-                    #self.editor.selection_y.set(y)
                     
                     self.spinbox_updated(use_values = True)
                     
