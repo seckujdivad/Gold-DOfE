@@ -1385,7 +1385,9 @@ class Editor:
 Click on a grab handle to select it, then use the arrow keys or the spinboxes to move the vertices of the hitbox around.
 
 M: Remove selected vertex and merge adjacent
-S: Subdivide between selected and next vertex""")
+S: Subdivide between selected and next vertex
+
+Remember, clicking on a new hitbox to edit without saving will reset your changes""")
 
                     text.config(state = tk.DISABLED)
                     text.pack(fill = tk.BOTH, expand = True)
