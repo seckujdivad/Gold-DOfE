@@ -9,7 +9,6 @@ import threading
 import math
 
 import modules.engine
-import modules.lightcalc
 import modules.bettercanvas
 
 class Map:
@@ -977,6 +976,8 @@ class Editor:
                     self.editorobj = editorobj
                     self.tabobj = tabobj
                     
+                    self.lightcalc = None
+                    
                     self.ui_styling = self.editorobj.uiobjs.ui_styling
                     
                     self.tabobj.set_title('loading...')
@@ -1026,6 +1027,10 @@ class Editor:
                     else:
                         self.log_list.insert(tk.END, 'Shadows are turned OFF')
                         self.log_list.insert(tk.END, 'This will result in a shorter render time at the cost of a lower quality image')
+                    
+                    self.tabobj.set_title('Getting lightmap module...')
+                    self.lightcalc = __import__(os.path.join(sys.path[0], 'modules', 'lightcalc.py')
+                    self.tabobj.set_title('Done')
                     
                     self.log_list.insert(tk.END, 'Allocating calculation processes...')
                     
@@ -1077,7 +1082,7 @@ class Editor:
                     
                     for x0, x1 in [[1, 100], [100, 200], [200, 300], [300, 400], [400, 500], [500, 600], [600, 700], [700, 800]]:
                         self.log_list.insert(tk.END, 'Allocated segment x = {}-{}'.format(x0, x1))
-                        mp.Process(target = modules.lightcalc.CalcSegment, args = [x0, x1, process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels, self.user_config['editor']['lightmap']['render shadows']]).start()
+                        mp.Process(target = self.lightcalc.CalcSegment, args = [x0, x1, process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels, self.user_config['editor']['lightmap']['render shadows']]).start()
                     
                     self.log_list.insert(tk.END, 'Done')
                     
