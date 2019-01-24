@@ -1433,7 +1433,14 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
                     self.spinbox_updated(use_values = True)
                 
                 def save(self, event = None):
-                    
+                    if not self.editor.current_material == None:
+                        data = self.materials[self.editor.current_material]
+                        
+                        data['hitbox'] = []
+                        for obj, x, y in self.editor.current_points:
+                            data['hitbox'].append([x, y])
+                        
+                        self.editor_obj.map.write_json(data)
                     
             library = {'Text': Text,
                        'Tree': Tree,
