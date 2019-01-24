@@ -1431,6 +1431,9 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
                     self.choose_handle((index0 + 1) % len(self.editor.current_points))
                     
                     self.spinbox_updated(use_values = True)
+                
+                def save(self, event = None):
+                    
                     
             library = {'Text': Text,
                        'Tree': Tree,
