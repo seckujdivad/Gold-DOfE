@@ -1174,6 +1174,7 @@ class Editor:
                     self.editor.selection_y.set('----')
                     
                     self.help_label = tk.Label(self.frame, text = 'For help, press F1', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.save_button = tk.Button(self.frame, text = 'Save', command = self.save, **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     
                     #display elements
                     self.mat_frame.grid(row = 0, column = 0, rowspan = 3, sticky = 'NESW')
@@ -1182,7 +1183,8 @@ class Editor:
                     self.coordx_spinbox.grid(row = 1, column = 2, sticky = 'NESW')
                     self.coordy_label.grid(row = 1, column = 3, sticky = 'NESW')
                     self.coordy_spinbox.grid(row = 1, column = 4, sticky = 'NESW')
-                    self.help_label.grid(row = 2, column = 1, columnspan = 4, sticky = 'NESW')
+                    self.help_label.grid(row = 2, column = 2, sticky = 'NESW')
+                    self.save_button.grid(row = 2, column = 4, sticky = 'NESW')
                     
                     #set weighting
                     self.ui_styling.set_weight(self.frame, 5, 3)
@@ -1440,7 +1442,7 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
                         for obj, x, y in self.editor.current_points:
                             data['hitbox'].append([x, y])
                         
-                        self.editor_obj.map.write_json(data)
+                        self.editorobj.map.write_json(os.path.join('materials', self.editor.current_material), data)
                     
             library = {'Text': Text,
                        'Tree': Tree,
