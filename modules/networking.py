@@ -147,6 +147,7 @@ class Server:
                         self.output_pipe.send('{} changed name to {}'.format(self.serverdata.conn_data[conn_id]['username'], req.arguments['value']))
                         self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
                         self.database.user_connected(self.serverdata.conn_data[conn_id]['username'])
+                        self.send_text(['chat', 'client changed name'], [client_data['username']], connection)
                         
                 elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
                     self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
@@ -157,7 +158,7 @@ class Server:
                     self.set_mode(self.serverdata.conn_data[conn_id], 'player')
                     self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
                     
-                    self.send(connection, Request(command = 'popmsg', subcommand = 'welcome', arguments = {'text': self.settingsdata['welcome text']}))
+                    self.send_text(['fullscreen', 'welcome'], None, connection)
                 elif req.command == 'use':
                     with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', req.arguments['item']), 'r') as file:
                         item_data = json.load(file)
@@ -433,7 +434,7 @@ sv_quit: destroy the server'''
                 self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client_data['username']}))
                 self.output_pipe.send('Player {} died'.format(client_data['username']))
                 self.set_mode(client_data, 'spectator')
-                self.send_all(Request(command = 'say', arguments = {'text': '{} died'.format(client_data['username']), 'category': 'death'}))
+                self.send_text(['chat', 'player died'], [client_data['username']], None, category = 'death')
     
     def increment_health(self, client_data, health):
         self.update_health(client_data, client_data['health'] + health)
@@ -442,9 +443,35 @@ sv_quit: destroy the server'''
         self.send(client_data['connection'], Request(command = 'set mode', subcommand = client_mode))
         
         if client_mode == 'spectator':
-            self.output_pipe.send('{} is now spectating'.format(client_data['username']))
+            self.send_text(['chat', 'new mode', 'spectator'], [client_data['username']])
         elif client_mode == 'player':
-            self.output_pipe.send('{} is now playing'.format(client_data['username']))
+            self.send_text(['chat', 'new mode', 'player'], [client_data['username']])
+    
+    def send_text(self, path, formats = None, connection = None, category = 'general'):
+        string = self.settingsdata['messages']
+        for item in path:
+            string = string[item]
+        
+        if type(string) == list:
+            string = random.choice(list)
+        
+        if not type(string) == str:
+            raise ValueError('Invalid string path {} - doesn\'t give a string'.format(path))
+        
+        if not formats == None:
+            string = string.format(*formats)
+        
+        if path[0] == 'fullscreen':
+            req = Request(command = 'popmsg', subcommand = 'welcome', arguments = {'text': string})
+        elif path[0] == 'chat':
+            req = Request(command = 'say', subcommand = 'welcome', arguments = {'text': string, 'category': category})
+        else:
+            raise ValueError('Invalid text mode "{}"'.format(path[0]))
+        
+        if connection == None:
+            self.send_all(req)
+        else:
+            self.send(connection, req)
 
 class Client:
     def __init__(self, server_data, ui):
