@@ -242,6 +242,14 @@ sv_quit: destroy the server'''
                     output = 'Server is now offline'
                 else:
                     output = 'No permissions'
+            elif name == 'sv_hitbox':
+                if source == 'internal':
+                    try:
+                        self.set_hitboxes(argstring)
+                    except ValueError:
+                        output = 'Error while setting hitboxes to \'{}\''.format(argstring)
+                else:
+                    output = 'No permissions'
             else:
                 output = 'Command not found, try \'help\''
         elif name == 'exec':
@@ -474,6 +482,9 @@ sv_quit: destroy the server'''
             self.send_all(req)
         else:
             self.send(connection, req)
+    
+    def set_hitboxes(self, mode):
+        pass
 
 class Client:
     def __init__(self, server_data, ui):
