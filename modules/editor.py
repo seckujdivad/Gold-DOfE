@@ -1029,7 +1029,7 @@ class Editor:
                         self.log_list.insert(tk.END, 'This will result in a shorter render time at the cost of a lower quality image')
                     
                     self.tabobj.set_title('Getting lightmap module...')
-                    self.lightcalc = __import__(os.path.join(sys.path[0], 'modules', 'lightcalc.py')
+                    self.lightcalc = __import__(os.path.join(sys.path[0], 'modules', 'lightcalc.py'))
                     self.tabobj.set_title('Done')
                     
                     self.log_list.insert(tk.END, 'Allocating calculation processes...')
