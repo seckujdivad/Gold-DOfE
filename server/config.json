@@ -1,7 +1,8 @@
 {
 	"network": {
 		"port": 4321,
-		"tickrate": 15
+		"tickrate": 15,
+		"accurate hit detection": true
 	},
 	"scripts": {
 		"autoexec": ["autoexec"],
