@@ -1,7 +1,8 @@
 {
 	"network": {
 		"port": 4321,
-		"tickrate": 15
+		"tickrate": 15,
+		"mandate proper clipping": true
 	},
 	"scripts": {
 		"autoexec": ["autoexec"],
