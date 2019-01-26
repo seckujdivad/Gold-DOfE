@@ -181,6 +181,14 @@ class Game:
                 if not self.engine.map.player.running:
                     self.engine.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = True)
                 self.engine.map.player.setpos(400, 300, 0)
+        
+        elif request.command == 'set hit model':
+            old = self.engine.hitdetection.accurate
+            self.engine.hitdetection.accurate = request.subcommand == 'accurate' #accurate or loose
+            
+            if self.engine.hitdetection.accurate and not old:
+                self.engine.hitdetection.module = __import__(os.path.join(sys.path[0], 'modules', 'lineintersection.py'))
+                
 
 class Engine:
     def __init__(self, game):
@@ -216,6 +224,11 @@ class Engine:
             settingscfg = None
             lightmap = None
         self.map = map
+        
+        class hitdetection:
+            accurate = False
+            module = None
+        self.hitdetection = hitdetection
         
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
@@ -391,14 +404,24 @@ class Engine:
     
     def origin_is_inside_hitbox(self, hitbox):
         'Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)'
-        has_smaller = False
-        has_bigger = False
-        for hx, hy in hitbox:
-            if hx > 0 and hy > 0:
-                has_bigger = True
-            if hx < 0 and hy < 0:
-                has_smaller = True
-        return has_smaller and has_bigger
+        if self.hitdetection.accurate:
+            max_x = max([x for x, y in hitbox])
+            max_y = max([y for x, y in hitbox])
+            num_intersections = 0
+            for i in range(0, len(hitbox) - 2, 1):
+                result = modules.lineintersection.wrap_np_seg_intersect([[last_x, last_y], [pan_x, pan_y]], [[x0, y0], [x1, y1]], considerCollinearOverlapAsIntersect = True)
+                if not (type(result) == bool or result is None):
+                    num_intersections += 1
+            return {False, True}[num_intersections % 2]
+        else:
+            has_smaller = False
+            has_bigger = False
+            for hx, hy in hitbox:
+                if hx > 0 and hy > 0:
+                    has_bigger = True
+                if hx < 0 and hy < 0:
+                    has_smaller = True
+            return has_smaller and has_bigger
     
     def use_current_item(self):
         if not self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['quantity'] == 0:

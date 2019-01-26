@@ -1,11 +1,24 @@
 {
 	"network": {
 		"port": 4321,
-		"tickrate": 15
+		"tickrate": 15,
+		"accurate hit detection": true
 	},
 	"scripts": {
 		"autoexec": ["autoexec"],
 		"userconnect": ["connection"]
 	},
-	"welcome text": "Welcome!"
+	"messages": {
+		"fullscreen": {
+			"welcome": "Welcome!"
+		},
+		"chat": {
+			"new mode": {
+				"spectator": "{0} is now spectating",
+				"player": "{0} is now playing"
+			},
+			"client changed name": "You changed your name to {0}",
+			"player died": "{0} died"
+		}
+	}
 }

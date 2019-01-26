@@ -1,8 +1,21 @@
 {
 	"default window state": 0,
+	"editor": {
+		"hitbox": {
+			"grab handles": {
+				"grabbed": "#555555",
+				"normal": "#AAAAAA",
+				"outline": "#000000",
+				"size": 8
+			}
+		},
+		"lightmap": {
+			"render shadows": true
+		}
+	},
 	"graphics": {
 		"PILrender": true,
-		"model quality": 3
+		"model quality": 0
 	},
 	"hud": {
 		"chat": {
@@ -25,6 +38,7 @@
 		}
 	},
 	"network": {
+		"accurate hit detection": true,
 		"default port": 4321,
 		"default tickrate": 15,
 		"interpolations per second": 50,
@@ -83,18 +97,5 @@
 	},
 	"user": {
 		"name": "snekky"
-	},
-	"editor": {
-		"lightmap": {
-			"render shadows": true
-		},
-		"hitbox": {
-			"grab handles": {
-				"size": 8,
-				"grabbed": "#555555",
-				"normal": "#AAAAAA",
-				"outline": "#000000"
-			}
-		}
 	}
 }
