@@ -82,6 +82,7 @@ class UI:
                     self.button_connect.config(command = self.load_connect_server)
                     self.button_host.config(command = self.load_host_server)
                     self.button_settings.config(command = self.load_settings)
+                    self.button_server_settings.config(command = self.load_server_settings)
                     self.button_quit.config(command = self.close_window)
                 
                 @classmethod
@@ -105,6 +106,10 @@ class UI:
                     self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.editor_choose_file)
                 
                 @classmethod
+                def load_server_settings(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.server_settings)
+                
+                @classmethod
                 def close_window(self):
                     self.config['methods'].uiobject.call_trigger('quit')
                     
@@ -113,7 +118,8 @@ class UI:
                 button_editor = tk.Button(frame, text = 'Map editor', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_connect = tk.Button(frame, text = 'Connect to a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_host = tk.Button(frame, text = 'Host a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_settings = tk.Button(frame, text = 'Change settings', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_settings = tk.Button(frame, text = 'Change client settings', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_server_settings = tk.Button(frame, text = 'Change server settings', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 button_quit = tk.Button(frame, text = 'Quit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 label_userdata = tk.Label(frame, text = 'Loading...', **self.styling.get(font_size = 'small', object_type = tk.Label))
                 
@@ -122,9 +128,10 @@ class UI:
                 button_connect.grid(row = 2, column = 0, sticky = 'NESW')
                 button_host.grid(row = 3, column = 0, sticky = 'NESW')
                 button_settings.grid(row = 4, column = 0, sticky = 'NESW')
-                button_quit.grid(row = 5, column = 0, sticky = 'NESW')
-                label_userdata.grid(row = 6, column = 0, sticky = 'NESW')
-                self.styling.set_weight(frame, 1, 7)
+                button_server_settings.grid(row = 5, column = 0, sticky = 'NESW')
+                button_quit.grid(row = 6, column = 0, sticky = 'NESW')
+                label_userdata.grid(row = 7, column = 0, sticky = 'NESW')
+                self.styling.set_weight(frame, 1, 8)
                 
             class settings:
                 config = {'name': 'Settings'}
@@ -561,6 +568,19 @@ class UI:
                 @classmethod
                 def on_close(self):
                     self.config['methods'].uiobject.call_trigger('close editor', [])
+                    self.frame.pack_forget()
+                
+                frame = tk.Frame(main.page_frame)
+            
+            class server_settings:
+                config = {'name': 'Server settings'}
+                
+                @classmethod
+                def on_load(self):
+                    self.frame.pack(fill = tk.BOTH, expand = True)
+                
+                @classmethod
+                def on_close(self):
                     self.frame.pack_forget()
                 
                 frame = tk.Frame(main.page_frame)
