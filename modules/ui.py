@@ -577,13 +577,67 @@ class UI:
                 
                 @classmethod
                 def on_load(self):
+                    self.button_close.config(command = self.choose_accept)
+                    self.button_cancel.config(command = self.choose_cancel)
+                    self.button_reset_default.config(command = self.choose_reset_default)
+                    
                     self.frame.pack(fill = tk.BOTH, expand = True)
+                    
+                    self.fetch_settings(os.path.join(sys.path[0], 'server', 'config.json'))
                 
                 @classmethod
                 def on_close(self):
                     self.frame.pack_forget()
                 
+                @classmethod
+                def choose_cancel(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
+                
+                @classmethod
+                def choose_accept(self):
+                    self.push_settings(os.path.join(sys.path[0], 'server', 'config.json'))
+                       
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
+                
+                @classmethod
+                def choose_reset_default(self):
+                    self.fetch_settings(os.path.join(sys.path[0], 'server', 'default_config.json'))
+                
+                @classmethod
+                def push_settings(self, path):
+                    with open(path, 'r') as file:
+                        settingsdict = json.load(file)
+                    
+                    with open(os.path.join(sys.path[0], 'server', 'config.json'), 'w') as file:
+                       json.dump(settingsdict, file, sort_keys=True, indent='\t')
+                
+                @classmethod
+                def fetch_settings(self, path):
+                    with open(path, 'r') as file:
+                        settingsdict = json.load(file)
+                
                 frame = tk.Frame(main.page_frame)
+                
+                settings_frame = tk.Frame(frame)
+                
+                widget_row = 0
+                
+                #functional buttons
+                button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                button_reset_default = tk.Button(frame, text = 'Reset to default', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                
+                settings_frame.grid(row = 0, column = 0, columnspan = 3, sticky = 'NESW')
+                button_close.grid(row = 2, column = 0, sticky = 'NESW')
+                button_cancel.grid(row = 2, column = 1, sticky = 'NESW')
+                button_reset_default.grid(row = 2, column = 2, sticky = 'NESW')
+                
+                #set weights
+                self.styling.set_weight(settings_frame, 2, widget_row, dorows = False)
+                frame.columnconfigure(0, weight = 1)
+                frame.columnconfigure(1, weight = 1)
+                frame.columnconfigure(2, weight = 1)
+                frame.rowconfigure(0, weight = 1)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects
