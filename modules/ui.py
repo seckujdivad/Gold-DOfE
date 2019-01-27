@@ -608,6 +608,8 @@ class UI:
                     with open(path, 'r') as file:
                         settingsdict = json.load(file)
                     
+                    settingsdict['network']['accurate hit detection'] = bool(self.hitbox_precision_flipswitch.state)
+                    
                     with open(os.path.join(sys.path[0], 'server', 'config.json'), 'w') as file:
                        json.dump(settingsdict, file, sort_keys=True, indent='\t')
                 
@@ -615,12 +617,26 @@ class UI:
                 def fetch_settings(self, path):
                     with open(path, 'r') as file:
                         settingsdict = json.load(file)
+                    
+                    self.hitbox_precision_flipswitch.on_option_press(settingsdict['network']['accurate hit detection'])
                 
                 frame = tk.Frame(main.page_frame)
                 
                 settings_frame = tk.Frame(frame)
                 
                 widget_row = 0
+                
+                #network
+                cat_network = tk.Label(settings_frame, text = 'Network', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                hitbox_precision_label = tk.Label(settings_frame, text = 'Hitbox precision', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                hitbox_precision_flipswitch = TkFlipSwitch(settings_frame, options = [{'text': 'Low (stock python)'},
+                                                                                      {'text': 'High (requires numpy)'}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                
+                cat_network.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
+                hitbox_precision_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
+                hitbox_precision_flipswitch.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
+                
+                widget_row += 2
                 
                 #functional buttons
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
@@ -752,5 +768,5 @@ class TkFlipSwitch:
         self.buttons[index].config(relief = tk.FLAT, state = tk.DISABLED)
         self.state = index
         
-        if run_binds:
+        if run_binds and 'command' in self.internal_args['options'][index] and (not self.internal_args['options'][index]['command'] is None):
             self.internal_args['options'][index]['command']()
