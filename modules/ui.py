@@ -609,6 +609,7 @@ class UI:
                         settingsdict = json.load(file)
                     
                     settingsdict['network']['accurate hit detection'] = bool(self.hitbox_precision_flipswitch.state)
+                    settingsdict['network']['tickrate'] = int(self.vars.tickrate.get())
                     
                     with open(os.path.join(sys.path[0], 'server', 'config.json'), 'w') as file:
                        json.dump(settingsdict, file, sort_keys=True, indent='\t')
@@ -619,6 +620,12 @@ class UI:
                         settingsdict = json.load(file)
                     
                     self.hitbox_precision_flipswitch.on_option_press(settingsdict['network']['accurate hit detection'])
+                    self.vars.tickrate.set(settingsdict['network']['tickrate'])
+                    
+                #variables
+                class vars:
+                    tickrate = tk.IntVar()
+                self.vars = vars
                 
                 frame = tk.Frame(main.page_frame)
                 
@@ -631,12 +638,16 @@ class UI:
                 hitbox_precision_label = tk.Label(settings_frame, text = 'Hitbox precision', **self.styling.get(font_size = 'medium', object_type = tk.Label))
                 hitbox_precision_flipswitch = TkFlipSwitch(settings_frame, options = [{'text': 'Low (stock python)'},
                                                                                       {'text': 'High (requires numpy)'}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                tickrate_label = tk.Label(settings_frame, text = 'Tickrate', **self.styling.get(font_size = 'medium', object_type = tk.Label))
+                tickrate_spinbox = tk.Spinbox(settings_frame, from_ = 1, to = 1024, textvariable = self.vars.tickrate, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
                 
                 cat_network.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
                 hitbox_precision_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
                 hitbox_precision_flipswitch.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
+                tickrate_label.grid(row = widget_row + 2, column = 0, sticky = 'NESW')
+                tickrate_spinbox.grid(row = widget_row + 2, column = 1, sticky = 'NESW')
                 
-                widget_row += 2
+                widget_row += 3
                 
                 #functional buttons
                 button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
