@@ -1,0 +1,4 @@
+Gamemodes:
+0: 1v1 arena
+1: deathmatch
+2: pve team survival
