@@ -424,7 +424,7 @@ class UI:
                 addserver_port_spinbox = tk.Spinbox(addserver_frame, textvariable = vars.port, from_ = 1024, to = 65535, **self.styling.get(font_size = 'small', object_type = tk.Spinbox))
                 addserver_tickrate_label = tk.Label(addserver_frame, text = 'Tickrate', **self.styling.get(font_size = 'small', object_type = tk.Label))
                 addserver_tickrate_spinbox = tk.Spinbox(addserver_frame, textvariable = vars.tickrate, from_ = 1, to = 1024, **self.styling.get(font_size = 'small', object_type = tk.Spinbox))
-                addserver_islocal_flipswitch = TkFlipSwitch(addserver_frame, options = [{'text': 'Local machine only', 'command': print},
+                addserver_islocal_flipswitch = TkFlipSwitch(addserver_frame, options = [{'text': 'Local machine (host server)', 'command': print},
                                                                                         {'text': 'Open to LAN', 'command': print}], **self.styling.get(font_size = 'small', object_type = tk.Button))
                 
                 serverlist_bar.pack(side = tk.RIGHT, fill = tk.Y)
