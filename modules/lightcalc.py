@@ -82,6 +82,9 @@ class CalcSegment:
                 result = modules.lineintersection.wrap_np_seg_intersect([[last_x, last_y], [pan_x, pan_y]], [[x0, y0], [x1, y1]], considerCollinearOverlapAsIntersect = True)
                 if not (type(result) == bool or result is None):
                     intersections.append([result[0], result[1]])
+                
+                if result == True: #co linear overlap
+                    intersections.append([0, 0])
             
             last_x = pan_x
             last_y = pan_y
