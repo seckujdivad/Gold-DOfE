@@ -493,7 +493,7 @@ class UI:
                 @classmethod
                 def on_load(self):
                     for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps')):
-                        if not name.startswith('_'):
+                        if (not name.startswith('_')) and os.path.isdir(os.path.join(sys.path[0], 'server', 'maps', name)):
                             self.listbox_box.insert(tk.END, name)
                     
                     self.button_choose.config(command = self.open_map)
