@@ -27,6 +27,7 @@
 		800,
 		600
 	],
+	"gamemode": 0,
 	"layout": "layout.json",
 	"lighting": {
 		"background": 0.4,
