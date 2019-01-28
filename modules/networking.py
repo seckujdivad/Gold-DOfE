@@ -147,7 +147,7 @@ class Server:
                         self.output_pipe.send('{} changed name to {}'.format(self.serverdata.conn_data[conn_id]['username'], req.arguments['value']))
                         self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
                         self.database.user_connected(self.serverdata.conn_data[conn_id]['username'])
-                        self.send_text(['chat', 'client changed name'], [client_data['username']], connection)
+                        self.send_text(['chat', 'client changed name'], [self.serverdata.conn_data[conn_id]['username']], connection)
                         
                 elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
                     self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
