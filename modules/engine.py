@@ -183,11 +183,12 @@ class Game:
                 self.engine.map.player.setpos(400, 300, 0)
         
         elif request.command == 'set hit model':
-            old = self.engine.hitdetection.accurate
-            self.engine.hitdetection.accurate = request.subcommand == 'accurate' #accurate or loose
+            if request.subcommand == 'accurate' and not self.engine.hitdetection.accurate:
+                spec = importlib.util.spec_from_file_location('lineintersection', os.path.join(sys.path[0], 'modules', 'lineintersection.py'))
+                self.engine.hitdetection.module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(self.engine.hitdetection.module)
             
-            if self.engine.hitdetection.accurate and not old:
-                self.engine.hitdetection.module = __import__(os.path.join(sys.path[0], 'modules', 'lineintersection.py'))
+            self.engine.hitdetection.accurate = request.subcommand == 'accurate' #accurate or loose
                 
 
 class Engine:
@@ -407,12 +408,15 @@ class Engine:
         if self.hitdetection.accurate:
             max_x = max([x for x, y in hitbox])
             max_y = max([y for x, y in hitbox])
+            min_x = min([x for x, y in hitbox])
+            min_y = min([y for x, y in hitbox])
+            
             num_intersections = 0
             for i in range(0, len(hitbox) - 2, 1):
-                result = modules.lineintersection.wrap_np_seg_intersect([[last_x, last_y], [pan_x, pan_y]], [[x0, y0], [x1, y1]], considerCollinearOverlapAsIntersect = True)
+                result = self.hitdetection.module.wrap_np_seg_intersect([[max_x, max_y], [min_x, min_y]], [[hitbox[i][0], hitbox[i][1]], [hitbox[i + 1][0], hitbox[i + 1][1]]], considerCollinearOverlapAsIntersect = True)
                 if not (type(result) == bool or result is None):
                     num_intersections += 1
-            return {False, True}[num_intersections % 2]
+            return [False, True][num_intersections % 2]
         else:
             has_smaller = False
             has_bigger = False
