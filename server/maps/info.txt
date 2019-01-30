@@ -1,4 +1,5 @@
 Gamemodes:
-0: 1v1 arena
+0: xvx arena
 1: deathmatch
-2: pve team survival
+2: team deathmatch
+3: pve team survival

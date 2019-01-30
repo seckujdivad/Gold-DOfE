@@ -27,7 +27,7 @@
 		800,
 		600
 	],
-	"gamemode": 0,
+	"gamemodes": [0, 1, 2],
 	"layout": "layout.json",
 	"lighting": {
 		"background": 0.4,
@@ -37,20 +37,48 @@
 	},
 	"player": {
 		"entity": "player",
-		"spawnpoints": [
-			[
+		"spawnpoints": {
+			"xvx": [
 				[
-					400,
-					500
+					[
+						400,
+						500
+					]
+				],
+				[
+					[
+						400,
+						100
+					]
 				]
 			],
-			[
+			"deathmatch": [
 				[
-					400,
-					100
+					50, 50
+				],
+				[
+					750, 550
+				]
+			],
+			"team deathmatch": [
+				[
+					[
+						50, 50
+					],
+					[
+						750, 250
+					]
+				],
+				[
+					[
+						50, 350
+					],
+					[
+						750, 550
+					]
 				]
 			]
-		],
+		},
 		"starting items": [
 			[
 				{
