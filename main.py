@@ -65,8 +65,11 @@ class App:
         
         self.ui.load(self.ui.uiobjects.game)
     
-    def host_server(self):
-        pass
+    def host_server(self, console_frame):
+        with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
+            serversettingsdata = json.load(file)
+        
+        self.server = modules.networking.Server(serversettingsdata['network']['port'], console_frame)
     
     def close_server(self):
         pass

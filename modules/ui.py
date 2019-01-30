@@ -675,12 +675,12 @@ class UI:
                 frame.rowconfigure(0, weight = 1)
             
             class server_host:
-                config = {'name': 'Host'}
+                config = {'name': 'Hosting server'}
                 
                 @classmethod
                 def on_load(self):
                     self.frame.pack(fill = tk.BOTH, expand = True)
-                    self.config['methods'].uiobject.call_trigger('host server', [])
+                    self.config['methods'].uiobject.call_trigger('host server', [self.console_frame])
                     
                     self.button_exit.config(command = self.choose_exit)
                 
@@ -695,11 +695,13 @@ class UI:
                 
                 frame = tk.Frame(main.page_frame)
                 
+                console_frame = tk.Frame(frame)
                 button_exit = tk.Button(frame, text = 'Exit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
                 
-                button_exit.grid(column = 0, row = 0, sticky = 'NESW')
+                console_frame.grid(column = 0, row = 0, sticky = 'NESW')
+                button_exit.grid(column = 0, row = 1, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 1, 1)
+                self.styling.set_weight(frame, 1, 2)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects
