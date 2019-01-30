@@ -27,7 +27,10 @@
 		800,
 		600
 	],
-	"gamemodes": [0, 1, 2],
+	"gamemode": {
+		"supported": [0, 1, 2],
+		"default": 0
+	}
 	"layout": "layout.json",
 	"lighting": {
 		"background": 0.4,

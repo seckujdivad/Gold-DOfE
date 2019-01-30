@@ -26,6 +26,7 @@ class Server:
             item_ticket = 0 #allow clients to know which items are which from tick to tick
             tickrate = 10 #times to process items per second
             looptime = 1 / tickrate
+            gamemode = None
         self.serverdata = serverdata
         
         self.frame = frame
@@ -156,8 +157,17 @@ class Server:
                     self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
                     self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
                     
-                    spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][self.serverdata.conn_data[conn_id]['team']])
                     self.set_mode(self.serverdata.conn_data[conn_id], 'player')
+                    
+                    if self.serverdata.gamemode == 0:
+                        spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints']['xvx'][self.serverdata.conn_data[conn_id]['team']])
+                    elif self.serverdata.gamemode == 1:
+                        cmax, cmin = self.serverdata.mapdata['player']['spawnpoints']['deathmatch']
+                        spawnpoint = [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
+                    elif self.serverdata.gamemode == 2:
+                        cmax, cmin = self.serverdata.mapdata['player']['spawnpoints']['team deathmatch'][self.serverdata.conn_data[conn_id]['team']]
+                        spawnpoint = [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
+                        
                     self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
                     
                     self.send(connection, Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.settingsdata['network']['accurate hit detection']]))
@@ -290,6 +300,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
         for data in self.serverdata.conn_data:
             data['model'] = random.choice(self.serverdata.mapdata['entity models']['player'])
+        
+        self.serverdata.gamemode = self.serverdata.mapdata['gamemode']['default']
         
         req = Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
