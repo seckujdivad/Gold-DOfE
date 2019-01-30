@@ -201,17 +201,19 @@ class Server:
         if name == 'help':
             output = '''Commands:
 map: load a map by name
-say: send a message to all players
-say_pop: send a fullscreen message to all players
 exec: execute a script by name stored in the server/scripts directory
 echo: output the text given to the console
 clear: clear the console
 close_window: close the console
 
+say: send a message to all players
+say_pop: send a fullscreen message to all players
+
 sv_:
 sv_conns: list of connections to the server
 sv_kick_addr: kick a player by address
-sv_quit: destroy the server'''
+sv_quit: destroy the server
+sv_hitbox: choose whether or not to use accurate hitboxes'''
         elif name == 'map':
             if source == 'internal':
                 try:
