@@ -4,15 +4,19 @@ import threading
 import modules.ui
 
 class ServerCommandLineUI:
-    def __init__(self, command_handler, pipe, default_title = 'Server Command Line'):
+    def __init__(self, command_handler, pipe, frame, default_title = 'Server Command Line'):
         self.default_title = default_title
         self.command_handler = command_handler
         self.pipe = pipe
+        self.frame = frame
     
         threading.Thread(target = self.main_thread, name = 'Server command line UI').start()
         
     def main_thread(self):
-        self.root = tk.Tk()
+        if self.frame is None:
+            self.root = tk.Tk()
+        else:
+            self.root = self.frame
         
         self.listbox_frame = tk.Frame(self.root)
         self.listbox_box = tk.Listbox(self.listbox_frame, font = self.styling.fonts.small)
@@ -32,13 +36,14 @@ class ServerCommandLineUI:
         self.root.rowconfigure(0, weight = 1)
         self.root.columnconfigure(0, weight = 1)
         
-        self.root.geometry('400x300')
         self.set_title_status()
         self.root.bind('<Return>', self.process_command)
         
         threading.Thread(target = self.listen_to_pipe, name = 'Server command line pipe listen').start()
         
-        self.root.mainloop()
+        if self.frame is None:
+            self.root.geometry('400x300')
+            self.root.mainloop()
 
         self.command_handler('sv_quit')
     
@@ -53,10 +58,11 @@ class ServerCommandLineUI:
         self.listbox_box.see(tk.END)
     
     def set_title_status(self, status = ''):
-        if status == '':
-            self.root.title(self.default_title)
-        else:
-            self.root.title('{} - {}'.format(self.default_title, status))
+        if self.frame is None:
+            if status == '':
+                self.root.title(self.default_title)
+            else:
+                self.root.title('{} - {}'.format(self.default_title, status))
     
     def listen_to_pipe(self):
         while True:
@@ -70,7 +76,8 @@ class ServerCommandLineUI:
                 if cmd == 'clear':
                     self.listbox_box.delete(0, tk.END)
                 elif cmd == 'close_window':
-                    self.root.destroy()
+                    if self.frame is None:
+                        self.root.destroy()
                     self.pipe.close()
             else:
                 self.listbox_box.insert(tk.END, line)

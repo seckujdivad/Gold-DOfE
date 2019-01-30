@@ -14,7 +14,7 @@ import modules.servercmds
 import modules.logging
 
 class Server:
-    def __init__(self, port_):
+    def __init__(self, port_, frame = None):
         class serverdata:
             host = ''
             port = port_
@@ -28,6 +28,8 @@ class Server:
             looptime = 1 / tickrate
         self.serverdata = serverdata
         
+        self.frame = frame
+        
         self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
         
         self.database = ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'), modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'dblog.txt')))
@@ -38,7 +40,7 @@ class Server:
         self.connection.bind((self.serverdata.host, self.serverdata.port))
         self.connection.listen(5)
         
-        self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe)
+        self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, frame)
         
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
             self.settingsdata = json.load(file)
