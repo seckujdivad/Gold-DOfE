@@ -37,15 +37,17 @@ class ServerCommandLineUI:
         self.root.columnconfigure(0, weight = 1)
         
         self.set_title_status()
-        self.root.bind('<Return>', self.process_command)
+        
+        if self.frame is None:
+            self.root.bind('<Return>', self.process_command)
+        self.command_field.bind('<Return>', self.process_command)
         
         threading.Thread(target = self.listen_to_pipe, name = 'Server command line pipe listen').start()
         
         if self.frame is None:
             self.root.geometry('400x300')
             self.root.mainloop()
-
-        self.command_handler('sv_quit')
+            self.command_handler('sv_quit')
     
     def process_command(self, event = None):
         data = self.command_field.get()

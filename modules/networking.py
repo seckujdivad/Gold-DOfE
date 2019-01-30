@@ -40,7 +40,7 @@ class Server:
         self.connection.bind((self.serverdata.host, self.serverdata.port))
         self.connection.listen(5)
         
-        self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, frame)
+        self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, self.frame)
         
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
             self.settingsdata = json.load(file)
