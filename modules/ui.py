@@ -95,7 +95,7 @@ class UI:
                 
                 @classmethod
                 def load_host_server(self):
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.game)
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.server_host)
                 
                 @classmethod
                 def load_connect_server(self):
@@ -473,6 +473,7 @@ class UI:
                 def on_close(self):
                     self.frame.pack_forget()
                     self.config['methods'].uiobject.call_trigger('close game')
+                    self.config['methods'].uiobject.call_trigger('close server', [])
                 
                 @classmethod
                 def return_to_menu(self, event = None):
@@ -672,6 +673,33 @@ class UI:
                 frame.columnconfigure(1, weight = 1)
                 frame.columnconfigure(2, weight = 1)
                 frame.rowconfigure(0, weight = 1)
+            
+            class server_host:
+                config = {'name': 'Host'}
+                
+                @classmethod
+                def on_load(self):
+                    self.frame.pack(fill = tk.BOTH, expand = True)
+                    self.config['methods'].uiobject.call_trigger('host server', [])
+                    
+                    self.button_exit.config(command = self.choose_exit)
+                
+                @classmethod
+                def on_close(self):
+                    self.config['methods'].uiobject.call_trigger('close server', [])
+                    self.frame.pack_forget()
+                
+                @classmethod
+                def choose_exit(self):
+                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
+                
+                frame = tk.Frame(main.page_frame)
+                
+                button_exit = tk.Button(frame, text = 'Exit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
+                
+                button_exit.grid(column = 0, row = 0, sticky = 'NESW')
+                
+                self.styling.set_weight(frame, 1, 1)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects

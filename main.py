@@ -42,6 +42,8 @@ class App:
         self.ui.set_trigger('start editor', self.start_editor)
         self.ui.set_trigger('close editor', self.close_editor)
         self.ui.set_trigger('quit', self.close)
+        self.ui.set_trigger('host server', self.host_server)
+        self.ui.set_trigger('close server', self.close_server)
     
     def connect_to_server(self, server_data):
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
@@ -62,6 +64,12 @@ class App:
         self.client = modules.networking.Client(server_data, self.ui)
         
         self.ui.load(self.ui.uiobjects.game)
+    
+    def host_server(self):
+        pass
+    
+    def close_server(self):
+        pass
     
     def create_game_object(self, canvas):
         self.game = modules.engine.Game(canvas, self.client)
