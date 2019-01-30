@@ -701,7 +701,8 @@ class UI:
                 console_frame.grid(column = 0, row = 0, sticky = 'NESW')
                 button_exit.grid(column = 0, row = 1, sticky = 'NESW')
                 
-                self.styling.set_weight(frame, 1, 2)
+                self.styling.set_weight(frame, 1, 2, dorows = False)
+                frame.rowconfigure(0, weight = 1)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects
