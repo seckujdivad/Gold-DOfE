@@ -24,5 +24,11 @@
 		"userconnect": [
 			"connection"
 		]
+	},
+	"player": {
+		"respawn time": {
+			"deathmatch": 2,
+			"team deathmatch": 5
+		}
 	}
 }
