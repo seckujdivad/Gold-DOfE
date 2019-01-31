@@ -52,6 +52,9 @@ class Server:
         
         self.serverdata.tickrate = self.settingsdata['network']['tickrate']
         self.serverdata.looptime = 1 / self.serverdata.tickrate
+        
+        while self.serverdata.mapdata is None:
+            time.sleep(0.1) #refuse to come online until a map is loaded
 
         threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
         threading.Thread(target = self.handle_items, name = 'Item handler', daemon = True).start()
@@ -231,6 +234,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     output = 'Loading map \'{}\'...'.format(argstring)
                 except ValueError:
                     output = 'Error while loading map \'{}\''.format(argstring)
+                    output 
             else:
                 output = 'No permissions'
         elif name.startswith('say'):

@@ -47,6 +47,8 @@ class Game:
         self.popmsg = PopMessage(self.canvcont)
         self.popmsg.graphical_properties.font = self.settingsdict['hud']['popmsg']['font']
         self.popmsg.graphical_properties.colour = self.settingsdict['hud']['popmsg']['colour']
+
+        self.scoreline_display = DynamicStringDisplay(self.canvcont, self.canvas.winfo_width() / 2, 30)
         
         self.engine = Engine(self)
 
@@ -1085,3 +1087,24 @@ class PopMessage:
                 
             self.canvcont.delete(self.canvobj)
             self.canvobj = None
+
+class DynamicStringDisplay:
+    def __init__(self, canvcont, pos_x, pos_y):
+        self.canvcont = canvcont
+        
+        class pos:
+            x = pos_x
+            y = pos_y
+        self.pos = pos
+        
+        class styling:
+            align = tk.CENTER
+            font = ('', 30)
+        self.styling = styling
+        
+        self.text_obj = self.canvcont.create_text(self.pos.x, self.pos.x)
+        
+        self.refresh()
+    
+    def refresh(self):
+        pass
