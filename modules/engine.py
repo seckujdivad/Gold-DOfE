@@ -48,7 +48,8 @@ class Game:
         self.popmsg.graphical_properties.font = self.settingsdict['hud']['popmsg']['font']
         self.popmsg.graphical_properties.colour = self.settingsdict['hud']['popmsg']['colour']
 
-        self.scoreline_display = DynamicStringDisplay(self.canvcont, self.canvas.winfo_width() / 2, 30)
+        self.scoreline_display = DynamicStringDisplay(self.canvcont, self.canvas.winfo_width() / 2, 30, 'hud')
+        self.scoreline_display.set_twoitems(1, 50)
         
         self.engine = Engine(self)
 
@@ -365,6 +366,10 @@ class Engine:
             
             #tell the server that the player has loaded in
             self.game.client.send(modules.networking.Request(command = 'map loaded'))
+            
+            #centre scoreline display
+            self.game.scoreline_display.pos.x = self.game.canvas.winfo_width() / 2
+            self.game.scoreline_display.refresh()
     
     def unload_current_map(self):
         if not self.map.textures.obj_scatter == []:
@@ -1089,8 +1094,9 @@ class PopMessage:
             self.canvobj = None
 
 class DynamicStringDisplay:
-    def __init__(self, canvcont, pos_x, pos_y):
+    def __init__(self, canvcont, pos_x, pos_y, layer):
         self.canvcont = canvcont
+        self.layer = layer
         
         class pos:
             x = pos_x
@@ -1102,9 +1108,20 @@ class DynamicStringDisplay:
             font = ('', 30)
         self.styling = styling
         
-        self.text_obj = self.canvcont.create_text(self.pos.x, self.pos.x)
+        self.text = ''
+        
+        self.text_obj = self.canvcont.create_text(self.pos.x, self.pos.x, layer = self.layer)
         
         self.refresh()
     
     def refresh(self):
-        pass
+        self.canvcont.coords(self.text_obj, self.pos.x, self.pos.y)
+        self.canvcont.itemconfigure(self.text_obj, font = self.styling.font, anchor = self.styling.align, text = self.text)
+    
+    def set(self, text):
+        self.text = text
+        self.refresh()
+    
+    def set_twoitems(self, int1, int2):
+        length = max(len(str(int1)), len(str(int2)))
+        self.set('{:>{}} - {:<{}}'.format(int1, length, int2, length))
