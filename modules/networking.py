@@ -233,8 +233,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     self.load_map(argstring)
                     output = 'Loading map \'{}\'...'.format(argstring)
                 except ValueError:
-                    output = 'Error while loading map \'{}\''.format(argstring)
-                    output 
+                    type, value, traceback = sys.exc_info()
+                    output = 'Error while loading map \'{}\'\nERROR: {}\n{}'.format(argstring, type, value)
             else:
                 output = 'No permissions'
         elif name.startswith('say'):
