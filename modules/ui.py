@@ -9,13 +9,20 @@ import functools
 import shutil
 
 class UI:
-    def __init__(self):
+    def __init__(self, autostart = True):
         self.ready = {'tkthread': False}
         self.triggers = {}
         
-        threading.Thread(target = self.tkthread).start() #start tkinter window in separate thread
+        self.root = None
+        
+        if autostart:
+            threading.Thread(target = self.tkthread).start() #start tkinter window in separate thread
+            self.wait_for_checkin()
+    
+    def wait_for_checkin(self):
         clearpass = False
-        while not clearpass: #wait for all threads to check in before returning
+        while not clearpass:  # wait for all threads to check in before returning
+            time.sleep(0.05)
             clearpass = True
             for name in self.ready:
                 if not self.ready[name]:
@@ -719,6 +726,7 @@ class UI:
         
         self.ready['tkthread'] = True
         self.root.mainloop()
+        
         self.call_trigger('window closed')
     
     def load(self, page, *pageargs, **pagekwargs):

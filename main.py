@@ -1,6 +1,8 @@
 import json
 import os
 import sys
+import threading
+import time
 
 import modules.ui
 import modules.engine
@@ -14,16 +16,25 @@ class App:
         self.game = None
         self.client = None
         self.server = None
+        self.ui = None
         
         if not os.path.isfile(os.path.join(sys.path[0], 'user', 'config.json')):
             with open(os.path.join(sys.path[0], 'user', 'default_config.json'), 'r') as file:
                 with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as writeto_file:
                     writeto_file.write(file.read())
         
+        
+    
+        self.ui = modules.ui.UI(autostart = False)
+        threading.Thread(target = self.initialise_ui).start()
+        self.ui.tkthread()
+    
+    def initialise_ui(self):
+        self.ui.wait_for_checkin()
+        
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             settingsdata = json.load(file)
-    
-        self.ui = modules.ui.UI()
+        
         self.ui.load(self.ui.uiobjects.menu)
         self.ui.set_title('Hydrophobes')
         self.ui.set_geometry('800x600')
