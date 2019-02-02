@@ -413,12 +413,8 @@ class Engine:
     def origin_is_inside_hitbox(self, hitbox):
         'Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)'
         if self.hitdetection.accurate:
-            max_x = max(hitbox, key = lambda i: i[0])[0] * 2
-            max_y = max(hitbox, key = lambda i: i[1])[1] * 2
-            if max_x < 0:
-                max_x = 0 - min(hitbox, key = lambda i: i[0])[0] * 2
-            if max_y < 0:
-                max_y = 0 - min(hitbox, key = lambda i: i[1])[1] * 2
+            max_x = abs(max(hitbox, key = lambda i: abs(i[0]))[0] * 2)
+            max_y = abs(max(hitbox, key = lambda i: abs(i[1]))[1] * 2)
             
             num_intersections = 0
             for i in range(0, len(hitbox) - 2, 1):
