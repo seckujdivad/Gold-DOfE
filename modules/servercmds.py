@@ -40,7 +40,8 @@ class ServerCommandLineUI:
         
         if self.frame is None:
             self.root.bind('<Return>', self.process_command)
-        self.command_field.bind('<Return>', self.process_command)
+        else:
+            self.command_field.bind('<Return>', self.process_command)
         
         threading.Thread(target = self.listen_to_pipe, name = 'Server command line pipe listen').start()
         
