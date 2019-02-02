@@ -413,15 +413,17 @@ class Engine:
     def origin_is_inside_hitbox(self, hitbox):
         'Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)'
         if self.hitdetection.accurate:
-            max_x = max([x for x, y in hitbox])
-            max_y = max([y for x, y in hitbox])
-            min_x = min([x for x, y in hitbox])
-            min_y = min([y for x, y in hitbox])
+            max_x = max(hitbox, key = lambda i: i[0])[0] * 2
+            max_y = max(hitbox, key = lambda i: i[1])[1] * 2
+            if max_x < 0:
+                max_x = 0 - min(hitbox, key = lambda i: i[0])[0] * 2
+            if max_y < 0:
+                max_y = 0 - min(hitbox, key = lambda i: i[1])[1] * 2
             
             num_intersections = 0
             for i in range(0, len(hitbox) - 2, 1):
-                result = self.hitdetection.module.wrap_np_seg_intersect([[max_x, max_y], [min_x, min_y]], [[hitbox[i][0], hitbox[i][1]], [hitbox[i + 1][0], hitbox[i + 1][1]]], considerCollinearOverlapAsIntersect = True)
-                if not (type(result) == bool or result is None):
+                result = self.hitdetection.module.wrap_np_seg_intersect([[max_x, max_y], [0, 0]], [hitbox[i], hitbox[i + 1]], considerCollinearOverlapAsIntersect = True)
+                if result is not None:
                     num_intersections += 1
             return [False, True][num_intersections % 2]
         else:
@@ -589,9 +591,8 @@ class Entity:
                 else:
                     current_strafe = None
                 
-                if not current_strafe == None:
-                    
-                    if self.pos.strafemove.current_strafe == None or self.pos.strafemove.current_strafe != current_strafe:
+                if not current_strafe is None:
+                    if self.pos.strafemove.current_strafe is None or self.pos.strafemove.current_strafe != current_strafe:
                         self.pos.strafemove.current_mult = self.pos.strafemove.mult
                     else:
                         self.pos.strafemove.current_mult = max(self.pos.strafemove.current_mult - self.pos.strafemove.increment, 1)
@@ -901,11 +902,9 @@ class KeyBind:
             for key in keysym:
                 if self.get_state(key):
                     return True
-            return False
         elif keysym.lower() in self._keystates:
             return self._keystates[keysym.lower()]
-        else:
-            return False
+        return False
         
     def kill(self):
         self._isactive = False
