@@ -17,6 +17,12 @@
 		"port": 4321,
 		"tickrate": 15
 	},
+	"player": {
+		"respawn time": {
+			"deathmatch": 2,
+			"team deathmatch": 5
+		}
+	},
 	"scripts": {
 		"autoexec": [
 			"autoexec"
@@ -24,11 +30,5 @@
 		"userconnect": [
 			"connection"
 		]
-	},
-	"player": {
-		"respawn time": {
-			"deathmatch": 2,
-			"team deathmatch": 5
-		}
 	}
 }
