@@ -234,6 +234,9 @@ class Engine:
             module = None
         self.hitdetection = hitdetection
         
+        with open(os.path.join(sys.path[0], 'user', 'debug.json'), 'r') as file:
+            self.debug_flags = json.load(file)
+        
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
     
