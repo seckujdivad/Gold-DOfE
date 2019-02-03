@@ -116,6 +116,12 @@ class CanvasController:
     def itemconfigure(self, obj, **args):
         'Configure an item on the canvas'
         self.canvas.itemconfigure(obj, **args)
+    
+    def winfo_width(self):
+        return self.canvas.winfo_width()
+    
+    def winfo_height(self):
+        return self.canvas.winfo_height()
 
 class Model:
     '''
