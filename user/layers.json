@@ -8,5 +8,6 @@
 	"overlay": 30,
 	"log text": 31,
 	"hud": 32,
-	"event overlays": 33
+	"debug": 33,
+	"event overlays": 34
 }
