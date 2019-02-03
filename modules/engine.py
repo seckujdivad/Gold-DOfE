@@ -234,8 +234,17 @@ class Engine:
             module = None
         self.hitdetection = hitdetection
         
+        class debug:
+            flags = None
+            panel_intersections = None
+        self.debug = debug
+        
         with open(os.path.join(sys.path[0], 'user', 'debug.json'), 'r') as file:
-            self.debug_flags = json.load(file)
+            self.debug.flags = json.load(file)
+        
+        if self.debug.flags['engine']['panels']['show intersections']:
+            self.debug.panel_intersections = DynamicStringDisplay(self.game.canvcont, 50, 300, 'debug')
+            self.debug.panel_intersections.styling.font[1] = 10
         
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
@@ -405,6 +414,13 @@ class Engine:
             hitbox = mat_data['hitbox']
             if self.is_inside_hitbox(relative_coords[0], relative_coords[1], hitbox):
                 output.append([panel, mat_data])
+        
+        if self.debug.panel_intersections is not None:
+            text = 'Intersections:'
+            for panel, mat_data in output:
+                text += '\n{}'.format(mat_data['display name'])
+            self.debug.panel_intersections.set(text)
+        
         return output
     
     def is_inside_hitbox(self, x, y, hitbox):
@@ -1096,6 +1112,12 @@ class DynamicStringDisplay:
         self.canvcont = canvcont
         self.layer = layer
         
+        if pos_x is None:
+            pos_x = self.canvcont.winfo_width() / 2
+            
+        if pos_y is None:
+            pos_y = self.canvcont.winfo_height() / 2
+        
         class pos:
             x = pos_x
             y = pos_y
@@ -1103,7 +1125,7 @@ class DynamicStringDisplay:
         
         class styling:
             align = tk.CENTER
-            font = ('', 30)
+            font = ['', 30]
         self.styling = styling
         
         self.text = ''
