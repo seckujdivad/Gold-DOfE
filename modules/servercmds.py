@@ -12,10 +12,10 @@ class ServerCommandLineUI:
         self.quit = False
     
         self.process_interface, process_interface = mp.Pipe()
-        mp.Process(target = _UI, args = [process_interface, frame], name = 'Server command line UI process').start()
+        mp.Process(target = _UI, args = [process_interface, None], name = 'Server command line UI process').start()
         
-        threading.Thread(target = self._receiver).start()
-        threading.Thread(target = self._server_receiver).start()
+        threading.Thread(target = self._receiver, name = 'Server UI comm receiver').start()
+        threading.Thread(target = self._server_receiver, name = 'Server UI server receiver').start()
         
         self.process_interface.send(['set title', 'Server command line'])
     
@@ -46,7 +46,7 @@ class _UI:
         else:
             self.toplevel = frame
         
-        threading.Thread(target = self.receiver).start()
+        threading.Thread(target = self.receiver, name = 'Server UI process receiver').start()
         
         ## make ui
         #command output box
@@ -81,7 +81,7 @@ class _UI:
         if self.toplevel is not None:
             self.toplevel.geometry('400x300')
             self.toplevel.mainloop()
-            self.quit = True
+            self.on_quit()
     
     def receiver(self):
         while not self.quit:
@@ -93,30 +93,33 @@ class _UI:
                 if type(self.toplevel) is tk.Tk:
                     self.toplevel.title(args[0])
             elif command == 'quit':
-                self.quit = True
+                self.on_quit()
             elif command == 'push':
                 for line in args[0].split('\n'):
                     if line.startswith('$$') and line.endswith('$$') and len(line) > 4: #console output operation
                         if line[2:len(line) - 2] == 'clear':
                             self.output_listbox.delete(0, tk.END)
                         elif line[2:len(line) - 2] == 'close_window':
-                            self.quit = True
+                            self.on_quit()
                     else:
                         self.output_listbox.insert(tk.END, line)
-            print(command)
-                    
+
+    def on_quit(self):
+        self.quit = True
+        self.handle_command('sv_quit', display = False)
+        self.process_interface.send(['quit'])
+        self.process_interface.close()
+        
         if type(self.toplevel) is tk.Tk:
             self.toplevel.destroy()
-
-        self.handle_command('sv_quit')
-        self.process_interface.send(['quit'])
     
     def submit_command(self, event = None):
         self.handle_command(self.cmd_var.get())
         self.cmd_var.set('')
         
-    def handle_command(self, cmd):
-        self.output_listbox.insert(tk.END, '] {}'.format(cmd))
+    def handle_command(self, cmd, display = True):
+        if display:
+            self.output_listbox.insert(tk.END, '] {}'.format(cmd))
         self.process_interface.send(['cmdout', cmd])
     
     class styling:
