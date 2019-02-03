@@ -1,90 +1,123 @@
 import tkinter as tk
+import multiprocessing as mp
 import threading
 
-import modules.ui
-
 class ServerCommandLineUI:
-    def __init__(self, command_handler, pipe, frame, default_title = 'Server Command Line'):
-        self.default_title = default_title
+    def __init__(self, command_handler, pipe, frame = None, default_title = 'Server Command Line'):
         self.command_handler = command_handler
         self.pipe = pipe
         self.frame = frame
+        self.default_title = default_title
+        
+        self.quit = False
     
-        threading.Thread(target = self.main_thread, name = 'Server command line UI').start()
+        self.process_interface, process_interface = mp.Pipe()
+        mp.Process(target = _UI, args = [process_interface, frame], name = 'Server command line UI process').start()
         
-    def main_thread(self):
-        if self.frame is None:
-            self.root = tk.Tk()
-        else:
-            self.root = self.frame
+        threading.Thread(target = self._receiver).start()
+        threading.Thread(target = self._server_receiver).start()
         
-        self.listbox_frame = tk.Frame(self.root)
-        self.listbox_box = tk.Listbox(self.listbox_frame, font = self.styling.fonts.small)
-        self.listbox_bar = tk.Scrollbar(self.listbox_frame, command = self.listbox_box.yview)
-        self.listbox_box.config(yscrollcommand = self.listbox_bar.set)
-        
-        self.command_field = tk.Entry(self.root, font = self.styling.fonts.small)
-        self.command_button = tk.Button(self.root, text = 'Submit', command = self.process_command, font = self.styling.fonts.small, relief = self.styling.relief, overrelief = self.styling.overrelief)
-        
-        self.listbox_bar.pack(side = tk.RIGHT, fill = tk.Y)
-        self.listbox_box.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
-        self.listbox_frame.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
-        
-        self.command_field.grid(row = 1, column = 0, sticky = 'NESW')
-        self.command_button.grid(row = 1, column = 1, sticky = 'NESW')
-        
-        self.root.rowconfigure(0, weight = 1)
-        self.root.columnconfigure(0, weight = 1)
-        
-        self.set_title_status()
-        
-        if self.frame is None:
-            self.root.bind('<Return>', self.process_command)
-        else:
-            self.command_field.bind('<Return>', self.process_command)
-        
-        threading.Thread(target = self.listen_to_pipe, name = 'Server command line pipe listen').start()
-        
-        if self.frame is None:
-            self.root.geometry('400x300')
-            self.root.mainloop()
-            self.command_handler('sv_quit')
+        self.process_interface.send(['set title', 'Server command line'])
     
-    def process_command(self, event = None):
-        data = self.command_field.get()
-        self.command_field.delete(0, tk.END)
-        self.listbox_box.insert(tk.END, '] {}'.format(data))
-        self.listbox_box.see(tk.END)
-        
-        data_out = self.command_handler(data)
-        self.display_incoming_data(data_out)
-        self.listbox_box.see(tk.END)
+    def _server_receiver(self):
+        while not self.quit:
+            input_data = self.pipe.recv()
+            self.process_interface.send(['push', input_data])
     
-    def set_title_status(self, status = ''):
-        if self.frame is None:
-            if status == '':
-                self.root.title(self.default_title)
-            else:
-                self.root.title('{} - {}'.format(self.default_title, status))
-    
-    def listen_to_pipe(self):
-        while True:
-            data = self.pipe.recv()
-            self.display_incoming_data(data)
+    def _receiver(self):
+        command = ''
+        while (not command == 'quit') and (not self.quit):
+            input_data = self.process_interface.recv()
+            command = input_data[0]
+            args = input_data[1:]
             
-    def display_incoming_data(self, data):
-        for line in data.split('\n'):
-            if line.startswith('$$') and line.endswith('$$') and len(line) > 4: #check if this is a command for the console window
-                cmd = line[2:len(line) - 2]
-                if cmd == 'clear':
-                    self.listbox_box.delete(0, tk.END)
-                elif cmd == 'close_window':
-                    if self.frame is None:
-                        self.root.destroy()
-                    self.pipe.close()
-            else:
-                self.listbox_box.insert(tk.END, line)
-        self.listbox_box.see(tk.END)
+            if command == 'cmdout':
+                self.process_interface.send(['push', self.command_handler(args[0])])
+        self.quit = True
+
+class _UI:
+    def __init__(self, process_interface, frame):
+        self.process_interface = process_interface
+        
+        self.quit = False
+        
+        if frame is None:
+            self.toplevel = tk.Tk()
+        else:
+            self.toplevel = frame
+        
+        threading.Thread(target = self.receiver).start()
+        
+        ## make ui
+        #command output box
+        self.output_frame = tk.Frame(self.toplevel)
+        self.output_listbox = tk.Listbox(self.output_frame, font = self.styling.fonts.small)
+        self.output_bar = tk.Scrollbar(self.output_frame, command = self.output_listbox.yview)
+        self.output_listbox.config(yscrollcommand = self.output_bar.set)
+        self.output_bar.pack(side = tk.RIGHT, fill = tk.Y)
+        self.output_listbox.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+        
+        #command entry field
+        self.cmd_var = tk.StringVar()
+        self.cmd_field = tk.Entry(self.toplevel, textvariable = self.cmd_var, font = self.styling.fonts.small)
+        self.cmd_button = tk.Button(self.toplevel, text = 'Submit', command = self.submit_command, font = self.styling.fonts.small, relief = self.styling.relief, overrelief = self.styling.overrelief)
+        
+        if type(self.toplevel) == tk.Tk:
+            self.toplevel.bind('<Return>', self.submit_command)
+        else:
+            self.cmd_button.bind('<Return>', self.submit_command)
+        
+        #grid items
+        self.output_frame.grid(column = 0, row = 0, columnspan = 2, sticky = 'NESW')
+        self.cmd_field.grid(column = 0, row = 1, sticky = 'NESW')
+        self.cmd_button.grid(column = 1, row = 1, sticky = 'NESW')
+        
+        #set grid weights
+        self.toplevel.columnconfigure(0, weight = 1)
+        self.toplevel.rowconfigure(0, weight = 1)
+        
+        ## end of make ui
+        
+        if self.toplevel is not None:
+            self.toplevel.geometry('400x300')
+            self.toplevel.mainloop()
+            self.quit = True
+    
+    def receiver(self):
+        while not self.quit:
+            input_data = self.process_interface.recv()
+            command = input_data[0]
+            args = input_data[1:]
+            
+            if command == 'set title':
+                if type(self.toplevel) is tk.Tk:
+                    self.toplevel.title(args[0])
+            elif command == 'quit':
+                self.quit = True
+            elif command == 'push':
+                for line in args[0].split('\n'):
+                    if line.startswith('$$') and line.endswith('$$') and len(line) > 4: #console output operation
+                        if line[2:len(line) - 2] == 'clear':
+                            self.output_listbox.delete(0, tk.END)
+                        elif line[2:len(line) - 2] == 'close_window':
+                            self.quit = True
+                    else:
+                        self.output_listbox.insert(tk.END, line)
+            print(command)
+                    
+        if type(self.toplevel) is tk.Tk:
+            self.toplevel.destroy()
+
+        self.handle_command('sv_quit')
+        self.process_interface.send(['quit'])
+    
+    def submit_command(self, event = None):
+        self.handle_command(self.cmd_var.get())
+        self.cmd_var.set('')
+        
+    def handle_command(self, cmd):
+        self.output_listbox.insert(tk.END, '] {}'.format(cmd))
+        self.process_interface.send(['cmdout', cmd])
     
     class styling:
         class fonts:
