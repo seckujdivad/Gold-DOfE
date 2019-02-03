@@ -22,8 +22,6 @@ class App:
             with open(os.path.join(sys.path[0], 'user', 'default_config.json'), 'r') as file:
                 with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as writeto_file:
                     writeto_file.write(file.read())
-        
-        
     
         self.ui = modules.ui.UI(autostart = False)
         threading.Thread(target = self.initialise_ui).start()
