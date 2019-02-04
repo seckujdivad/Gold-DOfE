@@ -1,7 +1,7 @@
 {
 	"engine": {
 		"panels": {
-			"show intersections": true
+			"show intersections": false
 		}
 	}
 }
