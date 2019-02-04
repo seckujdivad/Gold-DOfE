@@ -2,6 +2,10 @@
 	"engine": {
 		"panels": {
 			"show intersections": false
+		},
+		"player": {
+			"pos": false,
+			"speed": false
 		}
 	}
 }

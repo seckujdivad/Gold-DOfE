@@ -237,6 +237,8 @@ class Engine:
         class debug:
             flags = None
             panel_intersections = None
+            player_pos = None
+            player_speed = None
         self.debug = debug
         
         with open(os.path.join(sys.path[0], 'user', 'debug.json'), 'r') as file:
@@ -245,7 +247,15 @@ class Engine:
         if self.debug.flags['engine']['panels']['show intersections']:
             self.debug.panel_intersections = DynamicStringDisplay(self.game.canvcont, 50, 300, 'debug')
             self.debug.panel_intersections.styling.font[1] = 10
-        
+
+        if self.debug.flags['engine']['player']['pos']:
+            self.debug.player_pos = DynamicStringDisplay(self.game.canvcont, 100, 270, 'debug')
+            self.debug.player_pos.styling.font[1] = 10
+
+        if self.debug.flags['engine']['player']['speed']:
+            self.debug.player_speed = DynamicStringDisplay(self.game.canvcont, 100, 240, 'debug')
+            self.debug.player_speed.styling.font[1] = 10
+
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
     
@@ -625,6 +635,12 @@ class Entity:
                 
                 self.pos.x += self.pos.momentum.xmomentum
                 self.pos.y += self.pos.momentum.ymomentum
+
+                if self.engine.debug.flags['engine']['player']['pos']:
+                    self.engine.debug.player_pos.set('XPOS: {} YPOS: {}'.format(round(self.pos.x, 2), round(self.pos.y, 2)))
+
+                if self.engine.debug.flags['engine']['player']['speed']:
+                    self.engine.debug.player_speed.set('XSPEED: {} YSPEED: {}'.format(round(self.pos.momentum.xmomentum, 2), round(self.pos.momentum.ymomentum, 2)))
                 
                 self.setpos()
     
