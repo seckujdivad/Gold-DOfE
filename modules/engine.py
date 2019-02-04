@@ -239,22 +239,29 @@ class Engine:
             panel_intersections = None
             player_pos = None
             player_speed = None
+            cursor_pos = None
         self.debug = debug
         
         with open(os.path.join(sys.path[0], 'user', 'debug.json'), 'r') as file:
             self.debug.flags = json.load(file)
         
         if self.debug.flags['engine']['panels']['show intersections']:
-            self.debug.panel_intersections = DynamicStringDisplay(self.game.canvcont, 50, 300, 'debug')
+            self.debug.panel_intersections = DynamicStringDisplay(self.game.canvcont, 70, 300, 'debug')
             self.debug.panel_intersections.styling.font[1] = 10
 
         if self.debug.flags['engine']['player']['pos']:
-            self.debug.player_pos = DynamicStringDisplay(self.game.canvcont, 100, 270, 'debug')
+            self.debug.player_pos = DynamicStringDisplay(self.game.canvcont, 700, 270, 'debug')
             self.debug.player_pos.styling.font[1] = 10
 
         if self.debug.flags['engine']['player']['speed']:
-            self.debug.player_speed = DynamicStringDisplay(self.game.canvcont, 100, 240, 'debug')
+            self.debug.player_speed = DynamicStringDisplay(self.game.canvcont, 700, 240, 'debug')
             self.debug.player_speed.styling.font[1] = 10
+        
+        if self.debug.flags['engine']['cursor pos']:
+            self.debug.cursor_pos = DynamicStringDisplay(self.game.canvcont, 700, 300, 'debug')
+            self.debug.cursor_pos.styling.font[1] = 10
+            self.game.canvcont.bind('<Motion>', lambda event: self.debug.cursor_pos.set('CURSOR: ({}, {})'.format(event.x, event.y)))
+            self.game.canvcont.bind('<Leave>', lambda event: self.debug.cursor_pos.set('CURSOR: Outside of screen'))
 
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
@@ -422,33 +429,38 @@ class Engine:
             relative_coords = [x - panel['coordinates'][0], y - panel['coordinates'][1]]
             mat_data = panel['material data']
             hitbox = mat_data['hitbox']
-            if self.is_inside_hitbox(relative_coords[0], relative_coords[1], hitbox):
+            if self.is_inside_hitbox(relative_coords[0], relative_coords[1], hitbox, mat_data):
                 output.append([panel, mat_data])
         
         if self.debug.panel_intersections is not None:
             text = 'Intersections:'
             for panel, mat_data in output:
-                text += '\n{}'.format(mat_data['display name'])
+                text += '\n({}, {}) - {}'.format(round(panel['coordinates'][0], 1), round(panel['coordinates'][1], 1), mat_data['display name'])
             self.debug.panel_intersections.set(text)
         
         return output
     
-    def is_inside_hitbox(self, x, y, hitbox):
+    def is_inside_hitbox(self, x, y, hitbox, mat_data):
         nhitbox = []
         for hx, hy in hitbox:
             nhitbox.append([hx - x, hy - y])
-        return self.origin_is_inside_hitbox(nhitbox)
+        return self.origin_is_inside_hitbox(nhitbox, mat_data)
     
-    def origin_is_inside_hitbox(self, hitbox):
+    def origin_is_inside_hitbox(self, hitbox, mat_data):
         'Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)'
         if self.hitdetection.accurate:
-            max_x = abs(max(hitbox, key = lambda i: abs(i[0]))[0] * 2)
-            max_y = abs(max(hitbox, key = lambda i: abs(i[1]))[1] * 2)
+            if 'clipping' in mat_data:
+                m = max(mat_data['clipping']['x'], mat_data['clipping']['y'])
+            else:
+                max_x = max(hitbox, key = lambda i: abs(i[0]))[0]
+                max_y = max(hitbox, key = lambda i: abs(i[1]))[1]
+                
+                m = max(max_x, max_y)
             
             num_intersections = 0
-            for i in range(0, len(hitbox) - 2, 1):
-                result = self.hitdetection.module.wrap_np_seg_intersect([[max_x, max_y], [0, 0]], [hitbox[i], hitbox[i + 1]], considerCollinearOverlapAsIntersect = True)
-                if (result is not None) or result:
+            for i in range(0, len(hitbox), 1):
+                result = self.hitdetection.module.wrap_np_seg_intersect([[m, m], [0, 0]], [hitbox[i], hitbox[(i + 1) % len(hitbox)]], considerCollinearOverlapAsIntersect = True)
+                if not (type(result) == bool or result is None):
                     num_intersections += 1
             return [False, True][num_intersections % 2]
         else:

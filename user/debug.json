@@ -6,6 +6,7 @@
 		"player": {
 			"pos": false,
 			"speed": false
-		}
+		},
+		"cursor pos": false
 	}
 }
