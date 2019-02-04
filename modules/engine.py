@@ -438,7 +438,7 @@ class Engine:
             num_intersections = 0
             for i in range(0, len(hitbox) - 2, 1):
                 result = self.hitdetection.module.wrap_np_seg_intersect([[max_x, max_y], [0, 0]], [hitbox[i], hitbox[i + 1]], considerCollinearOverlapAsIntersect = True)
-                if result is not None:
+                if (result is not None) or result:
                     num_intersections += 1
             return [False, True][num_intersections % 2]
         else:
