@@ -428,9 +428,11 @@ class Engine:
         for panel in self.map.layout.data['geometry']:
             relative_coords = [x - panel['coordinates'][0], y - panel['coordinates'][1]]
             mat_data = panel['material data']
-            hitbox = mat_data['hitbox']
-            if self.is_inside_hitbox(relative_coords[0], relative_coords[1], hitbox, mat_data):
-                output.append([panel, mat_data])
+            
+            if math.hypot(*relative_coords) <= mat_data['hitbox maxdist']:
+                hitbox = mat_data['hitbox']
+                if self.is_inside_hitbox(relative_coords[0], relative_coords[1], hitbox, mat_data):
+                    output.append([panel, mat_data])
         
         if self.debug.panel_intersections is not None:
             text = 'Intersections:'
@@ -451,6 +453,8 @@ class Engine:
         if self.hitdetection.accurate:
             max_x = max(hitbox, key = lambda i: abs(i[0]))[0]
             max_y = max(hitbox, key = lambda i: abs(i[1]))[1]
+            
+            m = max(max_x, max_y)
             
             num_intersections = 0
             for i in range(0, len(hitbox), 1):
