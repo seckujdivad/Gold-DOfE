@@ -45,3 +45,11 @@ def np_seg_intersect(a, b, considerCollinearOverlapAsIntersect = False):
         return res
     # Otherwise, the two line segments are not parallel but do not intersect.
     return None
+
+def does_intersect(a, b):
+    result = wrap_np_seg_intersect(a, b, True)
+    if not (type(result) == bool or result is None):
+        return True
+    elif result == True:  # co linear overlap
+        return True
+    return False

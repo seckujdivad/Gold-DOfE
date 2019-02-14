@@ -449,18 +449,12 @@ class Engine:
     def origin_is_inside_hitbox(self, hitbox, mat_data):
         'Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)'
         if self.hitdetection.accurate:
-            if 'clipping' in mat_data:
-                m = max(mat_data['clipping']['x'], mat_data['clipping']['y'])
-            else:
-                max_x = max(hitbox, key = lambda i: abs(i[0]))[0]
-                max_y = max(hitbox, key = lambda i: abs(i[1]))[1]
-                
-                m = max(max_x, max_y)
+            max_x = max(hitbox, key = lambda i: abs(i[0]))[0]
+            max_y = max(hitbox, key = lambda i: abs(i[1]))[1]
             
             num_intersections = 0
             for i in range(0, len(hitbox), 1):
-                result = self.hitdetection.module.wrap_np_seg_intersect([[m, m], [0, 0]], [hitbox[i], hitbox[(i + 1) % len(hitbox)]], considerCollinearOverlapAsIntersect = True)
-                if not (type(result) == bool or result is None):
+                if self.hitdetection.module.does_intersect([[m, m], [0, 0]], [hitbox[i], hitbox[(i + 1) % len(hitbox)]]):
                     num_intersections += 1
             return [False, True][num_intersections % 2]
         else:
