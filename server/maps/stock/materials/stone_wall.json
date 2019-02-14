@@ -33,6 +33,7 @@
 			-32
 		]
 	],
+	"hitbox maxdist": 46,
 	"light": {
 		"block": 1,
 		"emit": 0
