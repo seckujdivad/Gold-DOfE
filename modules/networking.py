@@ -276,7 +276,14 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         elif name.startswith('mp_'):
             if name == 'mp_gamemode':
                 if source == 'internal':
-                    output = 'Feature not yet implemented'
+                    if argstring == '':
+                        output = '''Options:
+0: xvx arena
+1: deathmatch
+2: team deathmatch
+3: pve survival'''
+                    else:
+                        self.set_gamemode(int(argstring))
                 else:
                     output = 'No permissions'
             elif name == 'mp_respawn_all':
@@ -518,6 +525,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             self.send(connection, req)
     
     def set_hitboxes(self, mode):
+        pass
+    
+    def set_gamemode(self, gamemode):
         pass
 
 class Client:
