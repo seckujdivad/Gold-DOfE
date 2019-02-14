@@ -1030,10 +1030,7 @@ class Editor:
                         self.log_list.insert(tk.END, 'This will result in a shorter render time at the cost of a lower quality image')
                     
                     self.tabobj.set_title('Getting lightmap module...')
-                    spec = importlib.util.spec_from_file_location('lightcalc', os.path.join(sys.path[0], 'modules', 'lightcalc.py'))
-                    self.lightcalc = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(self.lightcalc)
-                    print(self.lightcalc)
+                    import modules.lightcalc #bad practice, but needed for pickling
                     self.tabobj.set_title('Done')
                     
                     self.log_list.insert(tk.END, 'Allocating calculation processes...')
@@ -1086,7 +1083,7 @@ class Editor:
                     
                     for x0, x1 in [[1, 100], [100, 200], [200, 300], [300, 400], [400, 500], [500, 600], [600, 700], [700, 800]]:
                         self.log_list.insert(tk.END, 'Allocated segment x = {}-{}'.format(x0, x1))
-                        mp.Process(target = self.lightcalc.CalcSegment, args = [x0, x1, process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels, self.user_config['editor']['lightmap']['render shadows']]).start()
+                        mp.Process(target = modules.lightcalc.CalcSegment, args = [x0, x1, process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels, self.user_config['editor']['lightmap']['render shadows']]).start()
                     
                     self.log_list.insert(tk.END, 'Done')
                     

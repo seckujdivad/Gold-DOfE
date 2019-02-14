@@ -23,14 +23,18 @@
 			"uses item": []
 		}
 	},
+	"gamemode": {
+		"default": 0,
+		"supported": [
+			0,
+			1,
+			2
+		]
+	},
 	"geometry": [
 		800,
 		600
 	],
-	"gamemode": {
-		"supported": [0, 1, 2],
-		"default": 0
-	},
 	"layout": "layout.json",
 	"lighting": {
 		"background": 0.4,
@@ -41,6 +45,38 @@
 	"player": {
 		"entity": "player",
 		"spawnpoints": {
+			"deathmatch": [
+				[
+					50,
+					50
+				],
+				[
+					750,
+					550
+				]
+			],
+			"team deathmatch": [
+				[
+					[
+						50,
+						50
+					],
+					[
+						750,
+						250
+					]
+				],
+				[
+					[
+						50,
+						350
+					],
+					[
+						750,
+						550
+					]
+				]
+			],
 			"xvx": [
 				[
 					[
@@ -52,32 +88,6 @@
 					[
 						400,
 						100
-					]
-				]
-			],
-			"deathmatch": [
-				[
-					50, 50
-				],
-				[
-					750, 550
-				]
-			],
-			"team deathmatch": [
-				[
-					[
-						50, 50
-					],
-					[
-						750, 250
-					]
-				],
-				[
-					[
-						50, 350
-					],
-					[
-						750, 550
 					]
 				]
 			]

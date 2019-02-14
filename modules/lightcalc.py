@@ -83,7 +83,7 @@ class CalcSegment:
                 if not (type(result) == bool or result is None):
                     intersections.append([result[0], result[1]])
                 
-                if result == True: #co linear overlap
+                elif result == True: #co linear overlap
                     intersections.append([0, 0])
             
             last_x = pan_x
