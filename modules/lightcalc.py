@@ -62,23 +62,6 @@ class CalcSegment:
                     last_x = self.materials[panel['material']]['hitbox'][0][0] + panel['coordinates'][0]
                     last_y = self.materials[panel['material']]['hitbox'][0][1] + panel['coordinates'][1]
                 
-                '''if not ((last_x - pan_x == 0) or (x0 - x1 == 0)):
-                    grad_1 = (last_y - pan_y) / (last_x - pan_x)
-                    grad_2 = (y0 - y1) / (x0 - x1)
-                    
-                    if not grad_1 == grad_2:
-                        c_1 = pan_y - (grad_1 * pan_x)
-                        c_2 = y1 - (grad_2 * x1)
-                        
-                        x_intersection = (c_1 - c_2) / (grad_2 - grad_1)
-                        
-                        if (x0 < x_intersection < x1) or (x1 < x_intersection < x0):
-                            intersections.append([x_intersection, (grad_1 * x_intersection) + c_1])
-                
-                if ((last_x - pan_x == 0) and (x0 - x1 == 0)) and x0 == last_x and (y0 < last_y < y1 or y1 < last_y < y0):
-                    intersections.append([x0, y0])
-                    intersections.append([x1, y1])'''
-                
                 result = modules.lineintersection.wrap_np_seg_intersect([[last_x, last_y], [pan_x, pan_y]], [[x0, y0], [x1, y1]], considerCollinearOverlapAsIntersect = True)
                 if not (type(result) == bool or result is None):
                     intersections.append([result[0], result[1]])
