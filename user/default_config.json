@@ -1,5 +1,18 @@
 {
 	"default window state": 0,
+	"editor": {
+		"hitbox": {
+			"grab handles": {
+				"grabbed": "#555555",
+				"normal": "#AAAAAA",
+				"outline": "#000000",
+				"size": 8
+			}
+		},
+		"lightmap": {
+			"render shadows": true
+		}
+	},
 	"graphics": {
 		"PILrender": true,
 		"model quality": 3
@@ -8,31 +21,67 @@
 		"chat": {
 			"colour": "#000000",
 			"font": "Courier New",
-			"fontsize": 9,
-			"maxlen": 15,
+			"fontsize": 6,
+			"maxlen": 20,
+			"persist time": 8,
 			"position": 3,
-			"spacing": 20,
-			"persist time": 8
+			"spacing": 10
+		},
+		"overlay transparency precision": 10,
+		"overlays": {
+			"damage": "overlays/damage",
+			"kill": "overlays/kill"
+		},
+		"popmsg": {
+			"colour": "#FFFFFF",
+			"font": ""
 		}
 	},
 	"network": {
+		"accurate hit detection": true,
 		"default port": 4321,
+		"default tickrate": 15,
+		"interpolations per second": 50,
 		"servers": [
 			{
 				"address": "localhost",
 				"internal": false,
 				"name": "Local PC",
-				"port": "normal"
+				"port": "normal",
+				"tickrate": 15
 			},
 			{
 				"address": "localhost",
 				"internal": true,
 				"name": "Local PC",
-				"port": "normal"
+				"port": "normal",
+				"tickrate": 15
 			}
 		]
 	},
+	"styling": {
+		"default": {
+			"fonts": {
+				"large": [
+					"",
+					25
+				],
+				"medium": [
+					"",
+					15
+				],
+				"small": [
+					"",
+					10
+				]
+			},
+			"reliefs": {
+				"overrelief": "groove",
+				"relief": "flat"
+			}
+		}
+	},
 	"user": {
-		"name": "unknown"
+		"name": "player"
 	}
 }
