@@ -222,6 +222,9 @@ close_window: close the console
 say: send a message to all players
 say_pop: send a fullscreen message to all players
 
+mp_gamemode: set the gamemode
+mp_respawn_all: respawn all players
+
 sv_:
 sv_conns: list of connections to the server
 sv_kick_addr: kick a player by address
@@ -270,6 +273,17 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     output = 'No permissions'
             else:
                 output = 'Command not found, try \'help\''
+        elif name.startswith('mp_'):
+            if name == 'mp_gamemode':
+                if source == 'internal':
+                    output = 'Feature not yet implemented'
+                else:
+                    output = 'No permissions'
+            elif name == 'mp_respawn_all':
+                if source == 'internal':
+                    output = 'Feature not yet implemented'
+                else:
+                    output = 'No permissions'
         elif name == 'exec':
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(argstring)), 'r') as file:
                 text = file.read()
