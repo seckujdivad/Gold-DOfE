@@ -1,0 +1,12 @@
+{
+	"engine": {
+		"panels": {
+			"show intersections": false
+		},
+		"player": {
+			"pos": false,
+			"speed": false
+		},
+		"cursor pos": false
+	}
+}
