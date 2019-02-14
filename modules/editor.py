@@ -1448,6 +1448,12 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
                         for obj, x, y in self.editor.current_points:
                             data['hitbox'].append([x, y])
                         
+                        dist = 0
+                        for x, y in data['hitbox']:
+                            dist = max(abs(math.hypot(x, y)), dist)
+                        
+                        data['hitbox maxdist'] = math.ceil(dist)
+                        
                         self.editorobj.map.write_json(os.path.join('materials', self.editor.current_material), data)
                     
             library = {'Text': Text,
