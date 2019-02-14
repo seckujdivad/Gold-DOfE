@@ -163,12 +163,12 @@ class Server:
                     self.set_mode(self.serverdata.conn_data[conn_id], 'player')
                     
                     if self.serverdata.gamemode == 0:
-                        spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints']['xvx'][self.serverdata.conn_data[conn_id]['team']])
+                        spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][0][self.serverdata.conn_data[conn_id]['team']])
                     elif self.serverdata.gamemode == 1:
-                        cmax, cmin = self.serverdata.mapdata['player']['spawnpoints']['deathmatch']
+                        cmax, cmin = self.serverdata.mapdata['player']['spawnpoints'][1]
                         spawnpoint = [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
                     elif self.serverdata.gamemode == 2:
-                        cmax, cmin = self.serverdata.mapdata['player']['spawnpoints']['team deathmatch'][self.serverdata.conn_data[conn_id]['team']]
+                        cmax, cmin = self.serverdata.mapdata['player']['spawnpoints'][2][self.serverdata.conn_data[conn_id]['team']]
                         spawnpoint = [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
                         
                     self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
