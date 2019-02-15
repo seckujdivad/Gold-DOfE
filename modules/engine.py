@@ -1151,7 +1151,7 @@ class PopMessage:
         while True:
             text_, duration = queue.recv()
             
-            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = (self.graphical_properties.font, 0), fill = self.graphical_properties.colour, layer = 'hud')
+            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = (self.graphical_properties.font, 0), fill = self.graphical_properties.colour, justify = tk.CENTER, layer = 'hud')
             
             for i in range(0, 52, 2):
                 self.canvcont.itemconfigure(self.canvobj, font = (self.graphical_properties.font, i))
