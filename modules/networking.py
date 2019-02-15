@@ -86,7 +86,8 @@ class Server:
                                           'id': conn_id,
                                           'team': self.get_team_id(self.get_team_distributions()),
                                           'health': 100,
-                                          'username': 'guest'})
+                                          'username': 'guest',
+                                          'mode': 'player'})
         
         self.send(connection, Request(command = 'var update r', subcommand = 'username'))
         
@@ -503,6 +504,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
     
     def set_mode(self, client_data, client_mode):
         self.send(client_data['connection'], Request(command = 'set mode', subcommand = client_mode))
+        
+        client_data['mode'] = client_mode
         
         if client_mode == 'spectator':
             self.send_text(['chat', 'new mode', 'spectator'], [client_data['username']])
