@@ -25,7 +25,7 @@ class Game:
             name = 'localhost'
         self.server = server
         
-        self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'game.txt'))
+        self.log = modules.logging.Log(os.path.join(sys.path[0], 'user', 'logs', 'client recv.txt'))
         
         self.vars = {}
         
