@@ -91,21 +91,26 @@ class Game:
                 self.message_pipe.send([request.arguments['category'], request.arguments['text']])
             else:
                 self.message_pipe.send(['chat', request.arguments['text']])
+                
         elif request.command == 'disconnect':
             if self.running == True:
                 print('Connection to server interrupted')
+                
         elif request.command == 'var update w':
             if request.subcommand == 'map':
                 if not self.engine.map.name == request.arguments['map name']:
                     self.engine.load_map(request.arguments['map name'])
                 self.vars[request.subcommand] = request.arguments['map name']
+                
             elif request.subcommand == 'player positions':
                 positions = request.arguments['positions']
                 if not len(positions) == len(self.engine.map.other_players.entities):
                     new_ent_list = self.engine.map.other_players.entities[:len(positions)]
                     excess_ents = self.engine.map.other_players.entities[len(positions):]
+                    
                     for entity in excess_ents:
                         entity.model.destroy()
+                        
                     if len(new_ent_list) < len(positions):
                         for i in range(len(positions) - len(new_ent_list)):
                             new_ent_list.append(Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = False))
@@ -113,22 +118,30 @@ class Game:
                 
                 for index in range(len(positions)):
                     self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 1 / self.client.serverdata.raw['tickrate'], int(self.engine.map.settingscfg['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
+                    
             elif request.subcommand == 'team':
                 self.vars['team'] = request.arguments['value']
+                
             elif request.subcommand == 'client position':
                 self.engine.map.player.setpos(request.arguments['x'], request.arguments['y'], request.arguments['rotation'])
+                
             elif request.subcommand == 'health':
                 self.engine.map.player.set_health(request.arguments['value'])
+                
             elif request.subcommand == 'scoreline':
                 self.scoreline_display.set_twoitems(*request.arguments['scores'])
+                
             else:
                 self.vars[request.subcommand] = request.arguments['value']
+                
         elif request.command == 'give':
             for item in request.arguments['items']:
                 i = 0
                 while self.engine.map.invdisp.inv_items[i]['quantity'] != 0:
                     i += 1
+                    
                 self.engine.map.invdisp.set_slot(i, item['item'], item['quantity'])
+                
         elif request.command == 'var update r':
             if request.subcommand == 'username':
                 self.client.send(modules.networking.Request(command = 'var update w', subcommand = 'username', arguments = {'value': self.settingsdict['user']['name']}))
