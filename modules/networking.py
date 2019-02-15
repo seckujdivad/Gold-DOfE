@@ -27,6 +27,7 @@ class Server:
             tickrate = 10 #times to process items per second
             looptime = 1 / tickrate
             gamemode = None
+            scoreline = [0, 0]
         self.serverdata = serverdata
         
         self.frame = frame
@@ -216,6 +217,8 @@ say_pop: send a fullscreen message to all players
 
 mp_gamemode: set the gamemode
 mp_respawn_all: respawn all players
+mp_scoreline_team1: set the scoreline of team 1
+mp_scoreline_team2: set the scoreline of team 2
 
 sv_:
 sv_conns: list of connections to the server
@@ -284,6 +287,21 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     output = 'Done!'
                 else:
                     output = 'No permissions'
+            elif name.startswith('mp_scoreline_'):
+                if name == 'mp_scoreline_team1':
+                    if argstring == '':
+                        output = 'Score for team 1: {}'.format(self.serverdata.scoreline[0])
+                    elif source == 'internal':
+                        self.set_scoreline(score0 = int(argstring))
+                    else:
+                        output = 'No permissions'
+                elif name == 'mp_scoreline_team2':
+                    if argstring == '':
+                        output = 'Score for team 2: {}'.format(self.serverdata.scoreline[1])
+                    elif source == 'internal':
+                        self.set_scoreline(score1 = int(argstring))
+                    else:
+                        output = 'No permissions'
         elif name == 'exec':
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(argstring)), 'r') as file:
                 text = file.read()
@@ -526,6 +544,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 return 2
             self.serverdata.gamemode = gamemode
             self.respawn_all()
+            self.set_scoreline(0, 0)
         else:
             return 0
         return 1
@@ -548,6 +567,15 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         elif self.serverdata.gamemode == 2:
             cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][2][self.serverdata.conn_data[conn_id]['team']]
             return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
+    
+    def set_scoreline(self, score0 = None, score1 = None):
+        if score0 is None:
+            score0 = self.serverdata.scoreline[0]
+        if score1 is None:
+            score1 = self.serverdata.scoreline[1]
+        
+        self.serverdata.scoreline = [score0, score1]
+        self.send_all(Request(command = 'var update w', subcommand = 'scoreline', arguments = {'scores': self.serverdata.scoreline}))
 
 class Client:
     def __init__(self, server_data, ui):

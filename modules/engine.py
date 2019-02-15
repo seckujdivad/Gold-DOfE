@@ -49,7 +49,7 @@ class Game:
         self.popmsg.graphical_properties.colour = self.settingsdict['hud']['popmsg']['colour']
 
         self.scoreline_display = DynamicStringDisplay(self.canvcont, self.canvas.winfo_width() / 2, 30, 'hud')
-        self.scoreline_display.set_twoitems(1, 50)
+        self.scoreline_display.set_twoitems(0, 0)
         
         self.engine = Engine(self)
 
@@ -119,6 +119,8 @@ class Game:
                 self.engine.map.player.setpos(request.arguments['x'], request.arguments['y'], request.arguments['rotation'])
             elif request.subcommand == 'health':
                 self.engine.map.player.set_health(request.arguments['value'])
+            elif request.subcommand == 'scoreline':
+                self.scoreline_display.set_twoitems(*request.arguments['scores'])
             else:
                 self.vars[request.subcommand] = request.arguments['value']
         elif request.command == 'give':
