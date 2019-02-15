@@ -492,12 +492,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             if (old_health == 0 and client_data['health'] < 0): #death has already occured
                 client_data['health'] = 0
             elif client_data['health'] <= 0 and old_health > 0: #this is the 'first death' (first time health reached 0)
-                client_data['health'] = 0
-                
-                self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client_data['username']}))
-                self.output_pipe.send('Player {} died'.format(client_data['username']))
-                self.set_mode(client_data, 'spectator')
-                self.send_text(['chat', 'player died'], [client_data['username']], None, category = 'death')
+                self.on_death(client_data['id'])
     
     def increment_health(self, client_data, health):
         self.update_health(client_data, client_data['health'] + health)
@@ -572,6 +567,13 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         self.send(client['connection'], Request(command = 'give',
                                                 arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
     
+    def respawn_after(self, conn_id, delay):
+        threading.Thread(target = self._respawn_after, args = [conn_id, delay], name = 'Scheduled respawn', daemon = True).start()
+    
+    def _respawn_after(self, conn_id, delay):
+        time.sleep(delay)
+        self.respawn(conn_id)
+    
     def generate_spawn(self, conn_id):
         if self.serverdata.gamemode == 0:
             return random.choice(self.serverdata.mapdata['player']['spawnpoints'][0][self.serverdata.conn_data[conn_id]['team']])
@@ -590,6 +592,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
         self.serverdata.scoreline = [score0, score1]
         self.send_all(Request(command = 'var update w', subcommand = 'scoreline', arguments = {'scores': self.serverdata.scoreline}))
+        self.output_pipe.send('Scoreline is now {} - {}'.format(score0, score1))
     
     def increment_scoreline(self, score0 = None, score1 = None):
         if score0 is not None:
@@ -597,7 +600,60 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         if score1 is not None:
             score1 += self.serverdata.scoreline[1]
         self.set_scoreline(score0, score1)
-
+    
+    def on_death(self, conn_id):
+        client = self.serverdata.conn_data[conn_id]
+        
+        client['health'] = 0
+                
+        self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client['username']}))
+        self.output_pipe.send('Player {} died'.format(client['username']))
+        self.send_text(['chat', 'player died'], [client['username']], None, category = 'death')
+        
+        if not client['mode'] == 'spectator':
+            if self.serverdata.gamemode == 0:
+                alive = self.num_alive()
+                
+                if alive[0] == 0:
+                    self.xvx_round_ended(1)
+                    self.output_pipe.send('Team 2 won the round')
+                elif alive[1] == 0:
+                    self.xvx_round_ended(0)
+                    self.output_pipe.send('Team 1 won the round')
+                    
+            elif self.serverdata.gamemode == 1:
+                self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['deathmatch'])
+            elif self.serverdata.gamemode == 2:
+                if client['team'] == 0:
+                    self.increment_scoreline(score0 = 1)
+                elif client['team'] == 1:
+                    self.increment_scoreline(score1 = 1)
+                self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['team deathmatch'])
+            elif self.serverdata.gamemode == 3:
+                self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['pve survival'])
+        
+        self.set_mode(client, 'spectator')
+        
+    def num_alive(self):
+        count = [0, 0]
+        for client in self.serverdata.conn_data:
+            if client['active'] and client['mode'] == 'player' and client['health'] > 0:
+                count[client['team']] += 1
+        return count
+    
+    def xvx_round_ended(self, winner):
+        threading.Thread(target = self._xvx_round_ended, args = [winner]).start()
+    
+    def _xvx_round_ended(self, winner):
+        time.sleep(self.settingsdata['player']['respawn time']['xvx'])
+        self.respawn_all()
+        
+        if winner == 0:
+            self.increment_scoreline(score0 = 1)
+        elif winner == 1:
+            self.increment_scoreline(score1 = 1)
+        
+        
 class Client:
     def __init__(self, server_data, ui):
         class serverdata:
