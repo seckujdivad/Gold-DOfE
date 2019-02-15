@@ -87,7 +87,12 @@ class Server:
                                           'team': self.get_team_id(self.get_team_distributions()),
                                           'health': 100,
                                           'username': 'guest',
-                                          'mode': 'player'})
+                                          'mode': 'player',
+                                          'position': {
+                                              'x': 0,
+                                              'y': 0,
+                                              'rotation': 0
+                                          }})
         
         self.send(connection, Request(command = 'var update r', subcommand = 'username'))
         
@@ -137,11 +142,7 @@ class Server:
                         self.send(connection, Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.serverdata.conn_data[conn_id]['health']}))
                             
                     elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
-                        output = []
-                        for data in self.serverdata.conn_data:
-                            if data['active'] and 'position' in data and not data == self.serverdata.conn_data[conn_id] and not data['health'] == 0:
-                                output.append(data['position'])
-                        self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': output}))
+                        self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([conn_id])}))
                         
                 elif req.command == 'var update w': #client wants to update a variable on the server
                     if req.subcommand == 'position': #client wants to update it's own position
@@ -504,8 +505,14 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
         if client_mode == 'spectator':
             self.send_text(['chat', 'new mode', 'spectator'], [client_data['username']])
+            self.output_pipe.send('{} is now spectating'.format(client_data['username']))
         elif client_mode == 'player':
             self.send_text(['chat', 'new mode', 'player'], [client_data['username']])
+            self.output_pipe.send('{} is now playing'.format(client_data['username']))
+            
+            for client in self.serverdata.conn_data:
+                if client['active']:
+                    self.send(client['connection'], Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([client['id']])}))
     
     def send_text(self, path, formats = None, connection = None, category = 'general'):
         string = self.settingsdata['messages']
@@ -568,10 +575,10 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                                                 arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
     
     def respawn_after(self, conn_id, delay):
+        print(delay)
         threading.Thread(target = self._respawn_after, args = [conn_id, delay], name = 'Scheduled respawn', daemon = True).start()
     
     def _respawn_after(self, conn_id, delay):
-        time.sleep(delay)
         self.respawn(conn_id)
     
     def generate_spawn(self, conn_id):
@@ -610,29 +617,31 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         self.output_pipe.send('Player {} died'.format(client['username']))
         self.send_text(['chat', 'player died'], [client['username']], None, category = 'death')
         
-        if not client['mode'] == 'spectator':
-            if self.serverdata.gamemode == 0:
-                alive = self.num_alive()
-                
-                if alive[0] == 0:
-                    self.xvx_round_ended(1)
-                    self.output_pipe.send('Team 2 won the round')
-                elif alive[1] == 0:
-                    self.xvx_round_ended(0)
-                    self.output_pipe.send('Team 1 won the round')
-                    
-            elif self.serverdata.gamemode == 1:
-                self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['deathmatch'])
-            elif self.serverdata.gamemode == 2:
-                if client['team'] == 0:
-                    self.increment_scoreline(score0 = 1)
-                elif client['team'] == 1:
-                    self.increment_scoreline(score1 = 1)
-                self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['team deathmatch'])
-            elif self.serverdata.gamemode == 3:
-                self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['pve survival'])
-        
         self.set_mode(client, 'spectator')
+        
+        if self.serverdata.gamemode == 0:
+            alive = self.num_alive()
+            
+            if alive[0] == 0:
+                self.xvx_round_ended(1)
+                self.output_pipe.send('Team 2 won the round')
+            elif alive[1] == 0:
+                self.xvx_round_ended(0)
+                self.output_pipe.send('Team 1 won the round')
+                
+        elif self.serverdata.gamemode == 1:
+            self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['deathmatch'])
+            
+        elif self.serverdata.gamemode == 2:
+            if client['team'] == 0:
+                self.increment_scoreline(score0 = 1)
+            elif client['team'] == 1:
+                self.increment_scoreline(score1 = 1)
+                
+            self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['team deathmatch'])
+            
+        elif self.serverdata.gamemode == 3:
+            self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['pve survival'])
         
     def num_alive(self):
         count = [0, 0]
@@ -652,6 +661,13 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             self.increment_scoreline(score0 = 1)
         elif winner == 1:
             self.increment_scoreline(score1 = 1)
+    
+    def get_all_positions(self, omit):
+        output = []
+        for data in self.serverdata.conn_data:
+            if data['active'] and data['mode'] == 'player' and data['id'] not in omit:
+                output.append(data['position'])
+        return output
         
         
 class Client:
