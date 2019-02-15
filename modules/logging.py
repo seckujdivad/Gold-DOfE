@@ -15,18 +15,21 @@ class Log:
             else:
                 file.write(text)
     
-    def _append(self, text, newline = True):
+    def _append(self, text, newline = True, console = False):
         with open(self.address, 'a') as file:
             if newline:
                 file.write('\n{}'.format(text))
             else:
                 file.write(text)
+        
+        if console:
+            print(text)
     
     def clear(self):
         self._write('Log {}:'.format(os.path.basename(self.address)), newline = False)
     
-    def add(self, category, message):
-        self._append('[{:^19}] [{:^20}]: {}'.format(self._getdatetime(), category, message))
+    def add(self, category, message, console = False):
+        self._append('[{:^19}] [{:^20}]: {}'.format(self._getdatetime(), category, message), True, console)
     
     def _getdatetime(self):
         now = datetime.datetime.now()
