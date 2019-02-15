@@ -415,6 +415,7 @@ class Engine:
             
             #tell the server that the player has loaded in
             self.game.client.send(modules.networking.Request(command = 'map loaded'))
+            self.log.add('map', 'Finished loading map', self.map.name)
             
             #centre scoreline display
             self.game.scoreline_display.pos.x = self.game.canvas.winfo_width() / 2
@@ -569,6 +570,8 @@ class Entity:
         threading.Thread(target = self.script_bind_handler, name = 'Entity script handler thread').start()
         
         self.setpos(100, 100)
+        
+        self.engine.log.add('entities', 'Created entity {} (is_player = {})'.format(ent_name, is_player))
     
     def setpos(self, x = None, y = None, rotation = None, transparency = None):
         self.setpos_queue.send([time.time(), x, y, rotation, transparency])
