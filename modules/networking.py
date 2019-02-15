@@ -434,7 +434,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 #clipping
                 for playerdata in self.serverdata.conn_data:
                     damage_dealt = False
-                    if playerdata['active']:
+                    if playerdata['active'] and playerdata['mode'] == 'player':
                         if self.item_touches_player(playerdata['position']['x'], playerdata['position']['y'], item):
                             if 'last damage' in item and not item['last damage'] == None:
                                 if (time.time() - item['last damage']) > item['data']['damage cooldown']:
