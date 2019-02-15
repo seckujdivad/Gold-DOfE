@@ -216,6 +216,8 @@ class Engine:
     def __init__(self, game):
         self.game = game
         
+        self.log = modules.logging.Log(os.path.join(sys.path[0], 'user', 'logs', 'engine.txt'))
+        
         class map:
             class textures:
                 base = None
