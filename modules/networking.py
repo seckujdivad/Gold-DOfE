@@ -561,6 +561,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         client = self.serverdata.conn_data[conn_id]
         
         spawnpoint = self.generate_spawn(conn_id)
+        self.set_mode(client, 'player')
         self.send(client['connection'], Request(command = 'var update w',
                                                 subcommand = 'client position',
                                                 arguments = {'x': spawnpoint[0],

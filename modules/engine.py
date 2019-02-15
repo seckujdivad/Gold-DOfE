@@ -184,7 +184,7 @@ class Game:
                     self.engine.map.player.destroy()
             elif request.subcommand == 'player':
                 if not self.engine.map.player.running:
-                    self.engine.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = True)
+                    self.engine.map.player = Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = True)
                 self.engine.map.player.setpos(400, 300, 0)
         
         elif request.command == 'set hit model':
