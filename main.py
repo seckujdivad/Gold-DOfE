@@ -108,7 +108,7 @@ class App:
         self.editor.close()
     
     def on_window_close(self):
-        sys.exit()
+        os._exit(0)
     
     def close(self):
         self.ui.root.destroy()
