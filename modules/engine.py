@@ -1014,6 +1014,7 @@ class InventoryBar:
         self.divider_size = divider_size
         
         self.layer = 'hud'
+        self.numbers_layer = 'inventory numbers'
         
         class paths:
             textures = textures_path
@@ -1026,7 +1027,7 @@ class InventoryBar:
         self.inv_items = []
         
         for i in range(self.num_slots):
-            self.inv_items.append({'item': None, 'image': None, 'quantity': 0})
+            self.inv_items.append({'item': None, 'image': None, 'quantity': 0, 'count obj': None})
         
         self.load_assets()
         self.draw_slots()
@@ -1066,25 +1067,29 @@ class InventoryBar:
     def increment_slot(self, index, increment):
         self.set_slot(index, quantity = int(self.inv_items[index]['quantity'] + increment))
     
-    def set_slot(self, index, item = None, quantity = 0):
-        if item == None:
-            if self.items_data[self.inv_items[index]['item']]['unlimited']:
-                quantity = max(quantity, 1)
-        elif self.items_data[item]['unlimited']:
+    def set_slot(self, index, item = None, quantity = 0, override = False):
+        if item is not None and self.inv_items[index]['item'] is not None and self.items_data[item]['unlimited'] and not override:
             quantity = max(quantity, 1)
         
         if quantity < 1:
             if not self.inv_items[index]['image'] == None:
                 self.canvcont.delete(self.inv_items[index]['image'])
-            self.inv_items[index] = {'item': None, 'image': None, 'quantity': 0}
+                self.canvcont.delete(self.inv_items[index]['count obj'])
+            self.inv_items[index] = {'item': None, 'image': None, 'quantity': 0, 'count obj': None}
         else:
             self.inv_items[index]['quantity'] = quantity
-            if not item == None:
+            if item is not None:
                 self.inv_items[index]['item'] = item
                 
                 if self.inv_items[index]['image'] == None:
                     coords = self.get_top_right_coords()
                     self.inv_items[index]['image'] = self.canvcont.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'], layer = self.layer)
+                    self.inv_items[index]['count obj'] = self.canvcont.create_text(coords[0] + (self.sprite_dimensions[0] * (index + 0.9)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] * 0.9), text = str(quantity), layer = self.numbers_layer)
+            
+            if self.inv_items[index]['item'] is not None and self.items_data[self.inv_items[index]['item']]['unlimited']:
+                self.canvcont.itemconfigure(self.inv_items[index]['count obj'], text = '∞')
+            else:
+                self.canvcont.itemconfigure(self.inv_items[index]['count obj'], text = str(quantity))
     
     def get_item_info(self, item):
         return self.items_data[item]
@@ -1100,7 +1105,7 @@ class InventoryBar:
 
     def make_empty(self):
         for i in range(self.num_slots):
-            self.set_slot(i)
+            self.set_slot(i, override = True)
 
 class PopMessage:
     def __init__(self, canvcont):

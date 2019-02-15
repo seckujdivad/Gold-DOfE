@@ -5,9 +5,10 @@
 	"player models": 3,
 	"scatters": 4,
 	"lightmap": 5,
-	"overlay": 30,
-	"log text": 31,
-	"hud": 32,
+	"overlay": 29,
+	"log text": 30,
+	"hud": 31,
+	"inventory numbers": 32,
 	"debug": 33,
 	"event overlays": 34
 }
