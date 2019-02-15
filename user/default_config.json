@@ -13,6 +13,7 @@
 			"render shadows": true
 		}
 	},
+	"force close": 1,
 	"graphics": {
 		"PILrender": true,
 		"model quality": 3

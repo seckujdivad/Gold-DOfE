@@ -108,7 +108,13 @@ class App:
         self.editor.close()
     
     def on_window_close(self):
-        os._exit(0)
+        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+            settingsdata = json.load(file)
+        
+        if settingsdata['force close']: #recommended - not all threads close when this is turned off (hopefully this will be fixed in the future)
+            os._exit(0)
+        else:
+            sys.exit(0)
     
     def close(self):
         self.ui.root.destroy()
