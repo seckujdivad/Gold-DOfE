@@ -283,7 +283,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
 2: team deathmatch
 3: pve survival'''
                     else:
-                        self.set_gamemode(int(argstring))
+                        output = ['Gamemode not supported by this map', 'Gamemode changed successfully', 'This is already the gamemode - no action taken'][self.set_gamemode(int(argstring))]
                 else:
                     output = 'No permissions'
             elif name == 'mp_respawn_all':
@@ -528,7 +528,13 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         pass
     
     def set_gamemode(self, gamemode):
-        pass
+        if gamemode in self.serverdata.mapdata['gamemode']['supported']:
+            if self.serverdata.gamemode == gamemode:
+                return 2
+            self.serverdata.gamemode = gamemode
+        else:
+            return 0
+        return 1
 
 class Client:
     def __init__(self, server_data, ui):
