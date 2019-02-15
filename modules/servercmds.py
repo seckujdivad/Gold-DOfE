@@ -103,6 +103,7 @@ class _UI:
                             self.on_quit()
                     else:
                         self.output_listbox.insert(tk.END, line)
+                self.output_listbox.see(tk.END)
 
     def on_quit(self):
         self.quit = True
