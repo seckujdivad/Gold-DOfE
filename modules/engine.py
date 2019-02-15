@@ -192,6 +192,9 @@ class Game:
                 spec.loader.exec_module(self.engine.hitdetection.module)
             
             self.engine.hitdetection.accurate = request.subcommand == 'accurate' #accurate or loose
+        
+        elif request.command == 'clear inventory':
+            self.engine.map.invdisp.make_empty()
                 
 
 class Engine:
@@ -1022,7 +1025,7 @@ class InventoryBar:
         self.selection_index = None
         self.inv_items = []
         
-        for i in range(5):
+        for i in range(self.num_slots):
             self.inv_items.append({'item': None, 'image': None, 'quantity': 0})
         
         self.load_assets()
@@ -1094,6 +1097,10 @@ class InventoryBar:
         data['quantity'] = self.inv_items[index]['quantity']
         data['file name'] = self.inv_items[index]['item']
         return data
+
+    def make_empty(self):
+        for i in range(self.num_slots):
+            self.set_slot(i)
 
 class PopMessage:
     def __init__(self, canvcont):

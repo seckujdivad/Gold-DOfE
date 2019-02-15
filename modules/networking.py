@@ -536,6 +536,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 spawnpoint = self.generate_spawn(client['id'])
                 self.send(client['connection'], Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
                 self.update_health(client, 100)
+                self.send(client['connection'], Request(command = 'clear inventory'))
                 self.send(client['connection'], Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
     
     def generate_spawn(self, conn_id):
