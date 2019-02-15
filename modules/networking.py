@@ -576,6 +576,13 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
         self.serverdata.scoreline = [score0, score1]
         self.send_all(Request(command = 'var update w', subcommand = 'scoreline', arguments = {'scores': self.serverdata.scoreline}))
+    
+    def increment_scoreline(self, score0 = None, score1 = None):
+        if score0 is not None:
+            score0 += self.serverdata.scoreline[0]
+        if score1 is not None:
+            score1 += self.serverdata.scoreline[1]
+        self.set_scoreline(score0, score1)
 
 class Client:
     def __init__(self, server_data, ui):
