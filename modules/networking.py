@@ -162,15 +162,7 @@ class Server:
                     
                     self.set_mode(self.serverdata.conn_data[conn_id], 'player')
                     
-                    if self.serverdata.gamemode == 0:
-                        spawnpoint = random.choice(self.serverdata.mapdata['player']['spawnpoints'][0][self.serverdata.conn_data[conn_id]['team']])
-                    elif self.serverdata.gamemode == 1:
-                        cmax, cmin = self.serverdata.mapdata['player']['spawnpoints'][1]
-                        spawnpoint = [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
-                    elif self.serverdata.gamemode == 2:
-                        cmax, cmin = self.serverdata.mapdata['player']['spawnpoints'][2][self.serverdata.conn_data[conn_id]['team']]
-                        spawnpoint = [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
-                        
+                    spawnpoint = self.generate_spawn(conn_id)
                     self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
                     
                     self.send(connection, Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.settingsdata['network']['accurate hit detection']]))
@@ -532,9 +524,27 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             if self.serverdata.gamemode == gamemode:
                 return 2
             self.serverdata.gamemode = gamemode
+            self.respawn_all()
         else:
             return 0
         return 1
+
+    def respawn_all(self):
+        for item in self.serverdata.conn_data:
+            if item['active']:
+                spawnpoint = self.generate_spawn(item['id'])
+                self.send(item['connection'], Request(command = 'var update w', subcommand = 'client position',
+                                              arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
+    
+    def generate_spawn(self, conn_id):
+        if self.serverdata.gamemode == 0:
+            return random.choice(self.serverdata.mapdata['player']['spawnpoints'][0][self.serverdata.conn_data[conn_id]['team']])
+        elif self.serverdata.gamemode == 1:
+            cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][1]
+            return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
+        elif self.serverdata.gamemode == 2:
+            cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][2][self.serverdata.conn_data[conn_id]['team']]
+            return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
 
 class Client:
     def __init__(self, server_data, ui):
