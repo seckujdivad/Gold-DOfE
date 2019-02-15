@@ -21,7 +21,8 @@
 		"respawn time": {
 			"deathmatch": 2,
 			"team deathmatch": 5,
-			"xvx": 5
+			"xvx": 5,
+			"pve survival": 10
 		}
 	},
 	"scripts": {
