@@ -552,11 +552,21 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
     def respawn_all(self):
         for client in self.serverdata.conn_data:
             if client['active']:
-                spawnpoint = self.generate_spawn(client['id'])
-                self.send(client['connection'], Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
-                self.update_health(client, 100)
-                self.send(client['connection'], Request(command = 'clear inventory'))
-                self.send(client['connection'], Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
+                self.respawn(client['id'])
+    
+    def respawn(self, conn_id):
+        client = self.serverdata.conn_data[conn_id]
+        
+        spawnpoint = self.generate_spawn(conn_id)
+        self.send(client['connection'], Request(command = 'var update w',
+                                                subcommand = 'client position',
+                                                arguments = {'x': spawnpoint[0],
+                                                             'y': spawnpoint[1],
+                                                             'rotation': 0}))
+        self.update_health(client, 100)
+        self.send(client['connection'], Request(command = 'clear inventory'))
+        self.send(client['connection'], Request(command = 'give',
+                                                arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
     
     def generate_spawn(self, conn_id):
         if self.serverdata.gamemode == 0:
