@@ -415,7 +415,7 @@ class Engine:
             
             #tell the server that the player has loaded in
             self.game.client.send(modules.networking.Request(command = 'map loaded'))
-            self.log.add('map', 'Finished loading map', self.map.name)
+            self.log.add('map', 'Finished loading map "{}"'.format(self.map.name))
             
             #centre scoreline display
             self.game.scoreline_display.pos.x = self.game.canvas.winfo_width() / 2
