@@ -9,7 +9,12 @@
 			"player died": "{0} died"
 		},
 		"fullscreen": {
-			"welcome": "Welcome!"
+			"welcome": "Welcome!",
+			"gamemode change": "Gamemode is now\n{0}",
+			"xvx": {
+				"round won": "Team {0} won the round",
+				"game won": "Team {0} won the game"
+			}
 		}
 	},
 	"network": {

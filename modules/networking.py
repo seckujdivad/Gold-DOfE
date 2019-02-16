@@ -529,13 +529,10 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         else:
             raise ValueError('Invalid text mode "{}"'.format(path[0]))
         
-        if connection == None:
+        if connection is None:
             self.send_all(req)
         else:
             self.send(connection, req)
-    
-    def set_hitboxes(self, mode):
-        pass
     
     def set_gamemode(self, gamemode):
         if gamemode in self.serverdata.mapdata['gamemode']['supported']:
@@ -544,10 +541,10 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             self.serverdata.gamemode = gamemode
             self.respawn_all()
             self.set_scoreline(0, 0)
-            self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': 'Gamemode is now\n{}'.format(['PvP arena',
-                                                                                                                                 'deathmatch',
-                                                                                                                                 'team deathmatch',
-                                                                                                                                 'PvE survival'][self.serverdata.gamemode])}))
+            self.send_text(['fullscreen', 'gamemode change'], formats = [['PvP arena',
+                                                                          'deathmatch',
+                                                                          'team deathmatch',
+                                                                          'PvE survival'][self.serverdata.gamemode]])
         else:
             return 0
         return 1
@@ -621,12 +618,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             
             if alive[0] == 0:
                 self.xvx_round_ended(1)
-                self.output_pipe.send('Team 2 won the round')
-                self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': 'Team 2 won the round'}))
             elif alive[1] == 0:
                 self.xvx_round_ended(0)
-                self.output_pipe.send('Team 1 won the round')
-                self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': 'Team 1 won the round'}))
                 
         elif self.serverdata.gamemode == 1:
             self.respawn_after(conn_id, self.settingsdata['player']['deathmatch']['respawn time'])
@@ -658,8 +651,15 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
         if winner == 0:
             self.increment_scoreline(score0 = 1)
+            self.output_pipe.send('Team 1 won the round')
+            self.send_text(['fullscreen', 'xvx', 'round won'], ["1"])
         elif winner == 1:
             self.increment_scoreline(score1 = 1)
+            self.output_pipe.send('Team 2 won the round')
+            self.send_text(['fullscreen', 'xvx', 'round won'], ["2"])
+        
+        if self.serverdata.scoreline[0] >= self.settingsdata['player']['xvx']['min rounds']:
+            pass
     
     def get_all_positions(self, omit):
         output = []
