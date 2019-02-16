@@ -466,13 +466,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             
             for conn_data in self.serverdata.conn_data:
                 self.send(conn_data['connection'], Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))
-            
-            for conn_data in self.serverdata.conn_data:
-                output = []
-                for data in self.serverdata.conn_data:
-                    if data['active'] and 'position' in data and not data == conn_data and not data['health'] == 0:
-                        output.append(data['position'])
-                self.send(conn_data['connection'], Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': output}))
+                self.send(conn_data['connection'], Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([conn_data['id']])}))
             
             time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
     
@@ -579,7 +573,6 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                                                 arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
     
     def respawn_after(self, conn_id, delay):
-        print(delay)
         threading.Thread(target = self._respawn_after, args = [conn_id, delay], name = 'Scheduled respawn', daemon = True).start()
     
     def _respawn_after(self, conn_id, delay):
@@ -672,7 +665,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         output = []
         for data in self.serverdata.conn_data:
             if data['active'] and data['mode'] == 'player' and data['id'] not in omit:
-                output.append(data['position'])
+                d = data['position'].copy()
+                d['id'] = data['id']
+                output.append(d)
         return output
         
         

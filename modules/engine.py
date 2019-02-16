@@ -93,7 +93,7 @@ class Game:
                 self.message_pipe.send(['chat', request.arguments['text']])
                 
         elif request.command == 'disconnect':
-            if self.running == True:
+            if self.running:
                 print('Connection to server interrupted')
                 
         elif request.command == 'var update w':
@@ -104,20 +104,38 @@ class Game:
                 
             elif request.subcommand == 'player positions':
                 positions = request.arguments['positions']
-                if not len(positions) == len(self.engine.map.other_players.entities):
-                    new_ent_list = self.engine.map.other_players.entities[:len(positions)]
-                    excess_ents = self.engine.map.other_players.entities[len(positions):]
-                    
-                    for entity in excess_ents:
-                        entity.model.destroy()
-                        
-                    if len(new_ent_list) < len(positions):
-                        for i in range(len(positions) - len(new_ent_list)):
-                            new_ent_list.append(Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = False))
-                        self.engine.map.other_players.entities = new_ent_list
                 
-                for index in range(len(positions)):
-                    self.engine.map.other_players.entities[index].setpos_interpolate(positions[index]['x'], positions[index]['y'], positions[index]['rotation'], 1 / self.client.serverdata.raw['tickrate'], int(self.engine.map.settingscfg['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
+                for data in positions:
+                    if data['id'] in self.engine.map.other_players.entities:
+                        self.engine.map.other_players.entities[data['id']].setpos_interpolate(data['x'],
+                                                                                           data['y'],
+                                                                                           data['rotation'],
+                                                                                           1 / self.client.serverdata.raw['tickrate'],
+                                                                                           int(self.engine.map.settingscfg['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
+                    else:
+                        self.engine.map.other_players.entities[data['id']] = Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]),
+                                                                                 self.engine.map.path,
+                                                                                 self.engine,
+                                                                                 'player models',
+                                                                                 is_player = False)
+                        self.engine.map.other_players.entities[data['id']].setpos(x = data['x'],
+                                                                               y = data['y'],
+                                                                               rotation = data['rotation'])
+                        self.engine.log.add('players', 'Client-server discrepancy, created id {}'.format(data['id']))
+                
+                to_remove = []
+                for conn_id in self.engine.map.other_players.entities:
+                    destroy = True
+                    for data in positions:
+                        if data['id'] == conn_id:
+                            destroy = False
+                    if destroy:
+                        self.engine.map.other_players.entities[conn_id].destroy()
+                        to_remove.append(conn_id)
+                
+                for conn_id in to_remove:
+                    self.engine.map.other_players.entities.pop(conn_id)
+                    self.engine.log.add('players', 'Client-server discrepancy, destroyed id {}'.format(conn_id))
                     
             elif request.subcommand == 'team':
                 self.vars['team'] = request.arguments['value']
@@ -236,7 +254,7 @@ class Engine:
                 textures = {}
                 scripts = {}
             class other_players:
-                entities = []
+                entities = {}
             name = None
             cfg = {}
             rendermethod = None
