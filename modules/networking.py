@@ -663,8 +663,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 self.output_pipe.send('Team 2 won the round')
                 self.send_text(['fullscreen', 'xvx', 'round won'], ["2"])
         
-        time.sleep(self.settingsdata['player']['gamemodes']['xvx']['after round time'])
-        self.respawn_all()
+            time.sleep(self.settingsdata['player']['gamemodes']['xvx']['after round time'])
+            self.respawn_all()
         
     def get_all_positions(self, omit):
         output = []
