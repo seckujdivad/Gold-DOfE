@@ -534,9 +534,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         else:
             self.send(connection, req)
     
-    def set_gamemode(self, gamemode):
+    def set_gamemode(self, gamemode, force = False):
         if gamemode in self.serverdata.mapdata['gamemode']['supported']:
-            if self.serverdata.gamemode == gamemode:
+            if self.serverdata.gamemode == gamemode and not force:
                 return 2
             self.serverdata.gamemode = gamemode
             self.respawn_all()
@@ -622,7 +622,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 self.xvx_round_ended(0)
                 
         elif self.serverdata.gamemode == 1:
-            self.respawn_after(conn_id, self.settingsdata['player']['deathmatch']['respawn time'])
+            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['deathmatch']['respawn time'])
             
         elif self.serverdata.gamemode == 2:
             if client['team'] == 0:
@@ -630,10 +630,10 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             elif client['team'] == 1:
                 self.increment_scoreline(score1 = 1)
                 
-            self.respawn_after(conn_id, self.settingsdata['player']['team deathmatch']['respawn time'])
+            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['team deathmatch']['respawn time'])
             
         elif self.serverdata.gamemode == 3:
-            self.respawn_after(conn_id, self.settingsdata['player']['pve surival']['respawn time'])
+            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['pve surival']['respawn time'])
         
     def num_alive(self):
         count = [0, 0]
@@ -646,21 +646,26 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         threading.Thread(target = self._xvx_round_ended, args = [winner]).start()
     
     def _xvx_round_ended(self, winner):
-        time.sleep(self.settingsdata['player']['xvx']['respawn time'])
+        if winner == 0 and self.serverdata.scoreline[0] + 1 == self.settingsdata['player']['gamemodes']['xvx']['min rounds']:
+            self.xvx_game_won(0)
+            
+        elif winner == 1 and self.serverdata.scoreline[1] + 1 == self.settingsdata['player']['gamemodes']['xvx']['min rounds']:
+            self.xvx_game_won(1)
+            
+        else:
+            if winner == 0:
+                self.increment_scoreline(score0 = 1)
+                self.output_pipe.send('Team 1 won the round')
+                self.send_text(['fullscreen', 'xvx', 'round won'], ["1"])
+                
+            elif winner == 1:
+                self.increment_scoreline(score1 = 1)
+                self.output_pipe.send('Team 2 won the round')
+                self.send_text(['fullscreen', 'xvx', 'round won'], ["2"])
+        
+        time.sleep(self.settingsdata['player']['gamemodes']['xvx']['after round time'])
         self.respawn_all()
         
-        if winner == 0:
-            self.increment_scoreline(score0 = 1)
-            self.output_pipe.send('Team 1 won the round')
-            self.send_text(['fullscreen', 'xvx', 'round won'], ["1"])
-        elif winner == 1:
-            self.increment_scoreline(score1 = 1)
-            self.output_pipe.send('Team 2 won the round')
-            self.send_text(['fullscreen', 'xvx', 'round won'], ["2"])
-        
-        if self.serverdata.scoreline[0] >= self.settingsdata['player']['xvx']['min rounds']:
-            pass
-    
     def get_all_positions(self, omit):
         output = []
         for data in self.serverdata.conn_data:
@@ -669,7 +674,17 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 d['id'] = data['id']
                 output.append(d)
         return output
+    
+    def xvx_game_won(self, winner):
+        self.send_text(['fullscreen', 'xvx', 'game won'], formats = [winner + 1])
         
+        self.output_pipe.send('Team {} won the game'.format(winner + 1))
+        
+        threading.Thread(target = self._xvx_game_won, daemon = True).start()
+    
+    def _xvx_game_won(self):
+        time.sleep(self.settingsdata['player']['gamemodes']['xvx']['after game time'])
+        self.set_gamemode(0, force = True)
         
 class Client:
     def __init__(self, server_data, ui):
