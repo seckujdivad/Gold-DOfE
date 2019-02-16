@@ -18,11 +18,22 @@
 		"tickrate": 15
 	},
 	"player": {
-		"respawn time": {
-			"deathmatch": 2,
-			"team deathmatch": 5,
-			"xvx": 5,
-			"pve survival": 10
+		"gamemodes": {
+			"deathmatch": {
+				"respawn time": 2,
+				"round time": 60
+			},
+			"team deathmatch": {
+				"respawn time": 5,
+				"round time": 60
+			},
+			"xvx": {
+				"after round time": 5,
+				"min rounds": 5
+			},
+			"pve survival": {
+				"respawn time": 10
+			}
 		}
 	},
 	"scripts": {

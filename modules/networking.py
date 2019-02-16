@@ -629,7 +629,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': 'Team 1 won the round'}))
                 
         elif self.serverdata.gamemode == 1:
-            self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['deathmatch'])
+            self.respawn_after(conn_id, self.settingsdata['player']['deathmatch']['respawn time'])
             
         elif self.serverdata.gamemode == 2:
             if client['team'] == 0:
@@ -637,10 +637,10 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             elif client['team'] == 1:
                 self.increment_scoreline(score1 = 1)
                 
-            self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['team deathmatch'])
+            self.respawn_after(conn_id, self.settingsdata['player']['team deathmatch']['respawn time'])
             
         elif self.serverdata.gamemode == 3:
-            self.respawn_after(conn_id, self.settingsdata['player']['respawn time']['pve survival'])
+            self.respawn_after(conn_id, self.settingsdata['player']['pve surival']['respawn time'])
         
     def num_alive(self):
         count = [0, 0]
@@ -653,7 +653,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         threading.Thread(target = self._xvx_round_ended, args = [winner]).start()
     
     def _xvx_round_ended(self, winner):
-        time.sleep(self.settingsdata['player']['respawn time']['xvx'])
+        time.sleep(self.settingsdata['player']['xvx']['respawn time'])
         self.respawn_all()
         
         if winner == 0:
