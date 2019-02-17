@@ -170,7 +170,7 @@ class Server:
                     
                     self.send(connection, Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.settingsdata['network']['accurate hit detection']]))
                     
-                    self.send_text(['fullscreen', 'welcome'], None, connection)
+                    self.send_text(['fullscreen', 'welcome'], None, connection, category = 'welcome')
                 elif req.command == 'use':
                     with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', req.arguments['item']), 'r') as file:
                         item_data = json.load(file)
@@ -544,7 +544,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             self.send_text(['fullscreen', 'gamemode change'], formats = [['PvP arena',
                                                                           'deathmatch',
                                                                           'team deathmatch',
-                                                                          'PvE survival'][self.serverdata.gamemode]])
+                                                                          'PvE survival'][self.serverdata.gamemode]],
+                           category = 'gamemode change')
         else:
             return 0
         return 1
@@ -656,12 +657,12 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             if winner == 0:
                 self.increment_scoreline(score0 = 1)
                 self.output_pipe.send('Team 1 won the round')
-                self.send_text(['fullscreen', 'xvx', 'round won'], ["1"])
+                self.send_text(['fullscreen', 'xvx', 'round won'], ["1"], category = 'round end')
                 
             elif winner == 1:
                 self.increment_scoreline(score1 = 1)
                 self.output_pipe.send('Team 2 won the round')
-                self.send_text(['fullscreen', 'xvx', 'round won'], ["2"])
+                self.send_text(['fullscreen', 'xvx', 'round won'], ["2"], category = 'round end')
         
             time.sleep(self.settingsdata['player']['gamemodes']['xvx']['after round time'])
             self.respawn_all()
@@ -676,7 +677,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         return output
     
     def xvx_game_won(self, winner):
-        self.send_text(['fullscreen', 'xvx', 'game won'], formats = [winner + 1])
+        self.send_text(['fullscreen', 'xvx', 'game won'], formats = [winner + 1], category = 'game end')
         
         self.output_pipe.send('Team {} won the game'.format(winner + 1))
         
