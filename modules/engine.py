@@ -1207,6 +1207,7 @@ class DynamicStringDisplay:
         class styling:
             align = tk.CENTER
             font = ['', 30]
+            colour = '#000000'
         self.styling = styling
         
         self.text = ''
@@ -1217,7 +1218,7 @@ class DynamicStringDisplay:
     
     def refresh(self):
         self.canvcont.coords(self.text_obj, self.pos.x, self.pos.y)
-        self.canvcont.itemconfigure(self.text_obj, font = self.styling.font, anchor = self.styling.align, text = self.text)
+        self.canvcont.itemconfigure(self.text_obj, font = self.styling.font, anchor = self.styling.align, text = self.text, fill = self.styling.colour, outline = self.styling.colour)
     
     def set(self, text):
         self.text = text
@@ -1235,10 +1236,12 @@ class DynamicStringDisplay:
         
         self.refresh()
     
-    def set_styling(self, typeface = None, size = None):
+    def set_styling(self, typeface = None, size = None, colour = None):
         if typeface is not None:
             self.styling.font[0] = typeface
         if size is not None:
             self.styling.font[1] = size
+        if colour is not None:
+            self.styling.colour = colour
         
         self.refresh()
