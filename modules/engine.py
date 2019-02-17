@@ -265,6 +265,7 @@ class Engine:
             pulse_in_progress = False
             settingscfg = None
             lightmap = None
+            round_timer = None
         self.map = map
         
         class hitdetection:
@@ -285,21 +286,25 @@ class Engine:
         
         if self.debug.flags['engine']['panels']['show intersections']:
             self.debug.panel_intersections = DynamicStringDisplay(self.game.canvcont, 70, 300, 'debug')
-            self.debug.panel_intersections.styling.font[1] = 10
+            self.debug.panel_intersections.set_styling(size = 10)
 
         if self.debug.flags['engine']['player']['pos']:
             self.debug.player_pos = DynamicStringDisplay(self.game.canvcont, 700, 270, 'debug')
-            self.debug.player_pos.styling.font[1] = 10
+            self.debug.player_pos.set_styling(size = 10)
 
         if self.debug.flags['engine']['player']['speed']:
             self.debug.player_speed = DynamicStringDisplay(self.game.canvcont, 700, 240, 'debug')
-            self.debug.player_speed.styling.font[1] = 10
+            self.debug.player_speed.set_styling(size = 10)
         
         if self.debug.flags['engine']['cursor pos']:
             self.debug.cursor_pos = DynamicStringDisplay(self.game.canvcont, 700, 300, 'debug')
-            self.debug.cursor_pos.styling.font[1] = 10
+            self.debug.cursor_pos.set_styling(size = 10)
             self.game.canvcont.bind('<Motion>', lambda event: self.debug.cursor_pos.set('CURSOR: ({}, {})'.format(event.x, event.y)))
             self.game.canvcont.bind('<Leave>', lambda event: self.debug.cursor_pos.set('CURSOR: Outside of screen'))
+        
+        self.map.round_timer = DynamicStringDisplay(self.game.canvcont, 50, 35, 'hud')
+        self.map.round_timer.set_styling(size = 15)
+        self.map.round_timer.set_twoitems(0, 0, sep = ':')
 
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
@@ -1218,6 +1223,22 @@ class DynamicStringDisplay:
         self.text = text
         self.refresh()
     
-    def set_twoitems(self, int1, int2):
-        length = max(len(str(int1)), len(str(int2)))
-        self.set('{:>{}} - {:<{}}'.format(int1, length, int2, length))
+    def set_twoitems(self, item1, item2, sep = ' - ', fillchar = ' '):
+        maxlen = max(len(str(item1)), len(str(item2)))
+        self.set('{0:{2}>{3}}{4}{1:{2}>{3}}'.format(item1, item2, fillchar, maxlen, sep))
+    
+    def setpos(self, x = None, y = None):
+        if x is not None:
+            self.pos.x = x
+        if y is not None:
+            self.pos.y = y
+        
+        self.refresh()
+    
+    def set_styling(self, typeface = None, size = None):
+        if typeface is not None:
+            self.styling.font[0] = typeface
+        if size is not None:
+            self.styling.font[1] = size
+        
+        self.refresh()
