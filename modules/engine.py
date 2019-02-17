@@ -50,6 +50,9 @@ class Game:
 
         self.scoreline_display = DynamicStringDisplay(self.canvcont, self.canvas.winfo_width() / 2, 30, 'hud')
         self.scoreline_display.set_twoitems(0, 0)
+        self.scoreline_display.set_styling(typeface = self.settingsdict['hud']['scoreboard']['font'],
+                                           size = self.settingsdict['hud']['scoreboard']['size'],
+                                           colour = self.settingsdict['hud']['scoreboard']['colour'])
         
         self.engine = Engine(self)
 
