@@ -1218,7 +1218,7 @@ class DynamicStringDisplay:
     
     def refresh(self):
         self.canvcont.coords(self.text_obj, self.pos.x, self.pos.y)
-        self.canvcont.itemconfigure(self.text_obj, font = self.styling.font, anchor = self.styling.align, text = self.text, fill = self.styling.colour, outline = self.styling.colour)
+        self.canvcont.itemconfigure(self.text_obj, font = self.styling.font, anchor = self.styling.align, text = self.text, fill = self.styling.colour)
     
     def set(self, text):
         self.text = text
