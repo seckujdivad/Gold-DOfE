@@ -54,8 +54,6 @@ class Game:
         self.killfeeddisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['killfeed']['position']]
         self.killfeeddisplay.graphical_properties.is_ready = True
         
-        self.killfeed_pipe.send(['info', 'I die'])
-        
         self.popmsg = PopMessage(self.canvcont)
         self.popmsg.graphical_properties.font = self.settingsdict['hud']['popmsg']['font']
         self.popmsg.graphical_properties.colour = self.settingsdict['hud']['popmsg']['colour']
