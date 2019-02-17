@@ -443,7 +443,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                                 damage_dealt = True
                     
                     if damage_dealt and not item['creator']['id'] == playerdata['id']:
-                        self.increment_health(playerdata, 0 - item['data']['damage']['player'])
+                        self.increment_health(playerdata, 0 - item['data']['damage']['player'], item['data']['display name'], self.serverdata.conn_data[item['creator']['id']]['username'])
                         item['last damage'] = time.time()
                         
                         self.send(playerdata['connection'], Request(command = 'var update w', subcommand = 'health', arguments = {'value': playerdata['health']}))
@@ -479,7 +479,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
     def distance_to_point(self, x0, y0, x1, y1):
         return math.hypot(x1 - x0, y1 - y0)
     
-    def update_health(self, client_data, health):
+    def update_health(self, client_data, health, weapon = None, killer = None):
         old_health = client_data['health']
         client_data['health'] = health
         
@@ -487,10 +487,10 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             if (old_health == 0 and client_data['health'] < 0): #death has already occured
                 client_data['health'] = 0
             elif client_data['health'] <= 0 and old_health > 0: #this is the 'first death' (first time health reached 0)
-                self.on_death(client_data['id'])
+                self.on_death(client_data['id'], weapon = weapon, killer = killer)
     
-    def increment_health(self, client_data, health):
-        self.update_health(client_data, client_data['health'] + health)
+    def increment_health(self, client_data, health, weapon = None, killer = None):
+        self.update_health(client_data, client_data['health'] + health, weapon, killer)
     
     def set_mode(self, client_data, client_mode):
         self.send(client_data['connection'], Request(command = 'set mode', subcommand = client_mode))
