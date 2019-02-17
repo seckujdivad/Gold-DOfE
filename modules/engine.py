@@ -202,10 +202,7 @@ class Game:
                             i['object'].setpos_interpolate(data['position'][0], data['position'][1], data['rotation'], 1 / self.client.serverdata.raw['tickrate'], int(self.engine.map.settingscfg['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
         
         elif request.command == 'popmsg':
-            if request.subcommand == 'general':
-                self.popmsg.queue_message(request.arguments['text'], 2)
-            elif request.subcommand == 'welcome':
-                self.popmsg.queue_message(request.arguments['text'], 4)
+            self.popmsg.queue_message(request.arguments['text'], self.settingsdict['hud']['popmsg']['duration'][request.subcommand])
         
         elif request.command == 'event':
             if request.subcommand == 'death':

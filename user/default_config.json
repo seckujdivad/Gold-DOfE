@@ -35,6 +35,13 @@
 		},
 		"popmsg": {
 			"colour": "#FFFFFF",
+			"duration": {
+				"game end": 1,
+				"gamemode change": 2,
+				"general": 2,
+				"round end": 1,
+				"welcome": 3
+			},
 			"font": ""
 		},
 		"round timer": {
