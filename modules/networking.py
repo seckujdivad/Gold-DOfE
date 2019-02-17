@@ -150,7 +150,7 @@ class Server:
                                                                           'y': req.arguments['y'],
                                                                           'rotation': req.arguments['rotation']}
                     elif req.subcommand == 'health': #client wants to update it's own health
-                        self.update_health(self.serverdata.conn_data[conn_id], req.arguments['value'])
+                        self.update_health(self.serverdata.conn_data[conn_id], req.arguments['value'], weapon = 'environment', killer = 'world')
                     
                     elif req.subcommand == 'username':
                         self.output_pipe.send('{} changed name to {}'.format(self.serverdata.conn_data[conn_id]['username'], req.arguments['value']))
