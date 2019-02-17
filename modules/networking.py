@@ -525,7 +525,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         if path[0] == 'fullscreen':
             req = Request(command = 'popmsg', subcommand = 'welcome', arguments = {'text': string})
         elif path[0] == 'chat':
-            req = Request(command = 'say', subcommand = 'welcome', arguments = {'text': string, 'category': category})
+            req = Request(command = 'say', subcommand = category, arguments = {'text': string, 'category': category})
         else:
             raise ValueError('Invalid text mode "{}"'.format(path[0]))
         
