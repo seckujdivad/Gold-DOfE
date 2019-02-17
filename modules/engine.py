@@ -281,6 +281,11 @@ class Engine:
             cursor_pos = None
         self.debug = debug
         
+        #check user cfg
+        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+            self.map.settingscfg = json.load(file)
+        
+        #get debugging settings
         with open(os.path.join(sys.path[0], 'user', 'debug.json'), 'r') as file:
             self.debug.flags = json.load(file)
         
@@ -313,10 +318,6 @@ class Engine:
         self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)
         if os.path.isdir(self.map.path):
             self.game.message_pipe.send(['map load', 'Loading map "{}"'.format(name)])
-            
-            #check user cfg
-            with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
-                self.map.settingscfg = json.load(file)
             
             #use correct rendering method
             if self.map.settingscfg['graphics']['PILrender']:
