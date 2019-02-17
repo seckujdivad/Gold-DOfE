@@ -44,6 +44,18 @@ class Game:
         self.messagedisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['chat']['position']]
         self.messagedisplay.graphical_properties.is_ready = True
         
+        self.killfeed_pipe, pipe = mp.Pipe()
+        self.killfeeddisplay = CanvasMessages(self.canvcont, pipe, chatbox = False)
+        self.killfeeddisplay.graphical_properties.font = (self.settingsdict['hud']['killfeed']['font'], self.settingsdict['hud']['killfeed']['fontsize'])
+        self.killfeeddisplay.graphical_properties.maxlen = self.settingsdict['hud']['killfeed']['maxlen']
+        self.killfeeddisplay.graphical_properties.persist = self.settingsdict['hud']['killfeed']['persist time']
+        self.killfeeddisplay.graphical_properties.height = self.settingsdict['hud']['killfeed']['spacing']
+        self.killfeeddisplay.graphical_properties.colour = self.settingsdict['hud']['killfeed']['colour']
+        self.killfeeddisplay.graphical_properties.alignment = ['tl', 'tr', 'bl', 'br'][self.settingsdict['hud']['killfeed']['position']]
+        self.killfeeddisplay.graphical_properties.is_ready = True
+        
+        self.killfeed_pipe.send(['info', 'I die'])
+        
         self.popmsg = PopMessage(self.canvcont)
         self.popmsg.graphical_properties.font = self.settingsdict['hud']['popmsg']['font']
         self.popmsg.graphical_properties.colour = self.settingsdict['hud']['popmsg']['colour']

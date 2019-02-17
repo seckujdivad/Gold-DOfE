@@ -28,6 +28,15 @@
 			"position": 3,
 			"spacing": 10
 		},
+		"killfeed": {
+			"colour": "#FFFFFF",
+			"font": "Courier New",
+			"fontsize": 8,
+			"maxlen": 20,
+			"persist time": 8,
+			"position": 1,
+			"spacing": 10
+		},
 		"overlay transparency precision": 10,
 		"overlays": {
 			"damage": "overlays/damage",
