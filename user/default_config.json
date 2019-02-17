@@ -36,6 +36,14 @@
 		"popmsg": {
 			"colour": "#FFFFFF",
 			"font": ""
+		},
+		"round timer": {
+			"colour": "#FFFFFF",
+			"size": 15
+		},
+		"scoreboard": {
+			"colour": "#FFFFFF",
+			"size": 30
 		}
 	},
 	"network": {
