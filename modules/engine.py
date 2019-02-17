@@ -811,9 +811,10 @@ class DBAccess:
         self.connection.close()
         
 class CanvasMessages:
-    def __init__(self, canvcont, pipe):
+    def __init__(self, canvcont, pipe, chatbox = True):
         self.canvcont = canvcont
         self.pipe = pipe
+        self.chatbox = chatbox
         
         self.messages = []
         self.running = True
@@ -863,13 +864,14 @@ class CanvasMessages:
         while not self.graphical_properties.is_ready:
             time.sleep(0.05)
         
-        self.textentry_var = tk.StringVar()
-        self.textentry_entry = tk.Entry(self.canvcont.canvas, textvariable = self.textentry_var, width = 30, **self.canvcont.game.client.ui.styling.get(font_size = 'small', object_type = tk.Entry))
-        self.textentry_window = self.canvcont.create_window(*self.calc_coords(0, inset_x = 2, inset_y = 2),
-                                                            anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment],
-                                                            window = self.textentry_entry,
-                                                            layer = 31)
-        self.textentry_entry.bind('<Return>', self.send_message)
+        if self.chatbox:
+            self.textentry_var = tk.StringVar()
+            self.textentry_entry = tk.Entry(self.canvcont.canvas, textvariable = self.textentry_var, width = 30, **self.canvcont.game.client.ui.styling.get(font_size = 'small', object_type = tk.Entry))
+            self.textentry_window = self.canvcont.create_window(*self.calc_coords(0, inset_x = 2, inset_y = 2),
+                                                                anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment],
+                                                                window = self.textentry_entry,
+                                                                layer = 31)
+            self.textentry_entry.bind('<Return>', self.send_message)
         
         while self.running:
             todelete = []
