@@ -308,7 +308,9 @@ class Engine:
             self.game.canvcont.bind('<Leave>', lambda event: self.debug.cursor_pos.set('CURSOR: Outside of screen'))
         
         self.map.round_timer = DynamicStringDisplay(self.game.canvcont, 50, 35, 'hud')
-        self.map.round_timer.set_styling(size = 15)
+        self.map.round_timer.set_styling(size = self.map.settingscfg['hud']['round timer']['size'],
+                                         typeface = self.map.settingscfg['hud']['round timer']['font'],
+                                         colour = self.map.settingscfg['hud']['round timer']['colour'])
         self.map.round_timer.set_twoitems(0, 0, sep = ':')
 
         #make keybind handler
