@@ -20,7 +20,30 @@ This is the project for the "skills" section of my Gold Duke of Edinburgh's Awar
 * Areas in levels that have scripts attached to them
 
 ## How To Play
-Start a local game by going to "Connect to a server" and picking a server on your local machine. Remember to go to settings and click "install required packages" before playing. Tweak with the graphical quality settings and the server hitbox precision settings for the best performance on your machine.
+1. Install [Python](https://www.python.org/), making sure that the tkinter package is installed (this should happen by default)
+2. Open "launcher.pyw"
+3. Click on "Connect to a server"
+4. Choose "Local PC (localhost:normal) - limited to local network" and click "connect" to host a server on your own machine
+
+### Controls
+|Key            |Action               |
+|---            |---                  |
+|WASD\Arrow keys|Move around          |
+|Mouse button 1 |Use current item     |
+|Keys 1-5       |Choose inventory slot|
+
+### Playing against friends
+1. Find their IP (type "ipconfig" into the command line on Windows)
+2. Go to "Connect to a server"
+3. Type it into the "address" box
+4. Give it a memorable name
+5. Click on "open to LAN"
+6. Click on "add server"
+
+If the server owner has any custom settings (port, tickrate etc), set these in the labelled boxes.
+
+### Recommended packages
+Remember to go to settings and click "install required packages" before playing for the best experience. Tweak with the graphical quality settings and the server hitbox precision settings for the best performance on your machine.
 
 ## Acknowledgements
 ### Line clipping
