@@ -39,10 +39,12 @@
 		},
 		"round timer": {
 			"colour": "#FFFFFF",
+			"font": "",
 			"size": 15
 		},
 		"scoreboard": {
 			"colour": "#FFFFFF",
+			"font": "",
 			"size": 30
 		}
 	},
