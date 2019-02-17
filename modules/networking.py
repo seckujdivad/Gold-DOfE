@@ -609,8 +609,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         client['health'] = 0
         
         s = random.choice(self.settingsdata['messages']['killfeed'])
-        self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'text': s.format(weapon = weapon, killer = killer, victim = client['username']),
-                                                                                    'weapon': weapon}))
+        self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'text': s.format(weapon = weapon.lower(), killer = killer, victim = client['username']),
+                                                                                    'weapon': weapon.lower()}))
         self.output_pipe.send('Player {} died'.format(client['username']))
         
         self.set_mode(client, 'spectator')
