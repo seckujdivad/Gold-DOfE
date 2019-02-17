@@ -216,8 +216,7 @@ class Game:
         
         elif request.command == 'event':
             if request.subcommand == 'death':
-                if request.arguments['username'] == self.engine.map.settingscfg['user']['name']:
-                    pass
+                self.killfeed_pipe.send([request.arguments['weapon'], request.arguments['text']])
         
         elif request.command == 'set mode':
             if request.subcommand == 'spectator':

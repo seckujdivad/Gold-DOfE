@@ -15,7 +15,10 @@
 				"round won": "Team {0} won the round",
 				"game won": "Team {0} won the game"
 			}
-		}
+		},
+		"killfeed": [
+			"{killer} killed {victim}"
+		]
 	},
 	"network": {
 		"accurate hit detection": true,

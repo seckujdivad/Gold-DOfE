@@ -603,14 +603,15 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             score1 += self.serverdata.scoreline[1]
         self.set_scoreline(score0, score1)
     
-    def on_death(self, conn_id):
+    def on_death(self, conn_id, weapon = 'world', killer = 'world'):
         client = self.serverdata.conn_data[conn_id]
         
         client['health'] = 0
-                
-        self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'username': client['username']}))
+        
+        s = random.choice(self.settingsdata['messages']['killfeed'])
+        self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'text': s.format(weapon = weapon, killer = killer, victim = client['username']),
+                                                                                    'weapon': weapon}))
         self.output_pipe.send('Player {} died'.format(client['username']))
-        self.send_text(['chat', 'player died'], [client['username']], None, category = 'death')
         
         self.set_mode(client, 'spectator')
         
