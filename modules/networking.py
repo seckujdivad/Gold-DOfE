@@ -340,7 +340,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         for data in self.serverdata.conn_data:
             data['model'] = random.choice(self.serverdata.mapdata['entity models']['player'])
         
-        self.serverdata.gamemode = self.serverdata.mapdata['gamemode']['default']
+        self.set_gamemode(self.serverdata.mapdata['gamemode']['default'])
         
         req = Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
