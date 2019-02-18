@@ -386,7 +386,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         return team_quantities
     
     def handle_items(self):
-        while self.running:
+        while self.serverdata.running:
             start = time.time()
             
             to_remove = []
