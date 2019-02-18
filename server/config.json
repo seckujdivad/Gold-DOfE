@@ -13,7 +13,8 @@
 			"gamemode change": "Gamemode is now\n{0}",
 			"xvx": {
 				"round won": "Team {0} won the round",
-				"game won": "Team {0} won the game"
+				"game won": "Team {0} won the game",
+				"round draw": "Draw\nRound will be replayed"
 			}
 		},
 		"killfeed": [
@@ -29,11 +30,13 @@
 		"gamemodes": {
 			"deathmatch": {
 				"respawn time": 2,
-				"round time": 300
+				"round time": 300,
+				"after game time": 10
 			},
 			"team deathmatch": {
 				"respawn time": 5,
-				"round time": 300
+				"round time": 300,
+				"after game time": 10
 			},
 			"xvx": {
 				"after round time": 2,
@@ -42,7 +45,8 @@
 				"round time": 120
 			},
 			"pve survival": {
-				"respawn time": 10
+				"respawn time": 10,
+				"after game time": 20
 			}
 		}
 	},
