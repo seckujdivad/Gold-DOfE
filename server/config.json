@@ -29,11 +29,11 @@
 		"gamemodes": {
 			"deathmatch": {
 				"respawn time": 2,
-				"round time": 60
+				"round time": 300
 			},
 			"team deathmatch": {
 				"respawn time": 5,
-				"round time": 60
+				"round time": 300
 			},
 			"xvx": {
 				"after round time": 2,
