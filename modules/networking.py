@@ -633,9 +633,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             alive = self.num_alive()
             
             if alive[0] == 0:
-                self.xvx_round_ended(1)
+                self.round_ended(winner = 1)
             elif alive[1] == 0:
-                self.xvx_round_ended(0)
+                self.round_ended(winner = 0)
                 
         elif self.serverdata.gamemode == 1:
             self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['deathmatch']['respawn time'])
@@ -650,6 +650,23 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             
         elif self.serverdata.gamemode == 3:
             self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['pve surival']['respawn time'])
+        
+    def round_ended(self, winner = None):
+        self.serverdata.round_in_progress = False
+        if self.serverdata.gamemode == 0:
+            self.xvx_round_ended(winner = winner)
+        
+        elif self.serverdata.gamemode == 1:
+            time.sleep(self.settingsdata['player']['gamemodes']['deathmatch']['after game time'])
+            self.respawn_all()
+        
+        elif self.serverdata.gamemode == 2:
+            time.sleep(self.settingsdata['player']['gamemodes']['team deathmatch']['after game time'])
+            self.respawn_all()
+        
+        elif self.serverdata.gamemode == 3:
+            time.sleep(self.settingsdata['player']['gamemodes']['pve survival']['after game time'])
+            self.respawn_all()
         
     def num_alive(self):
         count = [0, 0]
@@ -680,6 +697,10 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 self.increment_scoreline(score1 = 1)
                 self.output_pipe.send('Team 2 won the round')
                 self.send_text(['fullscreen', 'xvx', 'round won'], ["2"], category = 'round end')
+            
+            elif winner is None:
+                self.output_pipe.send('Both teams ran out of time')
+                self.send_text(['fullscreen', 'xvx', 'round draw'], category = 'round end')
         
             time.sleep(self.settingsdata['player']['gamemodes']['xvx']['after round time'])
             self.respawn_all()
@@ -726,9 +747,11 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 
                 if tleft is None:
                     time.sleep(0.1)
+                elif tleft <= 0:
+                    self.send_all(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': None}))
+                    self.round_ended()
                 else:
                     delay = tleft - math.floor(tleft)
-                    print(delay)
                     if delay <= 0:
                         time.sleep(0.5)
                     else:
