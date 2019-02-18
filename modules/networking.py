@@ -28,6 +28,8 @@ class Server:
             looptime = 1 / tickrate
             gamemode = None
             scoreline = [0, 0]
+            round_start_time = None
+            round_in_progress = False
             running = True
         self.serverdata = serverdata
         
@@ -57,9 +59,13 @@ class Server:
         
         while self.serverdata.mapdata is None:
             time.sleep(0.01) #refuse to come online until a map is loaded
+        
+        self.serverdata.round_start_time = time.time()
+        self.serverdata.round_in_progress = True
 
         threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
         threading.Thread(target = self.handle_items, name = 'Item handler', daemon = True).start()
+        threading.Thread(target = self.push_timeleftd, name = 'Round timer daemon', daemon = True).start()
         
     def acceptance_thread(self):
         conn_id = 0
@@ -144,6 +150,9 @@ class Server:
                             
                     elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
                         self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([conn_id])}))
+                    
+                    elif req.subcommand == 'round time':
+                        self.send(connection, Request(command = 'var update w', subcommand = 'round time', arguments = {'value': self.get_timeleft()}))
                         
                 elif req.command == 'var update w': #client wants to update a variable on the server
                     if req.subcommand == 'position': #client wants to update it's own position
@@ -556,6 +565,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         for client in self.serverdata.conn_data:
             if client['active']:
                 self.respawn(client['id'])
+                
+        self.serverdata.round_in_progress = True
+        self.serverdata.round_start_time = time.time()
     
     def respawn(self, conn_id):
         client = self.serverdata.conn_data[conn_id]
@@ -650,6 +662,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         threading.Thread(target = self._xvx_round_ended, args = [winner]).start()
     
     def _xvx_round_ended(self, winner):
+        self.serverdata.round_in_progress = False
+        
         if winner == 0 and self.serverdata.scoreline[0] + 1 == self.settingsdata['player']['gamemodes']['xvx']['min rounds']:
             self.xvx_game_won(0)
             
@@ -689,6 +703,38 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
     def _xvx_game_won(self):
         time.sleep(self.settingsdata['player']['gamemodes']['xvx']['after game time'])
         self.set_gamemode(0, force = True)
+    
+    def gamemode_text(self):
+        return ['xvx', 'deathmatch', 'team deathmatch', 'pve survival'][self.serverdata.gamemode]
+    
+    def get_timeleft(self):
+        if self.serverdata.round_in_progress:
+            gamemode_data = self.settingsdata['player']['gamemodes'][self.gamemode_text()]
+            if 'round time' in gamemode_data:
+                return gamemode_data['round time'] + self.serverdata.round_start_time - time.time()
+            else:
+                return None
+        else:
+            return None
+    
+    def push_timeleftd(self):
+        while self.serverdata.running:
+            if self.serverdata.round_in_progress:
+                tleft = self.get_timeleft()
+                
+                self.send_all(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': tleft}))
+                
+                if tleft is None:
+                    time.sleep(0.1)
+                else:
+                    delay = tleft - math.floor(tleft)
+                    print(delay)
+                    if delay <= 0:
+                        time.sleep(0.5)
+                    else:
+                        time.sleep(delay)
+            else:
+                time.sleep(0.1)
         
 class Client:
     def __init__(self, server_data, ui):
