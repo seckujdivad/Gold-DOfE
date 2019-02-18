@@ -38,7 +38,8 @@
 			"xvx": {
 				"after round time": 2,
 				"min rounds": 5,
-				"after game time": 5
+				"after game time": 5,
+				"round time": 120
 			},
 			"pve survival": {
 				"respawn time": 10
