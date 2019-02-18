@@ -161,6 +161,15 @@ class Game:
                 
             elif request.subcommand == 'scoreline':
                 self.scoreline_display.set_twoitems(*request.arguments['scores'])
+            
+            elif request.subcommand == 'round time':
+                if request.arguments['value'] is None or request.arguments['value'] <= 0:
+                    self.engine.map.round_timer.set('')
+                else:
+                    request.arguments['value'] = math.ceil(request.arguments['value'])
+                    t_mins = math.floor(request.arguments['value'] / 60)
+                    t_secs = '{:0>2}'.format(math.ceil(request.arguments['value'] - t_mins * 60))
+                    self.engine.map.round_timer.set_twoitems(t_mins, t_secs, sep = ':')
                 
             else:
                 self.vars[request.subcommand] = request.arguments['value']
