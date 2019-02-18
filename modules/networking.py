@@ -28,6 +28,7 @@ class Server:
             looptime = 1 / tickrate
             gamemode = None
             scoreline = [0, 0]
+            running = True
         self.serverdata = serverdata
         
         self.frame = frame
@@ -62,7 +63,7 @@ class Server:
         
     def acceptance_thread(self):
         conn_id = 0
-        while True:
+        while self.serverdata.running:
             self.output_pipe.send('Ready for incoming connections')
             
             conn, addr = self.connection.accept()
@@ -97,7 +98,7 @@ class Server:
         self.send(connection, Request(command = 'var update r', subcommand = 'username'))
         
         cont = True
-        while cont:
+        while cont and self.serverdata.running:
             reqs = []
             try:
                 data = connection.recv(4096).decode('UTF-8')
@@ -371,6 +372,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             self.send(connection, data)
     
     def quit(self):
+        self.serverdata.running = False
         self.connection.close()
     
     def get_team_id(self, team_quantities):
@@ -384,7 +386,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         return team_quantities
     
     def handle_items(self):
-        while True:
+        while self.running:
             start = time.time()
             
             to_remove = []
