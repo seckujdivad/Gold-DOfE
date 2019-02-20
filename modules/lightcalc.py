@@ -31,7 +31,7 @@ class CalcSegment:
             if dist == 0:
                 source_light = self.materials[source['material']]['light']['emit']
             else:
-                source_light = (1 / pow(dist, 2)) * self.materials[source['material']]['light']['emit'] * self.map_data['lighting']['dist mult']
+                source_light = (1 / pow(dist * self.map_data['lighting']['dist mult'], 2)) * self.materials[source['material']]['light']['emit']
                 if self.shadows:
                     for distance, panel in passthroughs:
                         if self.materials[panel['material']]['light']['block'] == 1: #don't bother doing the light calcuation if one of the panels will block all light
