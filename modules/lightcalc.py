@@ -28,22 +28,19 @@ class CalcSegment:
         
             dist = math.hypot(x - source['coordinates'][0], y - source['coordinates'][1]) * self.map_data['lighting']['dist mult']
             
-            
-            decrease = 0
-            blocked = False
-            
-            if self.shadows:
-                for passthrough in passthroughs:
-                    if self.materials[passthrough[1]['material']]['light']['block'] == 1:
-                        blocked = True
-                    decrease += self.materials[passthrough[1]['material']]['light']['block'] * passthrough[0] * self.map_data['lighting']['dist mult'] * self.map_data['lighting']['dist mult']
-            
             if dist == 0:
-                light_level = self.map_data['lighting']['dynamic range']
-            elif blocked:
-                pass
+                source_light = self.materials[source['material']]['light']['emit']
             else:
-                light_level += (1 / pow(dist, 2)) * self.materials[source['material']]['light']['emit'] - decrease
+                source_light = (1 / pow(dist, 2)) * self.materials[source['material']]['light']['emit'] * self.map_data['lighting']['dist mult']
+                if self.shadows:
+                    for distance, panel in passthroughs:
+                        if self.materials[panel['material']]['light']['block'] == 1: #don't bother doing the light calcuation if one of the panels will block all light
+                            source_light = 0
+                        else:
+                            source_light -= distance * self.materials[panel['material']]['light']['block'] * self.map_data['lighting']['dist mult']
+            
+            light_level += source_light
+                
         return int((min(light_level, self.map_data['lighting']['dynamic range']) / self.map_data['lighting']['dynamic range']) * 255)
 
     def line_passes_through(self, x0, y0, x1, y1, panel):
@@ -78,4 +75,3 @@ class CalcSegment:
             if len(intersections) == 1:
                 intersections.append([x0, y0])
             return math.hypot(intersections[0][0] - intersections[1][0], intersections[1][1] - intersections[0][1])
-        
