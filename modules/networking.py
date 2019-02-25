@@ -851,19 +851,22 @@ class Request:
    
     def dict_in(self, data):
         self._clear_all_values()
-        
-        if 'command' in data:
-            self.command = data['command']
+
+        if type(data) == dict:
+            if 'command' in data:
+                self.command = data['command']
+            else:
+                self.command = ''
+            if 'subcommand' in data:
+                self.subcommand = data['subcommand']
+            else:
+                self.subcommand = None
+            if 'arguments' in data:
+                self.arguments = data['arguments']
+            else:
+                self.arguments = []
         else:
-            self.command = ''
-        if 'subcommand' in data:
-            self.subcommand = data['subcommand']
-        else:
-            self.subcommand = None
-        if 'arguments' in data:
-            self.arguments = data['arguments']
-        else:
-            self.arguments = []
+            raise TypeError('Can\'t use type {} - {}'.format(type(data).__name__, data))
         
     def _clear_all_values(self):
         self.request_id = None
