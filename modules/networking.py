@@ -99,9 +99,12 @@ class Server:
                                               'x': 0,
                                               'y': 0,
                                               'rotation': 0
-                                          }})
+                                          },
+                                          "last use": None})
         
         self.send(connection, Request(command = 'var update r', subcommand = 'username'))
+        
+        conn_data = self.serverdata.conn_data[conn_id]
         
         cont = True
         while cont and self.serverdata.running:
@@ -146,10 +149,10 @@ class Server:
                         
                     elif req.subcommand == 'player model': #client wants to know it's own player model
                         if self.serverdata.map != None:
-                            self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.serverdata.conn_data[conn_id]['model']}))
+                            self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': conn_data['model']}))
                     
                     elif req.subcommand == 'health':
-                        self.send(connection, Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.serverdata.conn_data[conn_id]['health']}))
+                        self.send(connection, Request(command = 'var update w', subcommand = 'health', arguments = {'value': conn_data['health']}))
                             
                     elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
                         self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([conn_id])}))
@@ -159,24 +162,24 @@ class Server:
                         
                 elif req.command == 'var update w': #client wants to update a variable on the server
                     if req.subcommand == 'position': #client wants to update it's own position
-                        self.serverdata.conn_data[conn_id]['position'] = {'x': req.arguments['x'],
+                        conn_data['position'] = {'x': req.arguments['x'],
                                                                           'y': req.arguments['y'],
                                                                           'rotation': req.arguments['rotation']}
                     elif req.subcommand == 'health': #client wants to update it's own health
                         self.update_health(self.serverdata.conn_data[conn_id], req.arguments['value'], weapon = 'environment', killer = 'world')
                     
                     elif req.subcommand == 'username':
-                        self.output_pipe.send('{} changed name to {}'.format(self.serverdata.conn_data[conn_id]['username'], req.arguments['value']))
+                        self.output_pipe.send('{} changed name to {}'.format(conn_data['username'], req.arguments['value']))
                         self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
-                        self.database.user_connected(self.serverdata.conn_data[conn_id]['username'])
-                        self.send_text(['chat', 'client changed name'], [self.serverdata.conn_data[conn_id]['username']], connection)
+                        self.database.user_connected(conn_data['username'])
+                        self.send_text(['chat', 'client changed name'], [conn_data['username']], connection)
                         
                 elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
                     self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
                     self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
                     self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
                     
-                    self.set_mode(self.serverdata.conn_data[conn_id], 'player')
+                    self.set_mode(conn_data, 'player')
                     
                     spawnpoint = self.generate_spawn(conn_id)
                     self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
@@ -195,16 +198,16 @@ class Server:
                                                       'rotation': req.arguments['rotation'],
                                                       'position': req.arguments['position'],
                                                       'new': True,
-                                                      'creator': self.serverdata.conn_data[conn_id]})
+                                                      'creator': conn_data})
                     
                     self.serverdata.item_ticket += 1
                 
                 elif req.command == 'say':
-                    self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.serverdata.conn_data[conn_id]['username'], req.arguments['text'])}))
+                    self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.conn_data['username'], req.arguments['text'])}))
                 
-        self.serverdata.conn_data[conn_id]['active'] = False
+        conn_data['active'] = False
         
-        self.output_pipe.send('Player {} disconnected'.format(self.serverdata.conn_data[conn_id]['username']))
+        self.output_pipe.send('Player {} disconnected'.format(conn_data['username']))
     
     def handle_command(self, command, source = 'internal'):
         if command == '' or command.startswith(' '):
