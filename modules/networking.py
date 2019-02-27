@@ -125,11 +125,14 @@ class Server:
                 
                 for json_data in output:
                     reqs.append(Request(json_data))
+                    
             except ConnectionResetError or ConnectionAbortedError:
                 req = Request(command = 'disconnect', arguments = {'clean': False}) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
                 cont = False
+                
             except json.decoder.JSONDecodeError:
                 pass
+                
             for req in reqs:
                 if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
                     self.output_pipe.send('User {} disconnected'.format(address[0]))
