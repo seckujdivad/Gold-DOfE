@@ -831,10 +831,14 @@ class Request:
         if not data == {}:
             if type(data) == str:
                 self.json_in(data)
-            else:
+            elif type(data) == dict:
                 self.dict_in(data)
+            else:
+                raise TypeError('Data must be dict or str, not {} (value = {})'.format(type(data).__name__, data))
+                
         elif not args == {}:
             self.dict_in(args)
+            
         else:
             self.dict_in(data)
     
@@ -851,22 +855,19 @@ class Request:
    
     def dict_in(self, data):
         self._clear_all_values()
-
-        if type(data) == dict:
-            if 'command' in data:
-                self.command = data['command']
-            else:
-                self.command = ''
-            if 'subcommand' in data:
-                self.subcommand = data['subcommand']
-            else:
-                self.subcommand = None
-            if 'arguments' in data:
-                self.arguments = data['arguments']
-            else:
-                self.arguments = []
+        
+        if 'command' in data:
+            self.command = data['command']
         else:
-            raise TypeError('Can\'t use type {} - {}'.format(type(data).__name__, data))
+            self.command = ''
+        if 'subcommand' in data:
+            self.subcommand = data['subcommand']
+        else:
+            self.subcommand = None
+        if 'arguments' in data:
+            self.arguments = data['arguments']
+        else:
+            self.arguments = []
         
     def _clear_all_values(self):
         self.request_id = None
