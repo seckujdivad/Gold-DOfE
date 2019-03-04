@@ -14,5 +14,6 @@
 		"type": "circular",
 		"radius": 32
 	},
-	"model": "swordswipe"
+	"model": "swordswipe",
+	"use cooldown": 1
 }

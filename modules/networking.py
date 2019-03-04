@@ -16,21 +16,22 @@ import modules.logging
 class Server:
     def __init__(self, port_, frame = None):
         class serverdata:
-            host = ''
-            port = port_
-            connections = []
-            map = None
-            mapdata = None
+            host = '' #hostname of server
+            port = port_ #port server is operating on
+            connections = [] #open or closed connections with clients
+            map = None #map name
+            mapdata = None #map attributes
             conn_data = [] #individual spaces for connections to store data to be publicly accessible
             item_data = [] #store ongoing items
             item_ticket = 0 #allow clients to know which items are which from tick to tick
             tickrate = 10 #times to process items per second
-            looptime = 1 / tickrate
-            gamemode = None
-            scoreline = [0, 0]
-            round_start_time = None
-            round_in_progress = False
-            running = True
+            looptime = 1 / tickrate #time per loop
+            gamemode = None #current gamemode int
+            scoreline = [0, 0] #current game scoreline
+            round_start_time = None #timestamp for start of round
+            round_in_progress = False #whether or not a round is in progress
+            running = True #whether or not server is running
+            item_dicts = {} #store attributes of the map's possible items
         self.serverdata = serverdata
         
         self.frame = frame
@@ -187,20 +188,18 @@ class Server:
                     self.send(connection, Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.settingsdata['network']['accurate hit detection']]))
                     
                     self.send_text(['fullscreen', 'welcome'], None, connection, category = 'welcome')
-                elif req.command == 'use':
-                    with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', req.arguments['item']), 'r') as file:
-                        item_data = json.load(file)
-                    
-                    self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
-                                                      'data': item_data,
-                                                      'file name': req.arguments['item'],
-                                                      'distance travelled': 0,
-                                                      'rotation': req.arguments['rotation'],
-                                                      'position': req.arguments['position'],
-                                                      'new': True,
-                                                      'creator': conn_data})
-                    
-                    self.serverdata.item_ticket += 1
+                elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
+                    if conn_data['last use'] is None or (time.time() - conn_data['last use']) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
+                        self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
+                                                          'data': self.serverdata.item_dicts[req.arguments['item']],
+                                                          'file name': req.arguments['item'],
+                                                          'distance travelled': 0,
+                                                          'rotation': req.arguments['rotation'],
+                                                          'position': req.arguments['position'],
+                                                          'new': True,
+                                                          'creator': conn_data})
+                        
+                        self.serverdata.item_ticket += 1
                 
                 elif req.command == 'say':
                     self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.conn_data['username'], req.arguments['text'])}))
@@ -366,6 +365,11 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 self.send(conn_data['connection'], req)
                 req = Request(command = 'var update w', subcommand = 'team', arguments = {'value': conn_data['team']})
                 self.send(conn_data['connection'], req)
+        
+        self.serverdata.item_dicts = {}
+        for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items')):
+            with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', name), 'r') as file:
+                self.serverdata.item_dicts[name] = json.load(file)
                 
     def kick_address(self, target_address):
         i = 0
