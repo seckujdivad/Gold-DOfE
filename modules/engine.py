@@ -10,7 +10,7 @@ import random
 import math
 import importlib.util
 
-import modules.networking
+import modules.netclients
 import modules.logging
 import modules.bettercanvas
 
@@ -70,7 +70,7 @@ class Game:
         self.message_pipe.send(['info', 'Connected to {}:{}'.format(self.client.serverdata.host, self.client.serverdata.port)])
         
         self.client.recv_binds.append(self.recv_handler)
-        self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'map'))
+        self.client.send(modules.netclients.Request(command = 'var update r', subcommand = 'map'))
         
         self.running = True
         threading.Thread(target = self.main, daemon = True).start()
@@ -82,9 +82,8 @@ class Game:
     def main(self):
         while self.running:
             time.sleep(0.05)
-            if not self.engine.map.player == None:
-                self.client.send(modules.networking.Request(command = 'var update w', subcommand = 'position', arguments = {'x': self.engine.map.player.pos.x, 'y': self.engine.map.player.pos.y, 'rotation': self.engine.map.player.pos.rotation}))
-            #self.client.send(modules.networking.Request(command = 'var update r', subcommand = 'all player positions'))
+            if self.engine.map.player is not None:
+                self.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'position', arguments = {'x': self.engine.map.player.pos.x, 'y': self.engine.map.player.pos.y, 'rotation': self.engine.map.player.pos.rotation}))
     
     def close(self):
         self.running = False
@@ -184,7 +183,7 @@ class Game:
                 
         elif request.command == 'var update r':
             if request.subcommand == 'username':
-                self.client.send(modules.networking.Request(command = 'var update w', subcommand = 'username', arguments = {'value': self.settingsdict['user']['name']}))
+                self.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'username', arguments = {'value': self.settingsdict['user']['name']}))
         
         elif request.command == 'update items':
             if request.subcommand == 'server tick':
@@ -462,7 +461,7 @@ class Engine:
             self.map.invdisp.select_index(0)
             
             #tell the server that the player has loaded in
-            self.game.client.send(modules.networking.Request(command = 'map loaded'))
+            self.game.client.send(modules.netclients.Request(command = 'map loaded'))
             self.log.add('map', 'Finished loading map "{}"'.format(self.map.name))
             
             #centre scoreline display
@@ -542,7 +541,7 @@ class Engine:
     
     def use_current_item(self):
         if self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['quantity'] > 0:
-            self.game.client.send(modules.networking.Request(command = 'use',
+            self.game.client.send(modules.netclients.Request(command = 'use',
                                                              subcommand = 'client item',
                                                              arguments = {'item': self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['file name'],
                                                                           'rotation': self.map.player.angle_to_pos(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx(), self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty()),
@@ -777,7 +776,7 @@ class Entity:
         self.health = value
         if not self.engine.map.healthbar == None: #make sure healthbar has been created
             self.engine.map.healthbar.set_value(self.health)
-        self.engine.game.client.send(modules.networking.Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.health}))
+        self.engine.game.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.health}))
     
     def angle_to_pos(self, x, y):
         dx = x - self.pos.x
@@ -923,7 +922,7 @@ class CanvasMessages:
     def send_message(self, event = None):
         text = self.textentry_var.get()
         
-        self.canvcont.game.client.send(modules.networking.Request(command = 'say', arguments = {'text': text}))
+        self.canvcont.game.client.send(modules.netclients.Request(command = 'say', arguments = {'text': text}))
         
         self.textentry_var.set('')
         

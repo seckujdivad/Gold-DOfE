@@ -8,6 +8,7 @@ import modules.engine
 import modules.logging
 import modules.networking
 import modules.editor
+import modules.netclients
 
 class App:
     def __init__(self):
@@ -74,7 +75,7 @@ class App:
         if server_data['port'] == 'normal':
             server_data['port'] = settingsdata['network']['default port']
             
-        self.client = modules.networking.Client(server_data, self.ui)
+        self.client = modules.netclients.Client(server_data, self.ui)
         
         self.ui.load(self.ui.uiobjects.game)
     
