@@ -72,10 +72,9 @@ class Client:
         self.connection.close()
 
 class NetClient:
-    def __init__(self, address, connection, server, passthroughs):
+    def __init__(self, address, connection, passthroughs):
         self.address = address
         self.connection = connection
-        self.server = server
         self.passthroughs = passthroughs
         
         self.running = True
