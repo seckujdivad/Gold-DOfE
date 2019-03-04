@@ -70,3 +70,50 @@ class Client:
     
     def disconnect(self):
         self.connection.close()
+
+class NetClient:
+    def __init__(self, address, connection, server, passthroughs):
+        self.address = address
+        self.connection = connection
+        self.server = server
+        self.passthroughs = passthroughs
+        
+        self.running = True
+        
+        threading.Thread(target = self.listen, name = 'Client listen daemon').start()
+    
+    def listen(self):
+        while self.running:
+            reqs = []
+            try:
+                data = self.connection.recv(4096).decode('UTF-8')
+                
+                #unpack the data - often will get multiple dictionaries
+                escape_level = 0
+                output = []
+                current_string = ''
+                for char in data:
+                    if char == '{':
+                        escape_level += 1
+                    elif char == '}':
+                        escape_level -= 1
+                    current_string += char
+                    if escape_level == 0 and not len(current_string) == 0:
+                        output.append(current_string)
+                        current_string = ''
+                
+                for json_data in output:
+                    reqs.append(Request(json_data))
+                    
+            except ConnectionResetError or ConnectionAbortedError:
+                reqs.append(Request(command = 'disconnect', arguments = {'clean': False})) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
+                self.running = False
+            
+            for passthrough in self.passthroughs:
+                for req in reqs:
+                    passthrough.handle(req)
+        self.connection.close()
+
+class ServerClient:
+    def __init__(self):
+        pass
