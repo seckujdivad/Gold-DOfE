@@ -246,6 +246,10 @@ class Game:
         
         elif request.command == 'clear inventory':
             self.engine.map.invdisp.make_empty()
+        
+        elif request.command == 'increment inventory slot':
+            if not self.engine.map.invdisp.get_slot_info(request.arguments['index'])['data']['unlimited']:
+                self.engine.map.invdisp.increment_slot(request.arguments['index'], request.arguments['increment'])
                 
 
 class Engine:
@@ -537,12 +541,13 @@ class Engine:
             return has_smaller and has_bigger
     
     def use_current_item(self):
-        if not self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['quantity'] == 0:
-            self.game.client.send(modules.networking.Request(command = 'use', subcommand = 'client item', arguments = {'item': self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['file name'],
-                                'rotation': self.map.player.angle_to_pos(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx(), self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty()),
-                                'position': [self.map.player.pos.x, self.map.player.pos.y]}))
-            if not self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['unlimited']:
-                self.map.invdisp.increment_slot(self.map.invdisp.selection_index, -1)
+        if self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['quantity'] > 0:
+            self.game.client.send(modules.networking.Request(command = 'use',
+                                                             subcommand = 'client item',
+                                                             arguments = {'item': self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['file name'],
+                                                                          'rotation': self.map.player.angle_to_pos(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx(), self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty()),
+                                                                          'position': [self.map.player.pos.x, self.map.player.pos.y],
+                                                                          'slot': self.map.invdisp.selection_index}))
     
     def pulse_item_transparency(self, model, timescale = 0.2):
         if not self.map.pulse_in_progress:
@@ -1158,7 +1163,10 @@ class InventoryBar:
                 self.canvcont.itemconfigure(self.inv_items[index]['count obj'], text = str(quantity))
     
     def get_item_info(self, item):
-        return self.items_data[item]
+        if item in self.items_data:
+            return self.items_data[item]
+        else:
+            return {}
     
     def get_slot_info(self, index):
         if self.inv_items[index]['quantity'] == 0:
@@ -1167,6 +1175,7 @@ class InventoryBar:
             data = self.get_item_info(self.inv_items[index]['item'])
         data['quantity'] = self.inv_items[index]['quantity']
         data['file name'] = self.inv_items[index]['item']
+        data['data'] = self.get_item_info(self.inv_items[index]['item'])
         return data
 
     def make_empty(self):

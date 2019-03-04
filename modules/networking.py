@@ -188,6 +188,7 @@ class Server:
                     self.send(connection, Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.settingsdata['network']['accurate hit detection']]))
                     
                     self.send_text(['fullscreen', 'welcome'], None, connection, category = 'welcome')
+                    
                 elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
                     if conn_data['last use'] is None or (time.time() - conn_data['last use']) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
                         self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
@@ -200,6 +201,11 @@ class Server:
                                                           'creator': conn_data})
                         
                         self.serverdata.item_ticket += 1
+                        conn_data['last use'] = time.time()
+                        
+                        self.send(connection, Request(command = 'increment inventory slot',
+                                                      arguments = {'index': req.arguments['slot'],
+                                                                   'increment': -1}))
                 
                 elif req.command == 'say':
                     self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.conn_data['username'], req.arguments['text'])}))
