@@ -12,6 +12,7 @@ import math
 
 import modules.servercmds
 import modules.logging
+import modules.netclients
 
 class Server:
     def __init__(self, port_, frame = None):
@@ -33,6 +34,8 @@ class Server:
             running = True #whether or not server is running
             item_dicts = {} #store attributes of the map's possible items
         self.serverdata = serverdata
+        
+        self.clients = []
         
         self.frame = frame
         
@@ -69,150 +72,22 @@ class Server:
         threading.Thread(target = self.push_timeleftd, name = 'Round timer daemon', daemon = True).start()
         
     def acceptance_thread(self):
-        conn_id = 0
         while self.serverdata.running:
             self.output_pipe.send('Ready for incoming connections')
             
             conn, addr = self.connection.accept()
-            threading.Thread(target = self.connection_handler, args = [addr, conn, conn_id], daemon = True).start()
             self.serverdata.connections.append([addr, conn])
+            
+            netcl = modules.netclients.NetClient(addr, conn)
+            client = modules.netclients.ServerClient(self, netcl)
+            netcl.start()
+            
+            self.clients.append(client)
             
             for script in self.settingsdata['scripts']['userconnect']:
                 with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
                     text = file.read()
                 self.output_pipe.send(self.run_script(text))
-            
-            conn_id += 1
-    
-    def connection_handler(self, address, connection, conn_id):
-        self.output_pipe.send('New connection from {}'.format(address[0]))
-        
-        self.serverdata.conn_data.append({'model': random.choice(self.serverdata.mapdata['entity models']['player']),
-                                          'connection': connection,
-                                          'active': True,
-                                          'address': address,
-                                          'id': conn_id,
-                                          'team': self.get_team_id(self.get_team_distributions()),
-                                          'health': 100,
-                                          'username': 'guest',
-                                          'mode': 'player',
-                                          'position': {
-                                              'x': 0,
-                                              'y': 0,
-                                              'rotation': 0
-                                          },
-                                          "last use": None})
-        
-        self.send(connection, Request(command = 'var update r', subcommand = 'username'))
-        
-        conn_data = self.serverdata.conn_data[conn_id]
-        
-        cont = True
-        while cont and self.serverdata.running:
-            reqs = []
-            try:
-                data = connection.recv(4096).decode('UTF-8')
-                
-                #unpack the data - often will get multiple dictionaries
-                escape_level = 0
-                output = []
-                current_string = ''
-                for char in data:
-                    if char == '{':
-                        escape_level += 1
-                    elif char == '}':
-                        escape_level -= 1
-                    current_string += char
-                    if escape_level == 0 and not len(current_string) == 0:
-                        output.append(current_string)
-                        current_string = ''
-                
-                for json_data in output:
-                    reqs.append(Request(json_data))
-                    
-            except ConnectionResetError or ConnectionAbortedError:
-                req = Request(command = 'disconnect', arguments = {'clean': False}) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
-                cont = False
-                
-            except json.decoder.JSONDecodeError:
-                pass
-                
-            for req in reqs:
-                if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
-                    self.output_pipe.send('User {} disconnected'.format(address[0]))
-                    if 'clean' in req.arguments and not req.arguments['clean']:
-                        self.output_pipe.send('Disconnect was not clean'.format(address[0]))
-                        
-                elif req.command == 'var update r': #client wants the server to send it a value
-                
-                    if req.subcommand == 'map': #client wants the server to send the name of the current map
-                        self.send(connection, Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map}))
-                        
-                    elif req.subcommand == 'player model': #client wants to know it's own player model
-                        if self.serverdata.map != None:
-                            self.send(connection, Request(command = 'var update w', subcommand = 'player model', arguments = {'value': conn_data['model']}))
-                    
-                    elif req.subcommand == 'health':
-                        self.send(connection, Request(command = 'var update w', subcommand = 'health', arguments = {'value': conn_data['health']}))
-                            
-                    elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
-                        self.send(connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([conn_id])}))
-                    
-                    elif req.subcommand == 'round time':
-                        self.send(connection, Request(command = 'var update w', subcommand = 'round time', arguments = {'value': self.get_timeleft()}))
-                        
-                elif req.command == 'var update w': #client wants to update a variable on the server
-                    if req.subcommand == 'position': #client wants to update it's own position
-                        conn_data['position'] = {'x': req.arguments['x'],
-                                                                          'y': req.arguments['y'],
-                                                                          'rotation': req.arguments['rotation']}
-                    elif req.subcommand == 'health': #client wants to update it's own health
-                        self.update_health(self.serverdata.conn_data[conn_id], req.arguments['value'], weapon = 'environment', killer = 'world')
-                    
-                    elif req.subcommand == 'username':
-                        self.output_pipe.send('{} changed name to {}'.format(conn_data['username'], req.arguments['value']))
-                        self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
-                        self.database.user_connected(conn_data['username'])
-                        self.send_text(['chat', 'client changed name'], [conn_data['username']], connection)
-                        
-                elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
-                    self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
-                    self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
-                    self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
-                    
-                    self.set_mode(conn_data, 'player')
-                    
-                    spawnpoint = self.generate_spawn(conn_id)
-                    self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
-                    
-                    self.send(connection, Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.settingsdata['network']['accurate hit detection']]))
-                    
-                    self.send_text(['fullscreen', 'welcome'], None, connection, category = 'welcome')
-                    
-                elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
-                    if conn_data['last use'] is None or (time.time() - conn_data['last use']) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
-                        self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
-                                                          'data': self.serverdata.item_dicts[req.arguments['item']],
-                                                          'file name': req.arguments['item'],
-                                                          'distance travelled': 0,
-                                                          'rotation': req.arguments['rotation'],
-                                                          'position': req.arguments['position'],
-                                                          'new': True,
-                                                          'creator': conn_data})
-                        
-                        self.serverdata.item_ticket += 1
-                        conn_data['last use'] = time.time()
-                        
-                        self.send(connection, Request(command = 'increment inventory slot',
-                                                      arguments = {'index': req.arguments['slot'],
-                                                                   'increment': -1}))
-                
-                elif req.command == 'say':
-                    self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.conn_data['username'], req.arguments['text'])}))
-                
-        conn_data['active'] = False
-        
-        self.output_pipe.send('Player {} disconnected'.format(conn_data['username']))
     
     def handle_command(self, command, source = 'internal'):
         if command == '' or command.startswith(' '):

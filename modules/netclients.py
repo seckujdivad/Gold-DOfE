@@ -74,11 +74,14 @@ class Client:
         self.connection.close()
 
 class NetClient:
-    def __init__(self, address, connection, passthroughs):
+    def __init__(self, address, connection):
         self.address = address
         self.connection = connection
-        self.passthroughs = passthroughs
         
+        self.passthroughs = []
+        self.running = False
+    
+    def start(self):
         self.running = True
         
         threading.Thread(target = self.listen, name = 'Client listen daemon').start()
@@ -125,6 +128,8 @@ class ServerClient:
     def __init__(self, server, interface):
         self.server = server
         self.interface = interface
+        
+        self.interface.passthroughs.append(self)
         
         class metadata:
             model = None
