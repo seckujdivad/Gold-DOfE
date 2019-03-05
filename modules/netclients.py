@@ -3,6 +3,7 @@ import socket
 import threading
 import json
 import random
+import time
 
 from modules.networking import Request
 
@@ -151,7 +152,7 @@ class ServerClient:
         'Send a string to the server console'
         self.server.output_pipe.send(string)
     
-    def update_health(self, value, weapon, killer):
+    def update_health(self, value, weapon = None, killer = None):
         old_health = self.metadata.health
         self.metadata.health = value
         
@@ -200,9 +201,9 @@ class ServerClient:
             self.respawn_after(self.server.settingsdata['player']['gamemodes']['deathmatch']['respawn time'])
             
         elif self.serverdata.gamemode == 2:
-            if client['team'] == 0:
+            if self.metadata.team_id == 0:
                 self.server.increment_scoreline(score0 = 1)
-            elif client['team'] == 1:
+            elif self.metadata.team_id == 1:
                 self.server.increment_scoreline(score1 = 1)
                 
             self.respawn_after(self.server.settingsdata['player']['gamemodes']['team deathmatch']['respawn time'])
@@ -221,7 +222,7 @@ class ServerClient:
         self.update_health(100)
         self.send(Request(command = 'clear inventory'))
         self.send(Request(command = 'give',
-                          arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
+                          arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.metadata.team_id]}))
     
     def respawn_after(self, delay):
         threading.Thread(target = self._respawn_after, args = [delay], name = 'Scheduled respawn', daemon = True).start()
@@ -255,10 +256,10 @@ class ServerClient:
                     self.send(Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.metadata.model}))
             
             elif req.subcommand == 'health':
-                self.send(Request(command = 'var update w', subcommand = 'health', arguments = {'value': conn_data['health']}))
+                self.send(Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.metadata.health}))
                 
             elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
-                self.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.server.get_all_positions([conn_id])}))
+                self.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.server.get_all_positions([self])}))
             
             elif req.subcommand == 'round time':
                 self.send(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': self.server.get_timeleft()}))
@@ -273,27 +274,27 @@ class ServerClient:
                 self.update_health(req.arguments['value'], weapon = 'environment', killer = 'world')
             
             elif req.subcommand == 'username':
-                self.output_console('{} changed name to {}'.format(conn_data['username'], req.arguments['value']))
-                self.serverdata.conn_data[conn_id]['username'] = req.arguments['value']
-                self.database.user_connected(conn_data['username'])
-                self.send_text(['chat', 'client changed name'], [conn_data['username']], connection)
+                self.output_console('{} changed name to {}'.format(self.metadata.username, req.arguments['value']))
+                self.metadata.username = req.arguments['value']
+                self.server.database.user_connected(self.metadata.username)
+                self.client_display_text(['chat', 'client changed name'], [self.metadata.username])
                 
         elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
-            self.send(connection, Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.serverdata.conn_data[conn_id]['team']]}))
-            self.send(connection, Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.serverdata.conn_data[conn_id]['team']}))
-            self.send(connection, Request(command = 'var update r', subcommand = 'username', arguments = {}))
+            self.send(Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.metadata.team_id]}))
+            self.send(Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.metadata.team_id}))
+            self.send(Request(command = 'var update r', subcommand = 'username', arguments = {}))
             
-            self.set_mode(conn_data, 'player')
+            self.set_mode('player')
             
-            spawnpoint = self.generate_spawn(conn_id)
-            self.send(connection, Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
+            spawnpoint = self.generate_spawn()
+            self.send(Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
             
-            self.send(connection, Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.settingsdata['network']['accurate hit detection']]))
+            self.send(Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.server.settingsdata['network']['accurate hit detection']]))
             
-            self.send_text(['fullscreen', 'welcome'], None, connection, category = 'welcome')
+            self.client_display_text(['fullscreen', 'welcome'], None, category = 'welcome')
             
         elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
-            if conn_data['last use'] is None or (time.time() - conn_data['last use']) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
+            if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
                 self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
                                                   'data': self.serverdata.item_dicts[req.arguments['item']],
                                                   'file name': req.arguments['item'],
@@ -301,14 +302,14 @@ class ServerClient:
                                                   'rotation': req.arguments['rotation'],
                                                   'position': req.arguments['position'],
                                                   'new': True,
-                                                  'creator': conn_data})
+                                                  'creator': self})
                 
                 self.serverdata.item_ticket += 1
-                conn_data['last use'] = time.time()
+                self.metadata.item_use_timestamp = time.time()
                 
-                self.send(connection, Request(command = 'increment inventory slot',
-                                              arguments = {'index': req.arguments['slot'],
-                                                           'increment': -1}))
+                self.send(Request(command = 'increment inventory slot',
+                                  arguments = {'index': req.arguments['slot'],
+                                               'increment': -1}))
         
         elif req.command == 'say':
-            self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.conn_data['username'], req.arguments['text'])}))
+            self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}))
