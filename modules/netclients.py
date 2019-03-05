@@ -115,7 +115,10 @@ class NetClient:
         self.connection.close()
     
     def send(self, req):
-        self.connection.send(req.as_json().encode())
+        self.send_to(self.connection, req)
+    
+    def send_to(self, connection, req):
+        connection.send(req.as_json().encode())
 
 class ServerClient:
     def __init__(self, server, interface):
@@ -125,6 +128,7 @@ class ServerClient:
         class metadata:
             model = None
             mode = None
+            active = True
             
             class pos:
                 x = 0
@@ -140,6 +144,7 @@ class ServerClient:
         
         self.send_all = self.server.send_all
         self.send = self.interface.send
+        self.send_to = self.interface.send_to
         self.client_display_text = self.server.send_text
     
     def output_console(self, string):
@@ -169,8 +174,8 @@ class ServerClient:
             self.output_console('{} is now playing'.format(self.metadata.username))
             
             for client in self.serverdata.conn_data:
-                if client['active']:
-                    self.send(client['connection'], Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([client['id']])}))
+                if client.metadata.active:
+                    self.send_to(client.interface.connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.server.get_all_positions([self])}))
     
     def on_death(self, weapon, killer):
         self.metadata.health = 0
@@ -181,29 +186,59 @@ class ServerClient:
                                                                                     'weapon': weapon.lower()}))
         self.output_console('Player {} died'.format(self.metadata.username))
         
-        self.set_mode(client, 'spectator')
+        self.set_mode('spectator')
         
         if self.serverdata.gamemode == 0:
-            alive = self.num_alive()
+            alive = self.server.num_alive()
             
             if alive[0] == 0:
-                self.round_ended(winner = 1)
+                self.server.round_ended(winner = 1)
             elif alive[1] == 0:
-                self.round_ended(winner = 0)
+                self.server.round_ended(winner = 0)
                 
         elif self.serverdata.gamemode == 1:
-            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['deathmatch']['respawn time'])
+            self.respawn_after(self.server.settingsdata['player']['gamemodes']['deathmatch']['respawn time'])
             
         elif self.serverdata.gamemode == 2:
             if client['team'] == 0:
-                self.increment_scoreline(score0 = 1)
+                self.server.increment_scoreline(score0 = 1)
             elif client['team'] == 1:
-                self.increment_scoreline(score1 = 1)
+                self.server.increment_scoreline(score1 = 1)
                 
-            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['team deathmatch']['respawn time'])
+            self.respawn_after(self.server.settingsdata['player']['gamemodes']['team deathmatch']['respawn time'])
             
         elif self.serverdata.gamemode == 3:
-            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['pve surival']['respawn time'])
+            self.respawn_after(self.server.settingsdata['player']['gamemodes']['pve surival']['respawn time'])
+    
+    def respawn(self):
+        spawnpoint = self.generate_spawn()
+        self.set_mode('player')
+        self.send(Request(command = 'var update w',
+                          subcommand = 'client position',
+                          arguments = {'x': spawnpoint[0],
+                                       'y': spawnpoint[1],
+                                       'rotation': 0}))
+        self.update_health(100)
+        self.send(Request(command = 'clear inventory'))
+        self.send(Request(command = 'give',
+                          arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
+    
+    def respawn_after(self, delay):
+        threading.Thread(target = self._respawn_after, args = [delay], name = 'Scheduled respawn', daemon = True).start()
+    
+    def _respawn_after(self, delay):
+        time.sleep(delay)
+        self.respawn()
+    
+    def generate_spawn(self):
+        if self.serverdata.gamemode == 0:
+            return random.choice(self.serverdata.mapdata['player']['spawnpoints'][0][self.metadata.team_id])
+        elif self.serverdata.gamemode == 1:
+            cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][1]
+            return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
+        elif self.serverdata.gamemode == 2:
+            cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][2][self.metadata.team_id]
+            return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
     
     def handle(self, req):
         if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
@@ -223,10 +258,10 @@ class ServerClient:
                 self.send(Request(command = 'var update w', subcommand = 'health', arguments = {'value': conn_data['health']}))
                 
             elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
-                self.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([conn_id])}))
+                self.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.server.get_all_positions([conn_id])}))
             
             elif req.subcommand == 'round time':
-                self.send(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': self.get_timeleft()}))
+                self.send(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': self.server.get_timeleft()}))
                 
         elif req.command == 'var update w': #client wants to update a variable on the server
             if req.subcommand == 'position': #client wants to update it's own position
