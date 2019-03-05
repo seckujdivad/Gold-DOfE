@@ -80,6 +80,11 @@ class Server:
             
             netcl = modules.netclients.NetClient(addr, conn)
             client = modules.netclients.ServerClient(self, netcl)
+            
+            client.metadata.health = 100
+            client.metadata.username = 'guest'
+            client.metadata.team_id = self.get_team_id(self.get_team_distributions())
+            
             netcl.start()
             
             self.clients.append(client)
@@ -268,8 +273,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         connection.send(data.as_json().encode())
         
     def send_all(self, data):
-        for address, connection in self.serverdata.connections:
-            self.send(connection, data)
+        for client in self.clients:
+            client.send(data)
     
     def quit(self):
         self.serverdata.running = False
