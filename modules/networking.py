@@ -237,20 +237,21 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'list.json'), 'r') as file:
             self.serverdata.mapdata = json.load(file)
         
-        for data in self.serverdata.conn_data:
-            data['model'] = random.choice(self.serverdata.mapdata['entity models']['player'])
+        for client in self.clients:
+            client.metadata.model = random.choice(self.serverdata.mapdata['entity models']['player'])
         
         self.set_gamemode(self.serverdata.mapdata['gamemode']['default'])
         
         req = Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map})
         self.send_all(req)
         
-        for conn_data in self.serverdata.conn_data:
-            if conn_data['active']:
-                req = Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][conn_data['team']]})
-                self.send(conn_data['connection'], req)
-                req = Request(command = 'var update w', subcommand = 'team', arguments = {'value': conn_data['team']})
-                self.send(conn_data['connection'], req)
+        for client in self.clients:
+            if client.metadata.active:
+                req = Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][client.metadata.team_id]})
+                client.send(req)
+                
+                req = Request(command = 'var update w', subcommand = 'team', arguments = {'value': client.metadata.team_id})
+                client.send(req)
         
         self.serverdata.item_dicts = {}
         for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items')):
