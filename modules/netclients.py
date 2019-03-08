@@ -123,6 +123,10 @@ class NetClient:
     
     def send_to(self, connection, req):
         connection.send(req.as_json().encode())
+    
+    def close(self):
+        self.connection.close()
+        self.running = False
 
 class ServerClient:
     def __init__(self, server, interface):
@@ -144,6 +148,7 @@ class ServerClient:
             item_use_timestamp = None
             username = None
             team_id = None
+            id = None
         self.metadata = metadata
         
         self.serverdata = self.server.serverdata
@@ -318,3 +323,7 @@ class ServerClient:
         
         elif req.command == 'say':
             self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}))
+    
+    def close(self):
+        self.active = False
+        self.interface.close()

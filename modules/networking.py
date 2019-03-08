@@ -72,6 +72,7 @@ class Server:
         threading.Thread(target = self.push_timeleftd, name = 'Round timer daemon', daemon = True).start()
         
     def acceptance_thread(self):
+        client_id = 0
         while self.serverdata.running:
             self.output_pipe.send('Ready for incoming connections')
             
@@ -84,6 +85,9 @@ class Server:
             client.metadata.health = 100
             client.metadata.username = 'guest'
             client.metadata.team_id = self.get_team_id(self.get_team_distributions())
+            
+            client.metadata.id = current_id
+            current_id += 1
             
             netcl.start()
             
@@ -261,11 +265,13 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
     def kick_address(self, target_address):
         i = 0
         to_delete = []
-        for address, connection in self.serverdata.connections:
-            if address[0] == target_address:
-                connection.close()
+        for client in self.clients:
+            if client.interface.address[0] == target_address:
+                client.close()
                 to_delete.append(i)
             i += 1
+            
+        to_delete.reverse()
         for i in to_delete:
             self.serverdata.connections.pop(i)
     
@@ -286,9 +292,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
     
     def get_team_distributions(self):
         team_quantities = [0, 0]
-        for conn_data in self.serverdata.conn_data:
-            if conn_data['active'] and conn_data['team'] != None:
-                team_quantities[conn_data['team']] += 1
+        for client in self.clients:
+            if client.metadata.active and client.metadata.team is not None:
+                team_quantities[client.metadata.team] += 1
         return team_quantities
     
     def handle_items(self):
@@ -340,21 +346,21 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     to_send_loop['position'] = item['position']
                     
                 #clipping
-                for playerdata in self.serverdata.conn_data:
+                for client in self.clients:
                     damage_dealt = False
-                    if playerdata['active'] and playerdata['mode'] == 'player':
-                        if self.item_touches_player(playerdata['position']['x'], playerdata['position']['y'], item):
+                    if client.metadata.active and client.metadata.mode == 'player':
+                        if self.item_touches_player(client.metadata.pos.x, client.metadata.pos.y, item):
                             if 'last damage' in item and not item['last damage'] == None:
                                 if (time.time() - item['last damage']) > item['data']['damage cooldown']:
                                     damage_dealt = True
                             else:
                                 damage_dealt = True
                     
-                    if damage_dealt and not item['creator']['id'] == playerdata['id']:
-                        self.increment_health(playerdata, 0 - item['data']['damage']['player'], item['data']['display name'], self.serverdata.conn_data[item['creator']['id']]['username'])
+                    if damage_dealt and not item['creator'] == client:
+                        client.increment_health(0 - item['data']['damage']['player'], item['data']['display name'], item['creator'].metadata.username)
                         item['last damage'] = time.time()
                         
-                        self.send(playerdata['connection'], Request(command = 'var update w', subcommand = 'health', arguments = {'value': playerdata['health']}))
+                        self.send(playerdata['connection'], Request(command = 'var update w', subcommand = 'health', arguments = {'value': client.metadata.health}))
                         
                         if item['data']['destroyed after damage']:
                             to_send_loop['type'] = 'remove'
@@ -372,9 +378,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             for i in to_remove:
                 self.serverdata.item_data.pop(i)
             
-            for conn_data in self.serverdata.conn_data:
-                self.send(conn_data['connection'], Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))
-                self.send(conn_data['connection'], Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([conn_data['id']])}))
+            for client in self.clients:
+                client.send(Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))
+                client.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([client])}))
             
             time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
     
@@ -386,35 +392,6 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
     
     def distance_to_point(self, x0, y0, x1, y1):
         return math.hypot(x1 - x0, y1 - y0)
-    
-    def update_health(self, client_data, health, weapon = None, killer = None):
-        old_health = client_data['health']
-        client_data['health'] = health
-        
-        if not old_health == client_data['health']: #health has changed
-            if (old_health == 0 and client_data['health'] < 0): #death has already occured
-                client_data['health'] = 0
-            elif client_data['health'] <= 0 and old_health > 0: #this is the 'first death' (first time health reached 0)
-                self.on_death(client_data['id'], weapon = weapon, killer = killer)
-    
-    def increment_health(self, client_data, health, weapon = None, killer = None):
-        self.update_health(client_data, client_data['health'] + health, weapon, killer)
-    
-    def set_mode(self, client_data, client_mode):
-        self.send(client_data['connection'], Request(command = 'set mode', subcommand = client_mode))
-        
-        client_data['mode'] = client_mode
-        
-        if client_mode == 'spectator':
-            self.send_text(['chat', 'new mode', 'spectator'], [client_data['username']])
-            self.output_pipe.send('{} is now spectating'.format(client_data['username']))
-        elif client_mode == 'player':
-            self.send_text(['chat', 'new mode', 'player'], [client_data['username']])
-            self.output_pipe.send('{} is now playing'.format(client_data['username']))
-            
-            for client in self.serverdata.conn_data:
-                if client['active']:
-                    self.send(client['connection'], Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([client['id']])}))
     
     def send_text(self, path, formats = None, connection = None, category = 'general'):
         string = self.settingsdata['messages']
@@ -459,43 +436,12 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         return 1
 
     def respawn_all(self):
-        for client in self.serverdata.conn_data:
-            if client['active']:
-                self.respawn(client['id'])
+        for client in self.clients:
+            if client.metadata.active:
+                client.respawn()
                 
         self.serverdata.round_in_progress = True
         self.serverdata.round_start_time = time.time()
-    
-    def respawn(self, conn_id):
-        client = self.serverdata.conn_data[conn_id]
-        
-        spawnpoint = self.generate_spawn(conn_id)
-        self.set_mode(client, 'player')
-        self.send(client['connection'], Request(command = 'var update w',
-                                                subcommand = 'client position',
-                                                arguments = {'x': spawnpoint[0],
-                                                             'y': spawnpoint[1],
-                                                             'rotation': 0}))
-        self.update_health(client, 100)
-        self.send(client['connection'], Request(command = 'clear inventory'))
-        self.send(client['connection'], Request(command = 'give',
-                                                arguments = {'items': self.serverdata.mapdata['player']['starting items'][client['team']]}))
-    
-    def respawn_after(self, conn_id, delay):
-        threading.Thread(target = self._respawn_after, args = [conn_id, delay], name = 'Scheduled respawn', daemon = True).start()
-    
-    def _respawn_after(self, conn_id, delay):
-        self.respawn(conn_id)
-    
-    def generate_spawn(self, conn_id):
-        if self.serverdata.gamemode == 0:
-            return random.choice(self.serverdata.mapdata['player']['spawnpoints'][0][self.serverdata.conn_data[conn_id]['team']])
-        elif self.serverdata.gamemode == 1:
-            cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][1]
-            return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
-        elif self.serverdata.gamemode == 2:
-            cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][2][self.serverdata.conn_data[conn_id]['team']]
-            return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
     
     def set_scoreline(self, score0 = None, score1 = None):
         if score0 is None:
@@ -513,40 +459,6 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         if score1 is not None:
             score1 += self.serverdata.scoreline[1]
         self.set_scoreline(score0, score1)
-    
-    def on_death(self, conn_id, weapon = 'world', killer = 'world'):
-        client = self.serverdata.conn_data[conn_id]
-        
-        client['health'] = 0
-        
-        s = random.choice(self.settingsdata['messages']['killfeed'])
-        self.send_all(Request(command = 'event', subcommand = 'death', arguments = {'text': s.format(weapon = weapon.lower(), killer = killer, victim = client['username']),
-                                                                                    'weapon': weapon.lower()}))
-        self.output_pipe.send('Player {} died'.format(client['username']))
-        
-        self.set_mode(client, 'spectator')
-        
-        if self.serverdata.gamemode == 0:
-            alive = self.num_alive()
-            
-            if alive[0] == 0:
-                self.round_ended(winner = 1)
-            elif alive[1] == 0:
-                self.round_ended(winner = 0)
-                
-        elif self.serverdata.gamemode == 1:
-            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['deathmatch']['respawn time'])
-            
-        elif self.serverdata.gamemode == 2:
-            if client['team'] == 0:
-                self.increment_scoreline(score0 = 1)
-            elif client['team'] == 1:
-                self.increment_scoreline(score1 = 1)
-                
-            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['team deathmatch']['respawn time'])
-            
-        elif self.serverdata.gamemode == 3:
-            self.respawn_after(conn_id, self.settingsdata['player']['gamemodes']['pve surival']['respawn time'])
         
     def round_ended(self, winner = None):
         self.serverdata.round_in_progress = False
@@ -567,9 +479,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
     def num_alive(self):
         count = [0, 0]
-        for client in self.serverdata.conn_data:
-            if client['active'] and client['mode'] == 'player' and client['health'] > 0:
-                count[client['team']] += 1
+        for client in self.clients:
+            if client.metadata.active and client.metadata.mode == 'player' and client.metadata.health > 0:
+                count[client.metadata.team_id] += 1
         return count
     
     def xvx_round_ended(self, winner):
@@ -604,10 +516,12 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
     def get_all_positions(self, omit):
         output = []
-        for data in self.serverdata.conn_data:
-            if data['active'] and data['mode'] == 'player' and data['id'] not in omit:
-                d = data['position'].copy()
-                d['id'] = data['id']
+        for client in self.clients:
+            if client.metadata.active and client.metadata.mode == 'player' and (client not in omit):
+                d = {'x': client.metadata.pos.x,
+                     'y': client.metadata.pos.y,
+                     'rotation': client.metadata.pos.rotation,
+                     'id': client.metadata.id}
                 output.append(d)
         return output
     
