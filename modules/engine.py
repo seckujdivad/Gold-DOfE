@@ -13,6 +13,7 @@ import importlib.util
 import modules.netclients
 import modules.logging
 import modules.bettercanvas
+import modules.simsound
 
 class Game:
     def __init__(self, canvas, client):
@@ -336,6 +337,9 @@ class Engine:
 
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
+        
+        #make sound controller
+        self.sound = modules.simsound.Interface()
     
     def load_map(self, name):
         self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)

@@ -10,10 +10,10 @@ class Interface:
         self.controller_process = mp.Process(target = Controller, args = [pipe], name = 'Sound controller').start()
     
     def play(self, freq, dura):
-        self.pipe.send(['play', [freq dura]])
+        self.pipe.send(['play', [freq, dura]])
     
     def schedule(self, timestamp, freq, dura):
-        self.pipe.send(['schedule', [freq, dura], timestamp)
+        self.pipe.send(['schedule', [freq, dura], timestamp])
     
     def stop(self):
         self.pipe.send(['stop'])
