@@ -286,8 +286,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
     def get_team_distributions(self):
         team_quantities = [0, 0]
         for client in self.clients:
-            if client.metadata.active and client.metadata.team is not None:
-                team_quantities[client.metadata.team] += 1
+            if client.metadata.active and client.metadata.team_id is not None:
+                team_quantities[client.metadata.team_id] += 1
         return team_quantities
     
     def handle_items(self):

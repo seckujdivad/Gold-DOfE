@@ -172,6 +172,9 @@ class ServerClient:
             elif self.metadata.health <= 0 and old_health > 0: #this is the 'first death' (first time health reached 0)
                 self.on_death(weapon, killer)
     
+    def increment_health(self, value, weapon = None, killer = None):
+        self.update_health(self.metadata.health + value, weapon, killer)
+    
     def set_mode(self, mode):
         self.send(Request(command = 'set mode', subcommand = mode))
         
