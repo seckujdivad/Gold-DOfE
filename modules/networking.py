@@ -241,21 +241,14 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'list.json'), 'r') as file:
             self.serverdata.mapdata = json.load(file)
         
-        for client in self.clients:
-            client.metadata.model = random.choice(self.serverdata.mapdata['entity models']['player'])
-        
         self.set_gamemode(self.serverdata.mapdata['gamemode']['default'])
         
         for client in self.clients:
-            client.write_var('map', {'map name': self.serverdata.map})
-        
-        for client in self.clients:
             if client.metadata.active:
-                req = Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][client.metadata.team_id]})
-                client.send(req)
-                
+                client.write_var('map', {'map name': self.serverdata.map})
                 client.give(self.serverdata.mapdata['player']['starting items'][client.metadata.team_id])
                 client.write_var('team', client.metadata.team_id)
+                client.metadata.model = random.choice(self.serverdata.mapdata['entity models']['player'])
         
         self.serverdata.item_dicts = {}
         for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items')):
@@ -360,7 +353,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                         client.increment_health(0 - item['data']['damage']['player'], item['data']['display name'], item['creator'].metadata.username)
                         item['last damage'] = time.time()
                         
-                        self.send(playerdata['connection'], Request(command = 'var update w', subcommand = 'health', arguments = {'value': client.metadata.health}))
+                        client.push_health()
                         
                         if item['data']['destroyed after damage']:
                             to_send_loop['type'] = 'remove'
@@ -379,10 +372,10 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 self.serverdata.item_data.pop(i)
             
             for client in self.clients:
-                client.send(Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': data_to_send}))
-                client.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.get_all_positions([client])}))
+                client.push_item_states(data_to_send)
+                client.push_positions()
             
-            time.sleep(max(0, self.serverdata.looptime - (time.time() - start))) #prevent server from running too quickly
+            time.sleep(max([0, self.serverdata.looptime - (time.time() - start)])) #prevent server from running too quickly
     
     def item_touches_player(self, x, y, item):
         if item['data']['hitbox']['type'] == 'circular':

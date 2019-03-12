@@ -186,7 +186,7 @@ class ServerClient:
             
             for client in self.serverdata.conn_data:
                 if client.metadata.active:
-                    self.send_to(client.interface.connection, Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.server.get_all_positions([self])}))
+                    self.push_positions()
     
     def on_death(self, weapon, killer):
         self.metadata.health = 0
@@ -220,19 +220,26 @@ class ServerClient:
             
         elif self.serverdata.gamemode == 3:
             self.respawn_after(self.server.settingsdata['player']['gamemodes']['pve surival']['respawn time'])
+            
+    def setpos(self, x = None, y = None, rotation = None):
+        to_send = {}
+        
+        if x is not None:
+            to_send['x'] = x
+        if y is not None:
+            to_send['y'] = y
+        if rotation is not None:
+            to_send['rotation'] = rotation
+        
+        self.write_var('client position', to_send)
     
     def respawn(self):
         spawnpoint = self.generate_spawn()
         self.set_mode('player')
-        self.send(Request(command = 'var update w',
-                          subcommand = 'client position',
-                          arguments = {'x': spawnpoint[0],
-                                       'y': spawnpoint[1],
-                                       'rotation': 0}))
+        self.setpos(spawnpoint[0], spawnpoint[1], 0)
         self.update_health(100)
-        self.send(Request(command = 'clear inventory'))
-        self.send(Request(command = 'give',
-                          arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.metadata.team_id]}))
+        self.clear_inventory()
+        self.give(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
     
     def respawn_after(self, delay):
         threading.Thread(target = self._respawn_after, args = [delay], name = 'Scheduled respawn', daemon = True).start()
@@ -251,8 +258,8 @@ class ServerClient:
             cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][2][self.metadata.team_id]
             return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
     
-    def read_var(self, category, to_write):
-        self.var_update('read', category, to_write)
+    def read_var(self, category):
+        self.var_update('read', category, None)
     
     def write_var(self, category, to_write):
         self.var_update('write', category, to_write)
@@ -263,8 +270,7 @@ class ServerClient:
         
         if mode.lower().startswith('r'):
             self.send(Request(command = 'var update r',
-                              subcommand = category,
-                              arguments = to_write))
+                              subcommand = category))
                               
         elif mode.lower().startswith('w'):
             self.send(Request(command = 'var update w',
@@ -275,6 +281,21 @@ class ServerClient:
         self.send(Request(command = 'give',
                           arguments = {'items': items}))
     
+    def tell_use_accurate_hitscan(self, use_accurate_hitscan):
+        self.send(Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[use_accurate_hitscan]))
+    
+    def clear_inventory(self):
+        self.send(Request(command = 'clear inventory'))
+    
+    def push_item_states(self, states):
+        self.send(Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': states}))
+    
+    def push_positions(self):
+        self.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.server.get_all_positions([self])}))
+    
+    def push_health(self):
+        self.write_var('health', self.metadata.health)
+    
     def handle(self, req):
         if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
             self.output_console('User {} disconnected'.format(self.interface.address[0]))
@@ -283,20 +304,20 @@ class ServerClient:
                 
         elif req.command == 'var update r': #client wants the server to send it a value
             if req.subcommand == 'map': #client wants the server to send the name of the current map
-                self.send(Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map}))
+                self.write_var('map', {'map name': self.serverdata.map})
                 
             elif req.subcommand == 'player model': #client wants to know it's own player model
                 if self.serverdata.map is not None:
-                    self.send(Request(command = 'var update w', subcommand = 'player model', arguments = {'value': self.metadata.model}))
+                    self.write_var('player model', self.metadata.model)
             
             elif req.subcommand == 'health':
-                self.send(Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.metadata.health}))
+                self.write_var('health', self.metadata.health)
                 
             elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
-                self.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.server.get_all_positions([self])}))
+                self.push_positions()
             
             elif req.subcommand == 'round time':
-                self.send(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': self.server.get_timeleft()}))
+                self.write_var('round time', self.server.get_timeleft())
                 
         elif req.command == 'var update w': #client wants to update a variable on the server
             if req.subcommand == 'position': #client wants to update it's own position
@@ -314,16 +335,15 @@ class ServerClient:
                 self.client_display_text(['chat', 'client changed name'], [self.metadata.username])
                 
         elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
-            self.send(Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][self.metadata.team_id]}))
-            self.send(Request(command = 'var update w', subcommand = 'team', arguments = {'value': self.metadata.team_id}))
-            self.send(Request(command = 'var update r', subcommand = 'username', arguments = {}))
-            
+            self.give(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
+            self.write_var('team', self.metadata.team_id)
+            self.read_var('username')
             self.set_mode('player')
             
             spawnpoint = self.generate_spawn()
-            self.send(Request(command = 'var update w', subcommand = 'client position', arguments = {'x': spawnpoint[0], 'y': spawnpoint[1], 'rotation': 0}))
+            self.setpos(spawnpoint[0], spawnpoint[1], 0)
             
-            self.send(Request(command = 'set hit model', subcommand = {True: 'accurate', False: 'loose'}[self.server.settingsdata['network']['accurate hit detection']]))
+            self.tell_use_accurate_hitscan(self.server.settingsdata['network']['accurate hit detection'])
             
             self.client_display_text(['fullscreen', 'welcome'], None, category = 'welcome')
             
@@ -349,5 +369,5 @@ class ServerClient:
             self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}))
     
     def close(self):
-        self.active = False
+        self.metadata.active = False
         self.interface.close()
