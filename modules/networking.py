@@ -72,7 +72,7 @@ class Server:
         threading.Thread(target = self.push_timeleftd, name = 'Round timer daemon', daemon = True).start()
         
     def acceptance_thread(self):
-        client_id = 0
+        current_id = 0
         while self.serverdata.running:
             self.output_pipe.send('Ready for incoming connections')
             
@@ -246,16 +246,16 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
         self.set_gamemode(self.serverdata.mapdata['gamemode']['default'])
         
-        req = Request(command = 'var update w', subcommand = 'map', arguments = {'map name': self.serverdata.map})
-        self.send_all(req)
+        for client in self.clients:
+            client.write_var('map', {'map name': self.serverdata.map})
         
         for client in self.clients:
             if client.metadata.active:
                 req = Request(command = 'give', arguments = {'items': self.serverdata.mapdata['player']['starting items'][client.metadata.team_id]})
                 client.send(req)
                 
-                req = Request(command = 'var update w', subcommand = 'team', arguments = {'value': client.metadata.team_id})
-                client.send(req)
+                client.give(self.serverdata.mapdata['player']['starting items'][client.metadata.team_id])
+                client.write_var('team', client.metadata.team_id)
         
         self.serverdata.item_dicts = {}
         for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items')):

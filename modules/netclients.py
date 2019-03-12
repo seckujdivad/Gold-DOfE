@@ -251,6 +251,30 @@ class ServerClient:
             cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][2][self.metadata.team_id]
             return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
     
+    def read_var(self, category, to_write):
+        self.var_update('read', category, to_write)
+    
+    def write_var(self, category, to_write):
+        self.var_update('write', category, to_write)
+    
+    def var_update(self, mode, category, to_write):
+        if type(to_write) is not dict:
+            to_write = {'value': to_write}
+        
+        if mode.lower().startswith('r'):
+            self.send(Request(command = 'var update r',
+                              subcommand = category,
+                              arguments = to_write))
+                              
+        elif mode.lower().startswith('w'):
+            self.send(Request(command = 'var update w',
+                              subcommand = category,
+                              arguments = to_write))
+    
+    def give(self, items):
+        self.send(Request(command = 'give',
+                          arguments = {'items': items}))
+    
     def handle(self, req):
         if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
             self.output_console('User {} disconnected'.format(self.interface.address[0]))
