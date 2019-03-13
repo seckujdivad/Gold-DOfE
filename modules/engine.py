@@ -339,7 +339,7 @@ class Engine:
         self.keybindhandler = KeyBind(self.game.canvas)
         
         #make sound controller
-        self.sound = modules.simsound.Interface()
+        self.sound = modules.simsound.Sound()
     
     def load_map(self, name):
         self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)
@@ -441,6 +441,9 @@ class Engine:
             #render overlay
             self.map.textures.obj_overlay = self.game.canvcont.create_image(402, 302, image = self.map.textures.overlay, layer = 'overlay')
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
+            
+            #load sounds
+            self.sound.load_map(self.map.name)
             
             #make healthbar
             self.map.healthbar = DisplayBar(self.game.canvcont, 0, 100, [10, 10, 100, 20], 'gray', 'red')

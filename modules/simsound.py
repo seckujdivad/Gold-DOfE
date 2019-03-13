@@ -3,6 +3,31 @@ import winsound
 import time
 import math
 import threading
+import os
+import sys
+import json
+
+class Sound:
+    def __init__(self):
+        self.path = None
+        
+        self.sounds = {}
+    
+    def load_library(self, path):
+        self.path = path
+        
+        if os.path.isdir(path):
+            for filename in os.listdir(path):
+                if filename.startswith('snd_') and filename.endswith('.json'):
+                    with open(os.path.join(path, filename), 'r') as file:
+                        data = json.load(file)
+                    self.sounds[data['name']] = data
+    
+    def load_map(self, map_name):
+        self.load_library(os.path.join(sys.path[0], 'server', 'maps', map_name, 'sounds'))
+    
+    def play(self, name):
+        pass
 
 class Interface:
     def __init__(self):
