@@ -444,6 +444,7 @@ class Engine:
             
             #load sounds
             self.sound.load_map(self.map.name)
+            self.sound.play('simple beep')
             
             #make healthbar
             self.map.healthbar = DisplayBar(self.game.canvcont, 0, 100, [10, 10, 100, 20], 'gray', 'red')

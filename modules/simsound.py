@@ -11,6 +11,9 @@ class Sound:
     def __init__(self):
         self.path = None
         
+        self.interface = Interface()
+        self.interface.play(1000, 1)
+        
         self.sounds = {}
     
     def load_library(self, path):
@@ -27,13 +30,19 @@ class Sound:
         self.load_library(os.path.join(sys.path[0], 'server', 'maps', map_name, 'sounds'))
     
     def play(self, name):
-        pass
+        sound = self.sounds[name]
+        
+        for timing, freq in sound['form']:
+            if timing[0] == 0:
+                self.interface.play(freq, timing[1])
+            else:
+                self.interface.schedule(time.time() + timing[0], freq, timing[1])
 
 class Interface:
     def __init__(self):
         self.pipe, pipe = mp.Pipe()
         
-        self.controller_process = mp.Process(target = Controller, args = [pipe], name = 'Sound controller').start()
+        self.controller_process = threading.Thread(target = Controller, args = [pipe], name = 'Sound controller').start()
     
     def play(self, freq, dura):
         self.pipe.send(['play', [freq, dura]])
@@ -45,18 +54,19 @@ class Interface:
         self.pipe.send(['stop'])
 
 class Controller:
-    def __init__(self, pipe, resolution = 10, subdivisions = 10):
+    def __init__(self, pipe, resolution = 0.001, subdivisions = 10):
         self.pipe = pipe
         self.resolution = math.ceil(resolution)
         self.subdivisions = math.ceil(subdivisions)
         
         self.cont = True
         self.sound_queue = {}
+        
+        threading.Thread(target = self.handler).start()
     
     def handler(self):
         while self.cont:
-            if data is None:
-                data = self.pipe.recv()
+            data = self.pipe.recv()
             
             if data[0] == 'stop':
                 self.cont = False
@@ -72,8 +82,6 @@ class Controller:
                     self.insert_at('next', data[1])
                 else:
                     self.insert_at(stamp, data[1])
-                    
-            data = None
     
     def insert_at(self, pos, sound):
         if pos == 'next':
@@ -83,13 +91,14 @@ class Controller:
         num_insertions = math.ceil(sound[1] / division_size)
         
         for i in range(num_insertions):
-            self._insert_direct(pos + (i * division_size), sound[0])
+            self._insert_direct(math.ceil((pos + (i * division_size)) / division_size) * division_size, sound[0])
     
     def _insert_direct(self, key, sound):
         if not sound in self.sound_queue:
             self.sound_queue[key] = [sound]
         else:
             self.sound_queue[key].append(sound)
+        print(key - time.time())
     
     def player(self):
         while self.cont:
@@ -108,6 +117,8 @@ class Controller:
             division_size = self.subdivisions / self.resolution
             slot_allocations = self.subdivisions / len(to_play) #slots allocated per sound
             snd_queue = []
+            if snd_queue is not []:
+                print(snd_queue)
             
             total_allocated = 0
             for sound in to_play:
@@ -130,7 +141,8 @@ class Controller:
         return timestamp * self.resolution
     
     def _play(self, freq, dura):
-        threading.Thread(target = self._winsound_beep, args = [freq, dura]).start()
+        threading.Thread(target = self._winsound_beep, args = [freq, dura * 1000]).start()
     
     def _winsound_beep(self, freq, dura):
         winsound.Beep(freq, dura)
+        print('b', freq, dura)
