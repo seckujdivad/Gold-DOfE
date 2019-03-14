@@ -14,7 +14,6 @@ class Sound:
         self.sounds = {}
         
         self.interface = Interface()
-        self.interface.schedule(5, 1000, 1)
     
     def load_library(self, path):
         self.path = path
@@ -167,7 +166,7 @@ class Controller:
             time.sleep(division_size)
     
     def _beep(self, freq, dura):
-        winsound.Beep(int(freq), int(dura * 1000), winsound.SND_ASYNC)
+        winsound.Beep(int(freq), int(dura * 1000))
     
     def reserve_queue(self):
         while self.sound_queue_locked:
