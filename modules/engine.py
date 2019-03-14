@@ -13,7 +13,6 @@ import importlib.util
 import modules.netclients
 import modules.logging
 import modules.bettercanvas
-import modules.simsound
 
 class Game:
     def __init__(self, canvas, client):
@@ -337,9 +336,6 @@ class Engine:
 
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
-        
-        #make sound controller
-        self.sound = modules.simsound.Sound()
     
     def load_map(self, name):
         self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)
@@ -441,10 +437,6 @@ class Engine:
             #render overlay
             self.map.textures.obj_overlay = self.game.canvcont.create_image(402, 302, image = self.map.textures.overlay, layer = 'overlay')
             self.game.message_pipe.send(['map load', 'Rendered overlay'])
-            
-            #load sounds
-            self.sound.load_map(self.map.name)
-            self.sound.play('simple beep')
             
             #make healthbar
             self.map.healthbar = DisplayBar(self.game.canvcont, 0, 100, [10, 10, 100, 20], 'gray', 'red')
