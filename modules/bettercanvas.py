@@ -7,7 +7,7 @@ import time
 import random
 
 class CanvasController:
-    def __init__(self, canvas, game = None):
+    def __init__(self, canvas, game = None, layers = None):
         self.canvas = canvas
         self.game = game
         
@@ -19,10 +19,13 @@ class CanvasController:
         self.unbind = self.canvas.unbind
         self.unbind_all = self.canvas.unbind_all
         
+        if layers is None:
+            layers = ['user', 'layers.json']
+        
         self.layers = []
         self.reserved_args = ['layer']
         
-        with open(os.path.join(sys.path[0], 'user', 'layers.json'), 'r') as file:
+        with open(os.path.join(sys.path[0], *layers), 'r') as file:
             self.layer_config = json.load(file) #load user defined order for screen items to be rendered in
         
     def create_rectangle(self, *coords, **args):
