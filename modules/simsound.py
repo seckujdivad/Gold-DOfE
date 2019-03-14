@@ -8,6 +8,11 @@ import sys
 import json
 
 class Sound:
+    '''
+    Highest level sound interface for winsound
+    
+    Unfortunately, winsound always adds a small gap between the beeps. I'm leaving this code in case I need it in the future, but right now it's redundant.
+    '''
     def __init__(self):
         self.path = None
         
