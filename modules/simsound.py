@@ -14,7 +14,7 @@ class Sound:
         self.sounds = {}
         
         self.interface = Interface()
-        self.interface.schedule(time.time() + 5, 1, 1)
+        self.interface.schedule(5, 1000, 1)
     
     def load_library(self, path):
         self.path = path
@@ -47,23 +47,25 @@ class Interface:
     def play(self, freq, dura):
         self.pipe.send(['play', [freq, dura]])
     
-    def schedule(self, timestamp, freq, dura):
-        self.pipe.send(['schedule', [freq, dura], timestamp])
+    def schedule(self, delay, freq, dura):
+        self.pipe.send(['schedule', [freq, dura], delay + time.time()])
     
     def stop(self):
         self.pipe.send(['stop'])
 
 class Controller:
-    def __init__(self, pipe, resolution = 0.001, subdivisions = 10):
+    def __init__(self, pipe, resolution = 0.1, subdivisions = 10, overlap = 0.1):
         self.pipe = pipe
-        self.resolution = math.ceil(resolution)
+        self.resolution = resolution
         self.subdivisions = math.ceil(subdivisions)
+        self.overlap = overlap
         
         self.cont = True
         self.sound_queue = {}
+        self.sound_queue_locked = False #flag to lock sound queue
         
-        threading.Thread(target = self.handler).start()
-        threading.Thread(target = self.player).start()
+        threading.Thread(target = self.handler, name = 'Interface handler').start()
+        threading.Thread(target = self.player, name = 'Sound splitter').start()
     
     def handler(self):
         while self.cont:
@@ -73,89 +75,104 @@ class Controller:
                 self.cont = False
                 
             elif data[0] == 'play':
-                self.insert_at('next', data[1])
+                self.insert_at(self.get_stamp(time.time(), bias = 1), data[1])
                     
             elif data[0] == 'schedule':
                 stamp = self.get_stamp(data[2], bias = 1)
                 data.pop(2)
                 
                 if stamp < time.time():
-                    self.insert_at('next', data[1])
+                    self.insert_at(self.get_stamp(time.time(), bias = 1), data[1])
                 else:
                     self.insert_at(stamp, data[1])
     
     def insert_at(self, pos, sound):
-        if pos == 'next':
-            pos = self.get_stamp(time.time(), bias = 1)
-        
-        division_size = 1 / self.resolution
-        num_insertions = math.ceil(sound[1] / division_size)
+        num_insertions = math.ceil(sound[1] / self.resolution)
         
         for i in range(num_insertions):
-            self._insert_direct(math.ceil((pos + (i * division_size)) / division_size) * division_size, sound[0])
+            self._insert_direct(math.ceil((pos + (i * self.resolution)) / self.resolution) * self.resolution, sound[0])
     
     def _insert_direct(self, key, sound):
+        self.reserve_queue()
+        
         if not sound in self.sound_queue:
             self.sound_queue[key] = [sound]
         else:
             self.sound_queue[key].append(sound)
-        print('insdir', key - time.time())
+        
+        self.release_queue()
     
     def player(self):
         while self.cont:
             start_time = time.time()
             
-            for key in self.sound_queue:
-                if (not key == 'next'):
-                    if self.get_stamp(key, bias = 0) < time.time():
-                        if 'next' in self.sound_queue:
-                            self.sound_queue['next'] += self.sound_queue[key]
-                        else:
-                            self.sound_queue['next'] = self.sound_queue[key]
-                        self.sound_queue.pop(key)
+            self.reserve_queue()
             
+            cull_keys = []
             to_play = []
-            if 'next' in self.sound_queue:
-                to_play = self.sound_queue['next'].copy()
-                self.sound_queue['next'] = []
+            loop_stamp = self.get_stamp(time.time(), bias = 0)
+            
+            for key in list(self.sound_queue):
+                if loop_stamp < time.time():
+                    to_play = self.sound_queue[key]
+                    cull_keys.append(key)
+            
+            
+            if loop_stamp in self.sound_queue:
+                to_play += self.sound_queue[loop_stamp].copy()
+                self.sound_queue.pop(loop_stamp)
             
             now_key = self.get_stamp(time.time())
-            if now_key in self.sound_queue:
+            if now_key in list(self.sound_queue):
                 for sound in self.sound_queue[now_key]:
                     to_play.append(sound)
-                self.sound_queue.pop(now_key)
+                cull_keys.append(now_key)
+            
+            for key in cull_keys:
+                if key in self.sound_queue:
+                    self.sound_queue.pop(key)
+            
+            self.release_queue()
             
             if not to_play == []:
-                division_size = self.subdivisions / self.resolution
                 slot_allocations = self.subdivisions / len(to_play) #slots allocated per sound
                 snd_queue = []
                 
                 total_allocated = 0
                 for sound in to_play:
-                    for i in range(total_allocated - int(total_allocated) + int(slot_allocations)):
+                    for i in range(int(total_allocated - int(total_allocated) + int(slot_allocations))):
                         snd_queue.append(sound)
                     total_allocated += slot_allocations
                 
                 if snd_queue is not []:
                     print(snd_queue)
-                
-                for sound in snd_queue:
-                    self._play(sound, division_size)
+                    self.play_snippet(snd_queue.copy())
             
-            time.sleep(max([0, (1 / self.resolution) - time.time() + start_time]))
+            time.sleep(max([0, self.resolution - time.time() + start_time]))
     
     def get_stamp(self, timestamp, bias = 0):
         'Bias of 0 means low, 1 means high'
-        timestamp = timestamp / self.resolution
         if bias == 0:
-            timestamp = math.floor(timestamp)
-        else:
-            timestamp = math.ceil(timestamp)
-        return timestamp * self.resolution
+            return math.floor(timestamp / self.resolution) * self.resolution
+        return math.ceil(timestamp / self.resolution) * self.resolution
     
-    def _play(self, freq, dura):
-        threading.Thread(target = self._winsound_beep, args = [freq, dura * 1000]).start()
+    def play_snippet(self, sounds):
+        threading.Thread(target = self._play_snippet, args = [sounds], name = 'Sound snippet player').start()
     
-    def _winsound_beep(self, freq, dura):
-        winsound.Beep(int(freq), int(dura))
-        print('b', freq, dura)
+    def _play_snippet(self, sounds):
+        print('sounds', sounds)
+        division_size = self.resolution / self.subdivisions
+        for sound in sounds:
+            threading.Thread(target = self._beep, args = [sound, division_size + self.overlap], name = 'Beep').start()
+            time.sleep(division_size)
+    
+    def _beep(self, freq, dura):
+        winsound.Beep(int(freq), int(dura * 1000), winsound.SND_ASYNC)
+    
+    def reserve_queue(self):
+        while self.sound_queue_locked:
+            time.sleep(0.01)
+        self.sound_queue_locked = True
+    
+    def release_queue(self):
+        self.sound_queue_locked = False
