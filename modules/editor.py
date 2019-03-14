@@ -1169,7 +1169,7 @@ class Editor:
                     self.mat_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     self.canvas = tk.Canvas(self.frame, bg = 'white', **self.ui_styling.get(font_size = 'small', object_type = tk.Canvas))
-                    self.canvcont = modules.bettercanvas.CanvasController(self.canvas)
+                    self.canvcont = modules.bettercanvas.CanvasController(self.canvas, layers = ['user', 'hitboxedit_layers.json'])
                     
                     self.coordx_label = tk.Label(self.frame, text = 'X:', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     self.coordx_spinbox = tk.Spinbox(self.frame, textvariable = self.editor.selection_x, from_ = -999, to = 999, command = self.spinbox_updated, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
@@ -1241,7 +1241,7 @@ class Editor:
                         
                         self.editor.current_img = tk.PhotoImage(file = os.path.join(self.editorobj.map.path, 'textures', material_data['texture']['address']))
                         
-                        if not self.editor.current_img_obj == None:
+                        if self.editor.current_img_obj is not None:
                             self.canvcont.delete(self.editor.current_img_obj)
                         
                         for obj, x, y in self.editor.current_points:
@@ -1250,17 +1250,17 @@ class Editor:
                         self.editor.centre.x = int(self.canvcont.winfo_width() / 2)
                         self.editor.centre.y = int(self.canvcont.winfo_height() / 2)
                         
-                        self.editor.current_img_obj = self.canvcont.create_image(self.editor.centre.x, self.editor.centre.y, image = self.editor.current_img, layer = 0)
+                        self.editor.current_img_obj = self.canvcont.create_image(self.editor.centre.x, self.editor.centre.y, image = self.editor.current_img, layer = 'texture')
                         
                         self.editor.current_material = material
                         
                         self.editor.current_points = []
                         last_x = None
-                        lasy_y = None
+                        last_y = None
                         for x, y in material_data['hitbox']:
                             self.editor.current_points.append([self.make_handle(x, y), x, y])
                             
-                            if not last_x == None:
+                            if last_x is not None:
                                 self.editor.hitbox_poly.append(self.make_hitbox_line(last_x, last_y, x, y))
                             
                             last_x = x
@@ -1269,22 +1269,22 @@ class Editor:
                         self.editor.hitbox_poly.append(self.make_hitbox_line(last_x, last_y, material_data['hitbox'][0][0], material_data['hitbox'][0][1]))
                 
                 def make_hitbox_line(self, x0, y0, x1, y1):
-                    return self.canvcont.create_line(self.editor.centre.x + x0, self.editor.centre.y + y0, self.editor.centre.x + x1, self.editor.centre.y + y1, fill = '#000000')
+                    return self.canvcont.create_line(self.editor.centre.x + x0, self.editor.centre.y + y0, self.editor.centre.x + x1, self.editor.centre.y + y1, fill = '#000000', layer = 'edges')
                 
                 def make_handle(self, x, y):
-                    return self.canvcont.create_rectangle(self.editor.centre.x + x + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.x + x - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), fill = self.user_config['editor']['hitbox']['grab handles']['normal'], outline = self.user_config['editor']['hitbox']['grab handles']['outline'])
+                    return self.canvcont.create_rectangle(self.editor.centre.x + x + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y + int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.x + x - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), self.editor.centre.y + y - int(self.user_config['editor']['hitbox']['grab handles']['size'] / 2), fill = self.user_config['editor']['hitbox']['grab handles']['normal'], outline = self.user_config['editor']['hitbox']['grab handles']['outline'], layer = 'handles')
                 
                 def canvas_clicked(self, event):
                     overlapping = self.canvcont.find_overlapping(event.x - 1, event.y - 1, event.x + 1, event.y + 1)
                     if not len(overlapping) == 0:
                         item_overlapping = None
                         for item in overlapping:
-                            if item_overlapping == None:
+                            if item_overlapping is None:
                                 for item_b in self.editor.current_points:
                                     if item == item_b[0]:
                                         item_overlapping = item
                         
-                        if not item_overlapping == None:
+                        if item_overlapping is not None:
                             overlapping = item_overlapping
                             is_current_point = False
                             i = 0
@@ -1300,10 +1300,10 @@ class Editor:
                                 self.choose_handle(index)
                 
                 def choose_handle(self, index):
-                    if not self.editor.selected_point == None:
+                    if self.editor.selected_point is not None:
                         self.canvcont.itemconfigure(self.editor.current_points[self.editor.selected_point][0], fill = self.user_config['editor']['hitbox']['grab handles']['normal'])
                         
-                    if index == None:
+                    if index is None:
                         self.editor.selection_x.set('----')
                         self.editor.selection_y.set('----')
                     else:
@@ -1325,7 +1325,6 @@ class Editor:
                     else:
                         self.editor.selection_x.set(self.editor.current_points[self.editor.selected_point][1])
                         self.editor.selection_y.set(self.editor.current_points[self.editor.selected_point][2])
-                    
                     
                     obj, x1, y1 = self.editor.current_points[len(self.editor.current_points) - 1]
                     x1 = int(x1)
@@ -1368,14 +1367,14 @@ class Editor:
                         self.spinbox_updated()
                 
                 def select_next(self, event = None):
-                    if self.editor.selected_point == None:
+                    if self.editor.selected_point is None:
                         self.choose_handle(0)
                     else:
                         self.choose_handle((self.editor.selected_point + 1) % len(self.editor.current_points))
                     self.canvas.focus_set()
                 
                 def select_prev(self, event = None):
-                    if self.editor.selected_point == None:
+                    if self.editor.selected_point is None:
                         self.choose_handle(0)
                     else:
                         self.choose_handle((self.editor.selected_point - 1) % len(self.editor.current_points))
@@ -1405,7 +1404,7 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
                     root.mainloop()
                 
                 def remove_selected(self, event = None):
-                    if not self.editor.selected_point == None:
+                    if self.editor.selected_point is not None:
                         self.remove(self.editor.selected_point)
                
                 def remove(self, index):
@@ -1422,7 +1421,7 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
                         self.spinbox_updated(use_values = False)
                 
                 def subdivide_selected(self, event = None):
-                    if not self.editor.selected_point == None:
+                    if self.editor.selected_point is not None:
                         self.subdivide(self.editor.selected_point, (self.editor.selected_point + 1) % len(self.editor.current_points))
                 
                 def subdivide(self, index0, index1):
@@ -1441,7 +1440,7 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
                     self.spinbox_updated(use_values = True)
                 
                 def save(self, event = None):
-                    if not self.editor.current_material == None:
+                    if self.editor.current_material is not None:
                         data = self.materials[self.editor.current_material]
                         
                         data['hitbox'] = []
