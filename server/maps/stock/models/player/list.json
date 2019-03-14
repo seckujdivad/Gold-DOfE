@@ -1,6 +1,6 @@
 {
 	"textures": {
-		"idle": "texture.png"
+		"idle": "player.gif"
 	},
 	"default textures": "idle",
 	"offscreen": [-100, -100],
@@ -8,7 +8,7 @@
 	"transparencies": [1, 1, 1, 1],
 	"layers": [1, 1, 1, 1],
 	"animation": {
-		"frames": 1,
+		"frames": 2,
 		"delay": 0.5,
 		"variation": 0
 	}
