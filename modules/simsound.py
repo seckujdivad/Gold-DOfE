@@ -11,10 +11,10 @@ class Sound:
     def __init__(self):
         self.path = None
         
-        self.interface = Interface()
-        self.interface.play(1000, 1)
-        
         self.sounds = {}
+        
+        self.interface = Interface()
+        self.interface.schedule(time.time() + 5, 1, 1)
     
     def load_library(self, path):
         self.path = path
@@ -63,6 +63,7 @@ class Controller:
         self.sound_queue = {}
         
         threading.Thread(target = self.handler).start()
+        threading.Thread(target = self.player).start()
     
     def handler(self):
         while self.cont:
@@ -98,11 +99,21 @@ class Controller:
             self.sound_queue[key] = [sound]
         else:
             self.sound_queue[key].append(sound)
-        print(key - time.time())
+        print('insdir', key - time.time())
     
     def player(self):
         while self.cont:
             start_time = time.time()
+            
+            for key in self.sound_queue:
+                if (not key == 'next'):
+                    if self.get_stamp(key, bias = 0) < time.time():
+                        if 'next' in self.sound_queue:
+                            self.sound_queue['next'] += self.sound_queue[key]
+                        else:
+                            self.sound_queue['next'] = self.sound_queue[key]
+                        self.sound_queue.pop(key)
+            
             to_play = []
             if 'next' in self.sound_queue:
                 to_play = self.sound_queue['next'].copy()
@@ -114,20 +125,22 @@ class Controller:
                     to_play.append(sound)
                 self.sound_queue.pop(now_key)
             
-            division_size = self.subdivisions / self.resolution
-            slot_allocations = self.subdivisions / len(to_play) #slots allocated per sound
-            snd_queue = []
-            if snd_queue is not []:
-                print(snd_queue)
-            
-            total_allocated = 0
-            for sound in to_play:
-                for i in range(total_allocated - int(total_allocated) + slot_allocations):
-                    snd_queue.append(sound)
-                total_allocated += slot_allocations
-            
-            for sound in snd_queue:
-                self._play(sound, division_size)
+            if not to_play == []:
+                division_size = self.subdivisions / self.resolution
+                slot_allocations = self.subdivisions / len(to_play) #slots allocated per sound
+                snd_queue = []
+                
+                total_allocated = 0
+                for sound in to_play:
+                    for i in range(total_allocated - int(total_allocated) + int(slot_allocations)):
+                        snd_queue.append(sound)
+                    total_allocated += slot_allocations
+                
+                if snd_queue is not []:
+                    print(snd_queue)
+                
+                for sound in snd_queue:
+                    self._play(sound, division_size)
             
             time.sleep(max([0, (1 / self.resolution) - time.time() + start_time]))
     
@@ -144,5 +157,5 @@ class Controller:
         threading.Thread(target = self._winsound_beep, args = [freq, dura * 1000]).start()
     
     def _winsound_beep(self, freq, dura):
-        winsound.Beep(freq, dura)
+        winsound.Beep(int(freq), int(dura))
         print('b', freq, dura)
