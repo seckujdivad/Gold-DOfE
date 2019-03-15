@@ -1102,7 +1102,16 @@ class Editor:
                             self.log_list.insert(tk.END, command[1])
                             self._see_bottom()
                         else:
-                            pixels[command[0][0], command[0][1]] = (0, 0, 0, 255 - command[1])
+                            to_write = (0, 0, 0, 255 - command[1])
+                            if self.map_data['grid']['apply to lightmap']:
+                                for x in range(command[0][0], command[0][0] + self.map_data['grid']['mult']['x'], 1):
+                                    for y in range(command[0][1], command[0][1] + self.map_data['grid']['mult']['y'], 1):
+                                        try:
+                                            pixels[x, y] = to_write
+                                        except IndexError:
+                                            pass
+                            else:
+                                pixels[command[0][0], command[0][1]] = to_write
                     self.log_list.insert(tk.END, 'Done')
                     
                     self.map_data['lighting']['map'] = os.path.join('models', 'system', 'lightmap', 'lightmap.png')

@@ -10,9 +10,15 @@ class CalcSegment:
         self.blocking_panels = blocking_panels
         self.shadows = shadows
         
-        for x in range(x0, x1, 1):
+        xinc = 1
+        yinc = 1
+        if self.map_data['grid']['apply to lightmap']:
+            xinc = self.map_data['grid']['mult']['x']
+            yinc = self.map_data['grid']['mult']['y']
+        
+        for x in range(x0, x1, xinc):
             self.pipe.send(['message', '{}-{} at {}'.format(x0, x1, x)])
-            for y in range(1, 600, 1):
+            for y in range(1, 600, yinc):
                 self.pipe.send([[x, y], self.calc_light(x, y)])
         self.pipe.send('done')
     

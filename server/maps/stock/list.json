@@ -36,6 +36,7 @@
 		600
 	],
 	"grid": {
+		"apply to lightmap": true,
 		"force": false,
 		"force value": true,
 		"mult": {
