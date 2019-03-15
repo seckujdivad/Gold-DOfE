@@ -11,5 +11,6 @@
 		"frames": 1,
 		"delay": 0.8,
 		"variation": 0
-	}
+	},
+	"use grid": true
 }

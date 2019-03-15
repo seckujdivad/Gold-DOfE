@@ -6,5 +6,6 @@
 	"offscreen": [-100, -100],
 	"rotations": [1, 1, 1, 1],
 	"transparencies": [1, 1, 1, 1],
-	"layers": [1, 1, 1, 1]
+	"layers": [1, 1, 1, 1],
+	"use grid": false
 }

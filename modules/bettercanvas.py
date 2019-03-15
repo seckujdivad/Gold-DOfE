@@ -135,7 +135,7 @@ class Model:
     map_path - path to map files
     layer - string or int for canvas controller
     '''
-    def __init__(self, canvas_controller, mdl_name, map_path, layer, snap_to = True):
+    def __init__(self, canvas_controller, mdl_name, map_path, layer):
         self.mdl_name = mdl_name
         self.map_path = map_path
         self.canvas_controller = canvas_controller
@@ -175,7 +175,7 @@ class Model:
                 cont = True
             
             class snap:
-                use = snap_to
+                use = False
                 x = 1
                 y = 1
                 
@@ -227,6 +227,9 @@ class Model:
         self.attributes.num_layers = self.cfgs.model['layers'][self.attributes.render_quality]
         
         ##load grid snap values
+        if 'use grid' in self.cfgs.model:
+            self.attributes.snap.use = self.cfgs.model['use grid']
+            
         if self.cfgs.map['grid']['force']:
             self.attributes.snap.use = self.cfgs.map['grid']['force value']
         self.attributes.snap.x = self.cfgs.map['grid']['mult']['x']
