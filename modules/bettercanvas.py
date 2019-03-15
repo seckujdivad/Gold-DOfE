@@ -5,6 +5,7 @@ import json
 import threading
 import time
 import random
+import math
 
 class CanvasController:
     def __init__(self, canvas, game = None, layers = None):
@@ -467,7 +468,13 @@ class Model:
             
             #move currently offscreen objects offscreen
             for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
-                self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.pos.x + self.get_offsets(i)[0], self.attributes.pos.y + self.get_offsets(i)[1])
+                x = self.attributes.pos.x + self.get_offsets(i)[0]
+                y = self.attributes.pos.y + self.get_offsets(i)[1]
+                
+                if self.attributes.snap.use:
+                    x, y = self.snap_coords(x, y)
+                
+                self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), x, y)
     
     def get_object(self, image_set, index, rotation, transparency, frame):
         if not self.attributes.uses_PIL:
