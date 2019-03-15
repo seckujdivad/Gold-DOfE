@@ -19,10 +19,7 @@ class CalcSegment:
         for x in range(x0, x1, xinc):
             self.pipe.send(['message', '{}-{} at {}'.format(x0, x1, x)])
             for y in range(1, 600, yinc):
-                x = int(x - (xinc / 2))
-                y = int(y - (yinc / 2))
-                
-                self.pipe.send([[x, y], self.calc_light(x, y)])
+                self.pipe.send([[x, y], self.calc_light(int((x / xinc) + 1) * xinc, int((y / yinc) + 1) * yinc)])
         self.pipe.send('done')
     
     def calc_light(self, x, y):
