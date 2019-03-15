@@ -229,7 +229,6 @@ class Model:
         ##load grid snap values
         if self.cfgs.map['grid']['force']:
             self.attributes.snap.use = self.cfgs.map['grid']['force value']
-        
         self.attributes.snap.x = self.cfgs.map['grid']['mult']['x']
         self.attributes.snap.y = self.cfgs.map['grid']['mult']['y']
         
@@ -491,5 +490,20 @@ class Model:
         while self.attributes.animation.cont:
             time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
             self.increment(frame = 1)
+    
+    def snap_coords(self, x, y):
+        x /= self.attributes.snap.x
+        y /= self.attributes.snap.y
+        
+        x = math.floor(x)
+        y = math.floor(y)
+        
+        x += 0.5
+        y += 0.5
+        
+        x *= self.attributes.snap.x
+        y *= self.attributes.snap.y
+        
+        return int(x), int(y)
     
     setpos = set
