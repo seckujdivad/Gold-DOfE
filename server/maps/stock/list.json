@@ -35,6 +35,14 @@
 		800,
 		600
 	],
+	"grid": {
+		"force": false,
+		"force value": true,
+		"mult": {
+			"x": 4,
+			"y": 4
+		}
+	},
 	"layout": "layout.json",
 	"lighting": {
 		"background": 0.4,

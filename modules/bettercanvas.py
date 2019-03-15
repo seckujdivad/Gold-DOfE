@@ -135,7 +135,7 @@ class Model:
     map_path - path to map files
     layer - string or int for canvas controller
     '''
-    def __init__(self, canvas_controller, mdl_name, map_path, layer):
+    def __init__(self, canvas_controller, mdl_name, map_path, layer, snap_to = True):
         self.mdl_name = mdl_name
         self.map_path = map_path
         self.canvas_controller = canvas_controller
@@ -173,6 +173,11 @@ class Model:
                 current_frame = 0
                 variation = 0
                 cont = True
+            
+            class snap:
+                use = snap_to
+                x = 1
+                y = 1
                 
             render_quality = 0 #0-3 - render quality as defined in the user's config
             image_set = None #e.g. idle
@@ -220,6 +225,13 @@ class Model:
         self.attributes.render_quality = self.cfgs.user['graphics']['model quality']
         self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
         self.attributes.num_layers = self.cfgs.model['layers'][self.attributes.render_quality]
+        
+        ##load grid snap values
+        if self.cfgs.map['grid']['force']:
+            self.attributes.snap.use = self.cfgs.map['grid']['force value']
+        
+        self.attributes.snap.x = self.cfgs.map['grid']['mult']['x']
+        self.attributes.snap.y = self.cfgs.map['grid']['mult']['y']
         
         if 'animation' in self.cfgs.model:
             self.attributes.animation.frames = self.cfgs.model['animation']['frames']
