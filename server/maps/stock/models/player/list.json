@@ -9,16 +9,19 @@
 	"transparencies": [1, 1, 1, 1],
 	"layers": [1, 1, 1, 1],
 	"animation": {
-		"idle": {
-			"frames": 2,
-			"delay": 0.5,
-			"variation": 0
+		"profiles": {
+			"idle": {
+				"frames": 2,
+				"delay": 0.5,
+				"variation": 0
+			},
+			"attack": {
+				"frames": 2,
+				"delay": 0.5,
+				"variation": 0
+			}
 		},
-		"attack": {
-			"frames": 2,
-			"delay": 0.5,
-			"variation": 0
-		}
+		"ranks": ["attack", "idle"]
 	},
 	"use grid": true
 }

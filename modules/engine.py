@@ -547,6 +547,8 @@ class Engine:
                                                                           'rotation': self.map.player.angle_to_pos(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx(), self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty()),
                                                                           'position': [self.map.player.pos.x, self.map.player.pos.y],
                                                                           'slot': self.map.invdisp.selection_index}))
+            
+            self.map.player.model.play_anim('attack')
     
     def pulse_item_transparency(self, model, timescale = 0.2):
         if not self.map.pulse_in_progress:

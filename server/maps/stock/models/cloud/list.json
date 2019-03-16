@@ -8,11 +8,14 @@
 	"transparencies": [1, 1, 1, 1],
 	"layers": [1, 1, 1, 1],
 	"animation": {
-		"idle": {
-			"frames": 2,
-			"delay": 1,
-			"variation": 0
-		}
+		"profiles": {
+			"idle": {
+				"frames": 2,
+				"delay": 1,
+				"variation": 0
+			}
+		},
+		"ranks": ["idle"]
 	},
 	"use grid": true
 }

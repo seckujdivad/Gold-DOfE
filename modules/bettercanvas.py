@@ -170,6 +170,10 @@ class Model:
             
             animation = None
             
+            class anim_controller:
+                playing_onetime = False
+                revert_to = None
+            
             class snap:
                 use = False
                 x = 1
@@ -235,12 +239,13 @@ class Model:
         self.attributes.image_set = self.cfgs.model['default textures']
         
         if not 'animation' in self.cfgs.model:
-            self.cfgs.model['animation'] = {}
+            self.cfgs.model['animation'] = {'profiles': {},
+                                            'ranks': [self.attributes.image_set]}
         
-        if not self.attributes.image_set in self.cfgs.model['animation']:
-            self.cfgs.model['animation'][self.attributes.image_set] = {'frames': 1,
-                                                                       'delay': 1000,
-                                                                       'variation': 0}
+        if not self.attributes.image_set in self.cfgs.model['animation']['profiles']:
+            self.cfgs.model['animation']['profiles'][self.attributes.image_set] = {'frames': 1,
+                                                                                   'delay': 1000,
+                                                                                   'variation': 0}
         
         self.attributes.animation = AnimAttr(self.attributes, self.cfgs.model['animation'])
         
@@ -484,6 +489,12 @@ class Model:
     def _anim_player(self):
         while self.attributes.animation.cont:
             time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
+            
+            if self.attributes.anim_controller.playing_onetime and self.attributes.animation.frames - 1 == self.attributes.animation.current_frame:
+                self.attributes.anim_controller.playing_onetime = False
+                self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0)
+                self.attributes.anim_controller.revert_to = None
+            
             self.increment(frame = 1)
     
     def snap_coords(self, x, y):
@@ -501,13 +512,33 @@ class Model:
         
         return int(x), int(y)
     
+    def play_anim(self, name, ignore_precedence = False):
+        'Plays an animation once through. If the animation is already playing, it will reset to the start'
+        if self.attributes.animation.is_higher(name, self.attributes.image_set) or not ignore_precedence:
+            self.attributes.anim_controller.playing_onetime = True
+            
+            if not self.attributes.image_set == name:
+                self.attributes.anim_controller.revert_to = self.attributes.image_set
+            
+            self.set(image_set = name, frame = 0)
+    
+    def loop_anim(self, name):
+        'Loop an animation. This will force the selected animation'
+        self.attributes.anim_controller.playing_onetime = False
+        self.attributes.anim_controller.revert_to = self.attributes.image_set
+        self.set(image_set = name, frame = 0)
+    
     setpos = set
 
 class AnimAttr:
+    """
+    Controls animation data
+    """
     def __init__(self, attributes, profiles):
         self._attributes = attributes
         
-        self._profiles = profiles
+        self._profiles = profiles['profiles']
+        self._ranks = profiles['ranks']
         
         self.cont = True
         self.current_frame = 0
@@ -515,13 +546,23 @@ class AnimAttr:
     def __getattr__(self, key):
         if key in ['frames', 'variation', 'delay']:
             return self._profiles[self._attributes.image_set][key]
+        
         elif key == 'run_loop':
             return max([self._profiles[key]['frames'] for key in self._profiles]) > 1
+        
         else:
             raise AttributeError('Attribute "{}" does not exist'.format(key))
     
     def __setattr__(self, key, value):
         if key in ['frames', 'variation', 'delay']:
             self._profiles[self._attributes.image_set][key] = value
+            
         else:
             self.__dict__[key] = value
+    
+    def is_higher(self, anim0, anim1):
+        'Checks if anim0 takes precendence over anim1'
+        if anim0 == anim1:
+            return False
+        elif anim0 in self._ranks and anim1 in self._ranks:
+            return self._ranks.index(anim0) < self._ranks.index(anim1)
