@@ -10,7 +10,7 @@
 	"animation": {
 		"idle": {
 			"frames": 2,
-			"delay": 0.8,
+			"delay": 1,
 			"variation": 0
 		}
 	},
