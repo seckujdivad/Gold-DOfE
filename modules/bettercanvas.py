@@ -306,18 +306,25 @@ class Model:
                     if self.attributes.animation.frames == 1:
                         self.attributes.baseimages[tex_set].append([self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name))])
                     else:
-                        frames = []
-                        for i in range(self.attributes.animation.frames):
-                            frame = self.pillow.gifimage(os.path.join(self.map_path, 'models', self.mdl_name, name))
-                            frame.seek(i)
-                            frames.append(frame)
+                        if type(name) == list:
+                            self.attributes.baseimages[tex_set].append([self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, subname)) for subname in name])
                         
-                        self.attributes.baseimages[tex_set].append(frames)
+                        else:
+                            frames = []
+                            for i in range(self.attributes.animation.frames):
+                                frame = self.pillow.gifimage(os.path.join(self.map_path, 'models', self.mdl_name, name))
+                                frame.seek(i)
+                                frames.append(frame)
+                            
+                            self.attributes.baseimages[tex_set].append(frames)
                 else:
                     if self.attributes.animation.frames == 1:
                         self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name))])
                     else:
-                        self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name), format = 'gif -index {}'.format(i)) for i in range(self.attributes.animation.frames)])
+                        if type(name) == list:
+                            self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, subname)) for subname in name])
+                        else:
+                            self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name), format = 'gif -index {}'.format(i)) for i in range(self.attributes.animation.frames)])
         
         #apply transformations to textures
         for tex_set in self.attributes.baseimages:

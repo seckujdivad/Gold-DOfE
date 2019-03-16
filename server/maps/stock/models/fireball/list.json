@@ -1,6 +1,6 @@
 {
 	"textures": {
-		"inflight": "fireball_inflight1.png"
+		"inflight": [["fireball_inflight1.png", "fireball_inflight2.png"]]
 	},
 	"default textures": "inflight",
 	"offscreen": [-100, -100],
@@ -11,7 +11,7 @@
 	"animation": {
 		"profiles": {
 			"inflight": {
-				"frames": 1,
+				"frames": 2,
 				"delay": 0.25,
 				"variation": 0
 			}
