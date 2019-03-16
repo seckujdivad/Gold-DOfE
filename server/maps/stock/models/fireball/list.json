@@ -1,11 +1,21 @@
 {
 	"textures": {
-		"idle": "fireball_sprite.png"
+		"inflight": "fireball_inflight1.png"
 	},
-	"default textures": "idle",
+	"default textures": "inflight",
 	"offscreen": [-100, -100],
 	"rotations": [8, 16, 32, 64],
 	"transparencies": [1, 1, 1, 1],
 	"layers": [1, 1, 1, 1],
-	"use grid": true
+	"use grid": true,
+	"animation": {
+		"profiles": {
+			"inflight": {
+				"frames": 1,
+				"delay": 0.25,
+				"variation": 0
+			}
+		},
+		"ranks": ["inflight"]
+	}
 }
