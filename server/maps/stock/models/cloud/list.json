@@ -9,7 +9,7 @@
 	"layers": [1, 1, 1, 1],
 	"animation": {
 		"idle": {
-			"frames": 1,
+			"frames": 2,
 			"delay": 0.8,
 			"variation": 0
 		}

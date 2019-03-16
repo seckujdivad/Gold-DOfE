@@ -168,12 +168,7 @@ class Model:
             
             uses_PIL = False
             
-            class animation:
-                frames = 1
-                delay = 1
-                current_frame = 0
-                variation = 0
-                cont = True
+            animation = None
             
             class snap:
                 use = False
@@ -236,11 +231,20 @@ class Model:
         self.attributes.snap.x = self.cfgs.map['grid']['mult']['x']
         self.attributes.snap.y = self.cfgs.map['grid']['mult']['y']
         
-        if 'animation' in self.cfgs.model:
-            self.attributes.animation.frames = self.cfgs.model['animation']['frames']
-            self.attributes.animation.delay = self.cfgs.model['animation']['delay']
-            self.attributes.animation.variation = self.cfgs.model['animation']['variation']
+        #load animation profiles
+        self.attributes.image_set = self.cfgs.model['default textures']
         
+        if not 'animation' in self.cfgs.model:
+            self.cfgs.model['animation'] = {}
+        
+        if not self.attributes.image_set in self.cfgs.model['animation']:
+            self.cfgs.model['animation'][self.attributes.image_set] = {'frames': 1,
+                                                                       'delay': 1000,
+                                                                       'variation': 0}
+        
+        self.attributes.animation = AnimAttr(self.attributes, self.cfgs.model['animation'])
+        
+        #load steps for graphics prerenderer
         if 'transparencies' in self.cfgs.model:
             self.attributes.transparency_steps = self.cfgs.model['transparencies'][self.attributes.render_quality]
         else:
@@ -250,11 +254,6 @@ class Model:
             self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
         else:
             self.attributes.rotation_steps = 1
-        
-        if 'frames' in self.cfgs.model:
-            self.attributes.animation_frames = self.cfgs.model['frames'][self.attributes.render_quality]
-        else:
-            self.attributes.animation_frames = 1
             
         #load PIL modules
         if self.attributes.uses_PIL:
@@ -294,9 +293,6 @@ class Model:
                 filtered_tex_names[name].append(tex_names[name][int(i * mult)])
         
         tex_names = filtered_tex_names
-        
-        #write in default texture name
-        self.attributes.image_set = self.cfgs.model['default textures']
         
         #load textures
         for tex_set in tex_names:
@@ -361,7 +357,7 @@ class Model:
                 self.attributes.canvobjs[tex_set].append(new_rotations)
         
         ## start animation player if necessary
-        if self.attributes.animation.frames > 1:
+        if self.attributes.animation.run_loop:
             threading.Thread(target = self._anim_player, name = 'Model animation player', daemon = True).start()
         
         ## call set
@@ -379,18 +375,19 @@ class Model:
     def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False):
         args = {}
         
-        if not x == None:
+        if x is not None:
             args['x'] = self.attributes.pos.x + x
             
-        if not y == None:
+        if y is not None:
             args['y'] = self.attributes.pos.y + y
             
-        if not rotation == None:
+        if rotation is not None:
             args['rotation'] = self.attributes.rotation + rotation
             
-        if not transparency == None:
+        if transparency is not None:
             args['transparency'] = self.attributes.transparency + transparency
-        if not frame == None:
+            
+        if frame is not None:
             args['frame'] = (self.attributes.animation.current_frame + frame) % self.attributes.animation.frames
         
         args['force'] = force
@@ -398,68 +395,56 @@ class Model:
         self.set(**args)
     
     def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None):
-        if image_set == None:
+        if image_set is None:
             prev_image_set = None
         else:
             prev_image_set = self.attributes.image_set
             self.attributes.image_set = image_set
     
-        if x == None:
-            prev_x = None
-        else:
-            prev_x = self.attributes.pos.x
+        if x is not None:
             self.attributes.pos.x = x
         
-        if y == None:
-            prev_y = None
-        else:
-            prev_y = self.attributes.pos.y
+        if y is not None:
             self.attributes.pos.y = y
         
-        if rotation == None:
+        if rotation is None:
             prev_rotation = None
         else:
             prev_rotation = self.attributes.rotation
             self.attributes.rotation = rotation
         
-        if transparency == None:
+        if transparency is None:
             prev_transparency = None
         else:
             prev_transparency = self.attributes.transparency
             self.attributes.transparency = transparency
         
-        if frame == None:
+        if frame is None:
             prev_frame = None
         else:
             prev_frame = self.attributes.animation.current_frame
             self.attributes.animation.current_frame = frame
         
         #check if the function has been called with any arguments at all
-        if x == None and y == None and rotation == None and transparency == None and frame == None and not force:
+        if x is None and y is None and rotation is None and transparency is None and frame is None and not force:
             return None
         
         #check if only the positions were changed
-        if ((rotation == None) ^ (rotation == prev_rotation)) and ((transparency == None) ^ (transparency == prev_transparency)) and ((frame == None) ^ (frame == prev_frame)) and ((image_set == None) ^ (image_set == prev_image_set)):
+        if ((rotation is None) ^ (rotation == prev_rotation)) and ((transparency is None) ^ (transparency == prev_transparency)) and ((frame is None) ^ (frame == prev_frame)) and ((image_set is None) ^ (image_set == prev_image_set)):
             for i in range(len(self.attributes.canvobjs)):
                 self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.pos.x, self.attributes.pos.y)
         else: #too many parameters were changed, replace all images
             #if previous is equal to current, set to current
-            if prev_x == None:
-                prev_x = self.attributes.pos.x
-            
-            if prev_y == None:
-                prev_y = self.attributes.pos.y
-            
-            if prev_rotation == None:
+            if prev_rotation is None:
                 prev_rotation = self.attributes.rotation
             
-            if prev_transparency == None:
+            if prev_transparency is None:
                 prev_transparency = self.attributes.transparency
             
-            if prev_frame == None:
+            if prev_frame is None:
                 prev_frame = self.attributes.animation.current_frame
             
-            if prev_image_set == None:
+            if prev_image_set is None:
                 prev_image_set = self.attributes.image_set
             
             #move currently onscreen objects offscreen
@@ -517,3 +502,26 @@ class Model:
         return int(x), int(y)
     
     setpos = set
+
+class AnimAttr:
+    def __init__(self, attributes, profiles):
+        self._attributes = attributes
+        
+        self._profiles = profiles
+        
+        self.cont = True
+        self.current_frame = 0
+    
+    def __getattr__(self, key):
+        if key in ['frames', 'variation', 'delay']:
+            return self._profiles[self._attributes.image_set][key]
+        elif key == 'run_loop':
+            return max([self._profiles[key]['frames'] for key in self._profiles]) > 1
+        else:
+            raise AttributeError('Attribute "{}" does not exist'.format(key))
+    
+    def __setattr__(self, key, value):
+        if key in ['frames', 'variation', 'delay']:
+            self._profiles[self._attributes.image_set][key] = value
+        else:
+            self.__dict__[key] = value
