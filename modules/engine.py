@@ -228,7 +228,7 @@ class Game:
         
         elif request.command == 'set mode':
             if request.subcommand == 'spectator':
-                if not self.engine.map.player == None or not self.engine.map.player.running:
+                if self.engine.map.player is not None or not self.engine.map.player.running:
                     self.engine.map.player.destroy()
             elif request.subcommand == 'player':
                 if not self.engine.map.player.running:
@@ -360,13 +360,13 @@ class Engine:
             self.game.message_pipe.send(['map load', 'Loaded map cfg'])
             
             #load base and overlay into memory
-            if self.map.cfg['background']['base'] == None:
+            if self.map.cfg['background']['base'] is None:
                 self.game.message_pipe.send(['map load', 'No base texture'])
             else:
                 self.map.textures.base = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['base']))
                 self.game.message_pipe.send(['map load', 'Loaded base texture'])
             
-            if self.map.cfg['background']['overlay'] == None:
+            if self.map.cfg['background']['overlay'] is None:
                 self.game.message_pipe.send(['map load', 'No overlay texture'])
             else:
                 self.map.textures.overlay = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['overlay']))
@@ -421,12 +421,13 @@ class Engine:
             
             #render scatters
             self.map.textures.obj_scatter = []
-            for i in range(int(self.map.cfg['background']['scatternum'] / len(self.map.cfg['background']['scatters']))):
-                for scatter in self.map.cfg['background']['scatters']:
-                    scattermdl = modules.bettercanvas.Model(self.game.canvcont, random.choice(self.map.cfg['entity models'][scatter]), self.map.path, 'scatters')
-                    scattermdl.set(random.randint(0, 800), random.randint(0, 600))
-                    self.map.textures.obj_scatter.append(scattermdl)
-            self.game.message_pipe.send(['map load', 'Loaded scatters'])
+            if len(self.map.cfg['background']['scatters']) > 0:
+                for i in range(int(self.map.cfg['background']['scatternum'] / len(self.map.cfg['background']['scatters']))):
+                    for scatter in self.map.cfg['background']['scatters']:
+                        scattermdl = modules.bettercanvas.Model(self.game.canvcont, random.choice(self.map.cfg['entity models'][scatter]), self.map.path, 'scatters')
+                        scattermdl.set(random.randint(0, 800), random.randint(0, 600))
+                        self.map.textures.obj_scatter.append(scattermdl)
+                self.game.message_pipe.send(['map load', 'Loaded scatters'])
             
             #load player
             self.game.message_pipe.send(['map load', 'Creating player model...'])
