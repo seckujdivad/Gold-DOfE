@@ -304,8 +304,11 @@ class Model:
         tex_names = filtered_tex_names
         
         #load textures
+        default_set = self.attributes.image_set
+        
         for tex_set in tex_names:
             for name in tex_names[tex_set]:
+                self.attributes.image_set = tex_set
                 if self.attributes.uses_PIL:
                     if self.attributes.animation.frames == 1:
                         self.attributes.baseimages[tex_set].append([self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name))])
@@ -329,6 +332,8 @@ class Model:
                             self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, subname)) for subname in name])
                         else:
                             self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name), format = 'gif -index {}'.format(i)) for i in range(self.attributes.animation.frames)])
+        
+        self.attributes.image_set = default_set
         
         #apply transformations to textures
         for tex_set in self.attributes.baseimages:
