@@ -1,6 +1,7 @@
 {
 	"textures": {
-		"idle": ["teleport.png"]
+		"idle": ["teleport.gif"],
+		"active": ["teleport_active.gif"]
 	},
 	"default textures": "idle",
 	"offscreen": [-64, -64],
@@ -11,11 +12,18 @@
 	"animation": {
 		"profiles": {
 			"idle": {
-				"frames": 1,
-				"delay": 1000,
-				"variation": 0
+				"frames": 16,
+				"delay": 0.25,
+				"variation": 0,
+				"sync": true
+			},
+			"active": {
+				"frames": 8,
+				"delay": 0.0625,
+				"variation": 0,
+				"sync": true
 			}
 		},
-		"ranks": ["idle"]
+		"ranks": ["active", "idle"]
 	}
 }
