@@ -457,7 +457,10 @@
 				416,
 				352
 			],
-			"material": "stone.json"
+			"material": "teleport.json",
+			"scripts": [
+				"teleport.py"
+			]
 		},
 		{
 			"coordinates": [
