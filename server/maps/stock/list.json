@@ -3,9 +3,7 @@
 		"base": "textures/background/base.png",
 		"overlay": null,
 		"scatternum": 10,
-		"scatters": [
-			"cloud"
-		]
+		"scatters": []
 	},
 	"entity models": {
 		"cloud": [
