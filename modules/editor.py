@@ -7,7 +7,6 @@ import json
 import time
 import threading
 import math
-import importlib
 
 import modules.engine
 import modules.bettercanvas
@@ -351,10 +350,10 @@ class Editor:
                     #remove formatting from previous selection (if there was one)
                     if not self.selection == None:
                         current = self.screen_data[self.selection]
-                        self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['texture']['editor colour'], outline = current['material data']['texture']['editor colour'])
+                        self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['editor colour'], outline = current['material data']['editor colour'])
                     
                     #apply formatting to current selection
-                    self.canvas.itemconfigure(item['canvobj'], fill = modules.engine.colour.increase(item['material data']['texture']['editor colour'], [20, 20, 20]), outline = '#000000')
+                    self.canvas.itemconfigure(item['canvobj'], fill = modules.engine.colour.increase(item['material data']['editor colour'], [20, 20, 20]), outline = '#000000')
                     
                     #update the index of the current selection to match the object selected
                     self.selection = index
@@ -405,7 +404,7 @@ class Editor:
                     if not layer in ['highest', 'lowest']:
                         raise ValueError('"layer" must be either "highest" or "lowest", not "{}"'.format(layer))
                     dict['material data'] = self.editorobj.map.get_json(os.path.join('materials', dict['material']))
-                    dict['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(dict['material data']['hitbox'], dict['coordinates']), fill = dict['material data']['texture']['editor colour'], outline = dict['material data']['texture']['editor colour'])
+                    dict['canvobj'] = self.canvas.create_polygon(*self.unpack_coordinates(dict['material data']['hitbox'], dict['coordinates']), fill = dict['material data']['editor colour'], outline = dict['material data']['editor colour'])
                     if layer == 'highest':
                         self.screen_data.append(dict)
                         self.polylist_list.insert(tk.END, '{} at {}, {}'.format(dict['material data']['display name'], dict['coordinates'][0], dict['coordinates'][1]))
@@ -426,7 +425,7 @@ class Editor:
                         self.repopulate_poly_list()
                 
                 def select_none(self):
-                    if not self.selection == None:
+                    if self.selection is None:
                         item = self.screen_data[self.selection]
                         self.canvas.itemconfigure(item['canvobj'], fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
                         self.update_polycoord_display('----', '----')
@@ -616,7 +615,7 @@ class Editor:
                     self.tex_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
                     
                     #show the user the texture that they have selected
-                    self.label_tex = tk.Label(self.frame, text = 'Texture: ----', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+                    self.label_tex = tk.Label(self.frame, text = 'Model: ----', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
                     self.canvas_tex = tk.Canvas(self.frame, width = 128, height = 64)
                     
                     #choose a colour for the editor
@@ -678,10 +677,9 @@ class Editor:
                         self.lists.materials.append(item)
                         
                     self.tex_list.delete(0, tk.END)
-                    for item in os.listdir(os.path.join(self.editorobj.map.path, 'textures')):
-                        if item.endswith('.png'): #only pngs are currently supported
-                            self.tex_list.insert(tk.END, item)
-                            self.lists.textures.append(item)
+                    for item in os.listdir(os.path.join(self.editorobj.map.path, 'models', 'materials')):
+                        self.tex_list.insert(tk.END, item)
+                        self.lists.textures.append(item)
                     
                     self.ent_list.delete(0, tk.END)
                     

@@ -38,5 +38,6 @@
 		"block": 0,
 		"emit": 0.5
 	},
-	"model": "materials/lava"
+	"model": "materials/lava",
+	"editor colour": "#FF6E00"
 }

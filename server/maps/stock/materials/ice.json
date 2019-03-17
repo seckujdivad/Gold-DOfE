@@ -38,5 +38,6 @@
 		"block": 0,
 		"emit": 0
 	},
-	"model": "materials/ice"
+	"model": "materials/ice",
+	"editor colour": "#84E6FF"
 }

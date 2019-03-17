@@ -41,5 +41,6 @@
 	"scripts": [
 		"teleport.py"
 	],
-	"model": "materials/teleport"
+	"model": "materials/teleport",
+	"editor colour": "#96009B"
 }

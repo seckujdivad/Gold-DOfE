@@ -38,5 +38,6 @@
 		"block": 0,
 		"emit": 0
 	},
-	"model": "materials/stone"
+	"model": "materials/stone",
+	"editor colour": "#B7B7B7"
 }

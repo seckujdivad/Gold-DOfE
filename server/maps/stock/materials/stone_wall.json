@@ -38,5 +38,6 @@
 		"block": 1,
 		"emit": 0
 	},
-	"model": "materials/stone_wall"
+	"model": "materials/stone_wall",
+	"editor colour": "#595959"
 }
