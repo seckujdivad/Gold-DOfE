@@ -1,6 +1,6 @@
 {
 	"textures": {
-		"idle": ["lava.png"]
+		"idle": ["lava.gif"]
 	},
 	"default textures": "idle",
 	"offscreen": [-64, -64],
@@ -11,8 +11,8 @@
 	"animation": {
 		"profiles": {
 			"idle": {
-				"frames": 1,
-				"delay": 1000,
+				"frames": 8,
+				"delay": 1,
 				"variation": 0
 			}
 		},
