@@ -38,9 +38,5 @@
 		"block": 0,
 		"emit": 0.5
 	},
-	"texture": {
-		"address": "lava.png",
-		"animated": false,
-		"editor colour": "#FF7700"
-	}
+	"model": "materials/lava"
 }

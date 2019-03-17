@@ -38,9 +38,5 @@
 		"block": 1,
 		"emit": 0
 	},
-	"texture": {
-		"address": "stone_wall.png",
-		"animated": false,
-		"editor colour": "#909090"
-	}
+	"model": "materials/stone_wall"
 }

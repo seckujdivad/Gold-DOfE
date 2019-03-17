@@ -38,9 +38,5 @@
 		"block": 0,
 		"emit": 0
 	},
-	"texture": {
-		"address": "ice.png",
-		"animated": false,
-		"editor colour": "#C9CDFF"
-	}
+	"model": "materials/ice"
 }

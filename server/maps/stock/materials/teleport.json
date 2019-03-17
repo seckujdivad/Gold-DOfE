@@ -41,9 +41,5 @@
 	"scripts": [
 		"teleport.py"
 	],
-	"texture": {
-		"address": "teleport.png",
-		"animated": false,
-		"editor colour": "#DC00FF"
-	}
+	"model": "materials/teleport"
 }

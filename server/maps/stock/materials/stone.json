@@ -38,9 +38,5 @@
 		"block": 0,
 		"emit": 0
 	},
-	"texture": {
-		"address": "stone.png",
-		"animated": false,
-		"editor colour": "#ADADAD"
-	}
+	"model": "materials/stone"
 }
