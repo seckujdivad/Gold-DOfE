@@ -11,8 +11,8 @@
 	"animation": {
 		"profiles": {
 			"idle": {
-				"frames": 8,
-				"delay": 1,
+				"frames": 6,
+				"delay": 1.5,
 				"variation": 0,
 				"sync": true
 			}
