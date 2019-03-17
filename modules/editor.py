@@ -616,7 +616,8 @@ class Editor:
                     
                     #show the user the texture that they have selected
                     self.label_tex = tk.Label(self.frame, text = 'Model: ----', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
-                    self.canvas_tex = tk.Canvas(self.frame, width = 128, height = 64)
+                    self.base_canvas_tex = tk.Canvas(self.frame, width = 128, height = 64)
+                    self.canvas_tex = modules.bettercanvas.CanvasController(self.base_canvas_tex)
                     
                     #choose a colour for the editor
                     self.label_colour = tk.Label(self.frame, text = 'Editor colour', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
@@ -642,7 +643,7 @@ class Editor:
                     
                     #fourth column
                     self.tex_frame.grid(column = 5, row = 0, columnspan = 2, rowspan = 2, sticky = 'NESW')
-                    self.canvas_tex.grid(column = 5, row = 2, columnspan = 2, sticky = 'NESW')
+                    self.base_canvas_tex.grid(column = 5, row = 2, columnspan = 2, sticky = 'NESW')
                     self.label_tex.grid(column = 5, row = 3, columnspan = 2, sticky = 'NSW')
                     self.label_colour.grid(column = 5, row = 4, sticky = 'NESW')
                     self.entry_colour.grid(column = 6, row = 4, sticky = 'NESW')
@@ -715,7 +716,7 @@ class Editor:
                             self.ent_list.insert(tk.END, key)
                             self.lists.entities.append(key)
                         
-                        self.update_tex_display(selected_material_data['texture']['address'], selected_material_data['texture']['editor colour'])
+                        self.update_tex_display(selected_material_data['model'], selected_material_data['editor colour'])
                         
                         self.vars.damage.set('----')
                         self.vars.accel.set('0')
@@ -764,9 +765,9 @@ class Editor:
                         self.texture_selection = selection[0]
                         
                         selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
-                        selected_material_data['texture']['address'] = self.lists.textures[self.texture_selection]
+                        selected_material_data['model'] = 'materials/{}'.format(self.lists.textures[self.texture_selection])
                         
-                        self.update_tex_display(selected_material_data['texture']['address'], selected_material_data['texture']['editor colour'])
+                        self.update_tex_display(selected_material_data['model'], selected_material_data['editor colour'])
                 
                 def choose_colour(self, event = None):
                     colour = self.vars.editor_colour.get()
@@ -774,24 +775,22 @@ class Editor:
                     selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
                     selected_material_data['texture']['editor colour'] = colour
                     
-                    self.update_tex_display(selected_material_data['texture']['address'], selected_material_data['texture']['editor colour'])
+                    self.update_tex_display(selected_material_data['model'], selected_material_data['editor colour'])
                 
-                def update_tex_display(self, address, colour):
+                def update_tex_display(self, name, colour):
                     #delete old objects from the canvas
-                    if not self.editorcol_object == None:
+                    if self.editorcol_object is not None:
                         self.canvas_tex.delete(self.editorcol_object)
-                    if not self.canvtexture_object == None:
-                        self.canvas_tex.delete(self.canvtexture_object)
                     
                     self.editorcol_object = self.canvas_tex.create_rectangle(64, 0, 128, 64, fill = colour, outline = colour)
                     
-                    if address == None:
-                        self.label_tex.config(text = 'Texture: <none>')
+                    if name is None:
+                        self.label_tex.config(text = 'Model: <none>')
                     else:
-                        self.texture_object = self.rendermethod(file = os.path.join(self.editorobj.map.path, 'textures', address))
-                        self.canvtexture_object = self.canvas_tex.create_image(32, 32, image = self.texture_object)
+                        self.canvtexture_object = modules.bettercanvas.Model(self.canvas_tex, name, self.editorobj.map.path, 0)
+                        self.canvtexture_object.setpos(32, 32)
                         
-                        self.label_tex.config(text = 'Texture: {}'.format(address))
+                        self.label_tex.config(text = 'Model: {}'.format(name))
                     
                     self.vars.editor_colour.set(colour)
                 

@@ -1,6 +1,7 @@
 {
 	"clip hitbox": false,
 	"display name": "Teleport",
+	"editor colour": "#96009B",
 	"entities": {
 		"player": {
 			"accelerate": 0.0,
@@ -38,9 +39,8 @@
 		"block": 0,
 		"emit": 0.2
 	},
+	"model": "materials/teleport",
 	"scripts": [
 		"teleport.py"
-	],
-	"model": "materials/teleport",
-	"editor colour": "#96009B"
+	]
 }

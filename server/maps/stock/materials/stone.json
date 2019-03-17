@@ -1,6 +1,7 @@
 {
 	"clip hitbox": false,
 	"display name": "Stone",
+	"editor colour": "#B7B7B7",
 	"entities": {
 		"player": {
 			"accelerate": 30.0,
@@ -38,6 +39,5 @@
 		"block": 0,
 		"emit": 0
 	},
-	"model": "materials/stone",
-	"editor colour": "#B7B7B7"
+	"model": "materials/stone"
 }
