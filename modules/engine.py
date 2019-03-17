@@ -819,7 +819,7 @@ class Entity:
     def destroy(self):
         self.model.destroy()
         self.running = False
-            
+
 
 class DBAccess:
     def __init__(self, address):
