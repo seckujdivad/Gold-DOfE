@@ -408,7 +408,10 @@ class Engine:
             for panel in self.map.layout.data['geometry']:
                 with open(os.path.join(self.map.path, 'materials', panel['material']), 'r') as file:
                     panel['material data'] = json.load(file)
-                panel['img obj'] = self.game.canvcont.create_image(panel['coordinates'][0], panel['coordinates'][1], image = self.map.materials.textures[panel['material data']['texture']['address']], layer = 'map panels')
+                
+                panel['model'] = modules.bettercanvas.Model(self.game.canvcont, panel['material data']['model'], self.map.path, 'map panels')
+                panel['model'].set(x = panel['coordinates'][0], y = panel['coordinates'][1])
+                
                 panel['scriptmodules'] = []
                 if 'scripts' in panel['material data']:
                     for script in panel['material data']['scripts']:
@@ -474,20 +477,33 @@ class Engine:
             for scatter in self.map.textures.obj_scatter:
                 scatter.destroy()
             self.map.textures.obj_scatter = []
-        if not self.map.textures.obj_base == None:
+            
+        if self.map.textures.obj_base is not None:
+            
             self.game.canvcont.delete(self.map.textures.obj_base)
             self.map.textures.obj_base = None
-        if not self.map.textures.obj_overlay == None:
+            
+        if self.map.textures.obj_overlay is not None:
             self.game.canvcont.delete(self.map.textures.obj_overlay)
             self.map.textures.obj_overlay = None
-        if not self.map.player == None:
+            
+        if self.map.player is not None:
             self.map.player.model.destroy()
-        if not self.map.healthbar == None:
+            
+        if self.map.healthbar is not None:
             self.map.healthbar.destroy()
-        if not self.map.invdisp == None:
+            
+        if self.map.invdisp is not None:
             self.map.invdisp.destroy()
+            
         for item in self.map.items:
             item['object'].destroy()
+        
+        if 'geometry' in self.map.layout.data:
+            for panel in self.map.layout.data['geometry']:
+                panel['model'].destroy()
+        self.map.layout.data = {}
+            
         self.game.message_pipe.send(['map load', 'Cleared old map assets'])
         
         self.keybindhandler.unbind_all()
