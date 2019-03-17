@@ -29,6 +29,8 @@ class CanvasController:
         with open(os.path.join(sys.path[0], *layers), 'r') as file:
             self.layer_config = json.load(file) #load user defined order for screen items to be rendered in
         
+        self.global_time = time.time()
+        
     def create_rectangle(self, *coords, **args):
         'Wrapper function to provide tk canvas-like syntax'
         return self._create('rectangle', coords, args)
@@ -173,6 +175,7 @@ class Model:
             class anim_controller:
                 playing_onetime = False
                 revert_to = None
+                sync = False
             
             class snap:
                 use = False
@@ -245,7 +248,8 @@ class Model:
         if not self.attributes.image_set in self.cfgs.model['animation']['profiles']:
             self.cfgs.model['animation']['profiles'][self.attributes.image_set] = {'frames': 1,
                                                                                    'delay': 1000,
-                                                                                   'variation': 0}
+                                                                                   'variation': 0,
+                                                                                   "sync": False}
         
         self.attributes.animation = AnimAttr(self.attributes, self.cfgs.model['animation'])
         
@@ -494,6 +498,9 @@ class Model:
         self.attributes.animation.cont = False
     
     def _anim_player(self):
+        if self.attributes.animation.sync:
+            time.sleep(self.attributes.animation.delay - ((time.time() - self.canvas_controller.global_time) % self.attributes.animation.delay))
+        
         while self.attributes.animation.cont:
             time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
             
@@ -557,11 +564,17 @@ class AnimAttr:
         elif key == 'run_loop':
             return max([self._profiles[key]['frames'] for key in self._profiles]) > 1
         
+        elif key == 'sync':
+            if 'sync' in self._profiles[self._attributes.image_set]:
+                return self._profiles[self._attributes.image_set]['sync']
+            else:
+                return False
+        
         else:
             raise AttributeError('Attribute "{}" does not exist'.format(key))
     
     def __setattr__(self, key, value):
-        if key in ['frames', 'variation', 'delay']:
+        if key in ['frames', 'variation', 'delay', 'sync']:
             self._profiles[self._attributes.image_set][key] = value
             
         else:
