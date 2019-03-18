@@ -1,3 +1,5 @@
+import random
+
 class Script:
     def __init__(self, panel):
         self.binds = {'when touching': [self.when_touching],
@@ -8,5 +10,5 @@ class Script:
     
     def when_touching(self, entity):
         print(entity.pos.x, entity.pos.y)
-        entity.setpos(400, 300)
+        entity.setpos(random.randrange(50, 750), random.randrange(50, 550))
         self.panel['model'].play_anim('active')
