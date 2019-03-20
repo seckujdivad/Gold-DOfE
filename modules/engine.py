@@ -268,14 +268,19 @@ class Engine:
                 
                 event_overlays = {}
                 event_overlays_models = {}
+                
             class layout:
                 data = {}
+                panels = []
+                
             class materials:
                 data = {}
                 textures = {}
                 scripts = {}
+                
             class other_players:
                 entities = {}
+                
             name = None
             cfg = {}
             rendermethod = None
@@ -404,21 +409,12 @@ class Engine:
                     spec.loader.exec_module(script_module)
                     self.map.materials.scripts[script] = script_module.Script
             
-            #render layout panels and give them their scripts
+            #make layout panels
             for panel in self.map.layout.data['geometry']:
-                with open(os.path.join(self.map.path, 'materials', panel['material']), 'r') as file:
-                    panel['material data'] = json.load(file)
-                
-                panel['model'] = modules.bettercanvas.Model(self.game.canvcont, panel['material data']['model'], self.map.path, 'map panels')
-                panel['model'].set(x = panel['coordinates'][0], y = panel['coordinates'][1])
-                
-                panel['scriptmodules'] = []
-                if 'scripts' in panel['material data']:
-                    for script in panel['material data']['scripts']:
-                        panel['scriptmodules'].append(self.map.materials.scripts[script](panel))
-                if 'scripts' in panel:
-                    for script in panel['scripts']:
-                        panel['scriptmodules'].append(self.map.materials.scripts[script](panel))
+                panel_object = Panel(self.game.canvcont, panel['material'], self.map.path, 'map panels')
+                panel_object.load_scripts(self.map.materials.scripts)
+                panel_object.set(x = panel['coordinates'][0], y = panel['coordinates'][1])
+                self.map.layout.panels.append(panel_object)
                 
             self.game.message_pipe.send(['map load', 'Rendered layout panels'])
             
@@ -498,42 +494,40 @@ class Engine:
             
         for item in self.map.items:
             item['object'].destroy()
-        
-        if 'geometry' in self.map.layout.data:
-            for panel in self.map.layout.data['geometry']:
-                panel['model'].destroy()
+            
+        for panel in self.map.layout.panels:
+            panel.destroy()
         self.map.layout.data = {}
             
         self.game.message_pipe.send(['map load', 'Cleared old map assets'])
         
         self.keybindhandler.unbind_all()
     
-    def find_materials_underneath(self, x, y):
+    def find_panels_underneath(self, x, y):
         output = []
-        for panel in self.map.layout.data['geometry']:
-            relative_coords = [x - panel['coordinates'][0], y - panel['coordinates'][1]]
-            mat_data = panel['material data']
+        for panel in self.map.layout.panels:
+            relative_coords = [x - panel.attributes.pos.x, y - panel.attributes.pos.y]
             
-            if math.hypot(*relative_coords) <= mat_data['hitbox maxdist']:
-                hitbox = mat_data['hitbox']
-                if self.is_inside_hitbox(relative_coords[0], relative_coords[1], hitbox, mat_data):
-                    output.append([panel, mat_data])
+            if math.hypot(*relative_coords) <= panel.attributes.hitbox.maxdist:
+                hitbox = panel.attributes.hitbox.geometry
+                if self.is_inside_hitbox(relative_coords[0], relative_coords[1], panel.attributes.hitbox.geometry):
+                    output.append(panel)
         
         if self.debug.panel_intersections is not None:
             text = 'Intersections:'
             for panel, mat_data in output:
-                text += '\n({}, {}) - {}'.format(round(panel['coordinates'][0], 1), round(panel['coordinates'][1], 1), mat_data['display name'])
+                text += '\n({}, {}) - {}'.format(round(panel.attributes.pos.x, 1), round(panel.attributes.pos.x, 1), panel.cfgs.material['display name'])
             self.debug.panel_intersections.set(text)
         
         return output
     
-    def is_inside_hitbox(self, x, y, hitbox, mat_data):
+    def is_inside_hitbox(self, x, y, hitbox):
         nhitbox = []
         for hx, hy in hitbox:
             nhitbox.append([hx - x, hy - y])
-        return self.origin_is_inside_hitbox(nhitbox, mat_data)
+        return self.origin_is_inside_hitbox(nhitbox)
     
-    def origin_is_inside_hitbox(self, hitbox, mat_data):
+    def origin_is_inside_hitbox(self, hitbox):
         'Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)'
         if self.hitdetection.accurate:
             max_x = max(hitbox, key = lambda i: abs(i[0]))[0]
@@ -653,14 +647,18 @@ class Entity:
                 event.wait()
     
     def _setpos(self, event, x = None, y = None, rotation = None, transparency = None):
-        if not x == None:
+        if x is not None:
             self.pos.x = x
-        if not y == None:
+            
+        if y is not None:
             self.pos.y = y
-        if not rotation == None:
+            
+        if rotation is not None:
             self.pos.rotation = rotation % 360
-        if not transparency == None:
+            
+        if transparency is not None:
             self.pos.transparency = transparency
+            
         self.model.set(self.pos.x, self.pos.y, self.pos.rotation, self.pos.transparency)
             
         event.set()
@@ -676,16 +674,15 @@ class Entity:
             decel = 0
             velcap = 0
             damage = 0
-            data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
-            for panel, material in data:
-                if material['entities'][self.ent_name]['accelerate'] != None:
-                    accel = max(accel, material['entities'][self.ent_name]['accelerate'])
-                if material['entities'][self.ent_name]['decelerate'] != None:
-                    decel += material['entities'][self.ent_name]['decelerate']
-                if material['entities'][self.ent_name]['velcap'] != None:
-                    velcap = max(velcap, material['entities'][self.ent_name]['velcap'])
-                if material['entities'][self.ent_name]['damage'] != None:
-                    damage += material['entities'][self.ent_name]['damage']
+            for panel in self.engine.find_panels_underneath(self.pos.x, self.pos.y):
+                if panel.cfgs.material['entities'][self.ent_name]['accelerate'] is not None:
+                    accel = max(accel, panel.cfgs.material['entities'][self.ent_name]['accelerate'])
+                if panel.cfgs.material['entities'][self.ent_name]['decelerate'] is not None:
+                    decel += panel.cfgs.material['entities'][self.ent_name]['decelerate']
+                if panel.cfgs.material['entities'][self.ent_name]['velcap'] is not None:
+                    velcap = max(velcap, panel.cfgs.material['entities'][self.ent_name]['velcap'])
+                if panel.cfgs.material['entities'][self.ent_name]['damage'] is not None:
+                    damage += panel.cfgs.material['entities'][self.ent_name]['damage']
             
             self.set_health(self.health - (damage * self.pos.momentum.delay))
             
@@ -750,25 +747,24 @@ class Entity:
             start = time.time()
         
             touching_this_loop = []
-            data = self.engine.find_materials_underneath(self.pos.x, self.pos.y)
-            for panel, material in data:
+            for panel in self.engine.find_panels_underneath(self.pos.x, self.pos.y):
                 touching_this_loop.append(panel)
-                if not panel['scriptmodules'] == []:
-                    for script in panel['scriptmodules']:
-                        if 'when touching' in script.binds:
-                            for func in script.binds['when touching']:
+                for script in panel.attributes.scripts:
+                    if 'when touching' in script.binds:
+                        for func in script.binds['when touching']:
+                            func(self)
+                    if not panel in touching_last_loop:
+                        if 'on enter' in script.binds:
+                            for func in script.binds['on enter']:
                                 func(self)
-                        if not panel in touching_last_loop:
-                            if 'on enter' in script.binds:
-                                for func in script.binds['on enter']:
-                                    func(self)
+                                    
             for panel in touching_last_loop:
                 if not panel in touching_this_loop:
-                    if not panel['scriptmodules'] == []:
-                        for script in panel['scriptmodules']:
-                            if 'on leave' in script.binds:
-                                for func in script.binds['on leave']:
-                                    func(self)
+                    for script in panel.attributes.scripts:
+                        if 'on leave' in script.binds:
+                            for func in script.binds['on leave']:
+                                func(self)
+                                    
             touching_last_loop = touching_this_loop
             
             if self.pos.x < 0 or self.pos.x > self.engine.map.cfg['geometry'][0] or self.pos.y < 0 or self.pos.y > self.engine.map.cfg['geometry'][1]:
@@ -789,11 +785,11 @@ class Entity:
                 time.sleep(delay)
     
     def set_health(self, value):
-        if (not self.health == None) and (not self.health == value) and self.is_player:
+        if (self.health is not None) and (not self.health == value) and self.is_player:
             self.engine.pulse_item_transparency(self.engine.map.textures.event_overlays['damage'])
     
         self.health = value
-        if not self.engine.map.healthbar == None: #make sure healthbar has been created
+        if self.engine.map.healthbar is not None: #make sure healthbar has been created
             self.engine.map.healthbar.set_value(self.health)
         self.engine.game.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.health}))
     
@@ -816,11 +812,13 @@ class Entity:
     
     def _setpos_interpolate(self, x, y, rotation, time_, divisions):
         if divisions > 0:
-            if x == None:
+            if x is None:
                 x = self.pos.x
-            if y == None:
+                
+            if y is None:
                 y = self.pos.y
-            if rotation == None:
+                
+            if rotation is None:
                 rotation = self.pos.rotation
 
             xincrement = (x - self.pos.x) / divisions
@@ -1295,3 +1293,29 @@ class DynamicStringDisplay:
             self.styling.colour = colour
         
         self.refresh()
+
+class Panel(modules.bettercanvas.Model):
+    def __init__(self, canvas_controller, mat_name, map_path, layer):
+        self.mat_name = mat_name
+        
+        with open(os.path.join(map_path, 'materials', mat_name), 'r') as file:
+            mat_cfg = json.load(file)
+        
+        super().__init__(canvas_controller, mat_cfg['model'], map_path, layer)
+        
+        self.cfgs.material = mat_cfg
+        
+        class hitbox:
+            geometry = self.cfgs.material['hitbox']
+            maxdist = self.cfgs.material['hitbox maxdist']
+        self.attributes.hitbox = hitbox
+    
+    def load_scripts(self, library):
+        self.attributes.scripts = []
+        
+        if 'scripts' in self.cfgs.material:
+            for script in self.cfgs.material['scripts']:
+                if script in library:
+                    self.attributes.scripts.append(library[script](self))
+                else:
+                    print('Script "{}" not in script library'.format(script))
