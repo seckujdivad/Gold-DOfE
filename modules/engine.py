@@ -828,7 +828,7 @@ class Entity:
             rotationincrement = (rotation - self.pos.rotation) / divisions
             delay = time_ / divisions
             for i in range(divisions):
-                self.setpos(x = self.pos.x + xincrement, y = self.pos.y + yincrement, rotation = self.pos.rotation)
+                self.setpos(x = self.pos.x + (xincrement * i), y = self.pos.y + (yincrement * i), rotation = self.pos.rotation + (rotationincrement * i))
                 time.sleep(delay)
         else:
             self.setpos(x = x, y = y, rotation = rotation)
