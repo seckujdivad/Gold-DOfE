@@ -5,13 +5,13 @@
 		"player": {
 			"accelerate": 30.0,
 			"damage": 0.0,
-			"decelerate": 100.0,
+			"decelerate": 5.0,
 			"velcap": 20.0
 		},
 		"player3d": {
 			"accelerate": 30.0,
 			"damage": 0.0,
-			"decelerate": 100.0,
+			"decelerate": 5.0,
 			"velcap": 20.0
 		}
 	},

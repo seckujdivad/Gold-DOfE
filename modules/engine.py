@@ -588,6 +588,15 @@ class Engine:
             
         model.set(transparency = 0)
         self.map.pulse_in_progress = False
+    
+    def angle(self, delta_x, delta_y):
+        if delta_x == 0:
+            if delta_y > 0:
+                return math.pi / 2
+            else:
+                return (3 * math.pi) / 2
+        else:
+            return math.atan(delta_y /  delta_x)
 
 class Entity:
     def __init__(self, ent_name, map_path, engine, layer, is_player = False):
@@ -743,47 +752,52 @@ class Entity:
                 
                 for panel in self.engine.find_panels_underneath(self.pos.x, self.pos.y):
                     if self.clip and panel.cfgs.material['clip hitbox']:
-                        normal = None
+                        normal_angle = None
                         
                         if self.engine.hitdetection.accurate:
                             lines = []
-                            last_x = 0
-                            last_y = 0
+                            last_x, last_y = panel.attributes.hitbox.geometry[len(panel.attributes.hitbox.geometry) - 1]
                             for x, y in panel.attributes.hitbox.geometry:
-                                lines.append([[x - panel.attributes.pos.x, last_x - panel.attributes.pos.x], [y - panel.attributes.pos.y, last_y - panel.attributes.pos.y]])
+                                lines.append([[x, last_x], [y, last_y]])
                                 last_x = x
                                 last_y = y
                             
-                            line_last = lines[len(lines) - 1]
-                            
                             resultant = None
                             for line in lines:
-                                res = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, self.pos.x], [old_y, self.pos.y]], line, line_last)
+                                res = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, self.pos.x], [old_y, self.pos.y]], line)
                                 if type(res) != bool and res is not None:
                                     resultant = res
-                                
-                                line_last = line
                             
-                            if resultant is not None:
-                                normal = 0 - (resultant[0][1] - resultant[0][0]) / (resultant[1][1] - resultant[1][0])
+                            if resultant is None:
+                                mindist = None
+                                minline = None
+                                for line in lines:
+                                    centre = sum(line[0]) / 2, sum(line[1]) / 2
+                                    dist = math.hypot(*centre)
+                                    
+                                    if mindist is None or dist < mindist:
+                                        mindist = dist
+                                        minline = line
+                                
+                                if mindist is not None and minline is not None:
+                                    normal_angle = self.engine.angle(minline[0][1] - minline[0][0], minline[1][1] - minline[1][0]) - (math.pi / 2)
+                                    
+                            else:
+                                normal_angle = self.engine.angle(resultant[0][1] - resultant[0][0], resultant[1][1] - resultant[1][0]) - (math.pi / 2)
                         
                         else:
-                            normal = (self.pos.y - panel.attributes.pos.y) / (self.pos.x - panel.attributes.pos.x)
+                            normal_angle = self.engine.angle(self.pos.x - panel.attributes.pos.x, self.pos.y - panel.attributes.pos.y)
                             
-                        print(normal)
-                        if normal is not None:
+                        if normal_angle is not None:
                             self.pos.x = old_x
                             self.pos.y = old_y
                             
-                            normal_angle = math.atan(normal)
-                            mom_angle = math.atan(self.pos.momentum.ymomentum / self.pos.momentum.xmomentum)
+                            mom_angle = self.engine.angle(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
                             resultant_angle = (2 * normal_angle) - mom_angle
-                            resultant_momentum = math.hypot(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
+                            resultant_momentum = math.hypot(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum) * 2
                             
                             self.pos.momentum.xmomentum = math.cos(resultant_angle) * resultant_momentum
                             self.pos.momentum.ymomentum = math.sin(resultant_angle) * resultant_momentum
-                            
-                            print(math.degrees(resultant_angle), resultant_momentum)
                 
                 #debug messages
                 if self.engine.debug.flags['engine']['player']['pos']:
