@@ -600,6 +600,8 @@ class Entity:
         self.running = True
         self.health = None
         
+        self.clip = True
+        
         class pos:
             x = 0
             y = 0
@@ -677,10 +679,13 @@ class Entity:
             for panel in self.engine.find_panels_underneath(self.pos.x, self.pos.y):
                 if panel.cfgs.material['entities'][self.ent_name]['accelerate'] is not None:
                     accel = max(accel, panel.cfgs.material['entities'][self.ent_name]['accelerate'])
+                    
                 if panel.cfgs.material['entities'][self.ent_name]['decelerate'] is not None:
                     decel += panel.cfgs.material['entities'][self.ent_name]['decelerate']
+                    
                 if panel.cfgs.material['entities'][self.ent_name]['velcap'] is not None:
                     velcap = max(velcap, panel.cfgs.material['entities'][self.ent_name]['velcap'])
+                    
                 if panel.cfgs.material['entities'][self.ent_name]['damage'] is not None:
                     damage += panel.cfgs.material['entities'][self.ent_name]['damage']
             
@@ -730,9 +735,57 @@ class Entity:
                     if self.pos.momentum.ymomentum > velcap:
                         self.pos.momentum.ymomentum = velcap
                 
+                old_x = self.pos.x
+                old_y = self.pos.y
+                
                 self.pos.x += self.pos.momentum.xmomentum
                 self.pos.y += self.pos.momentum.ymomentum
-
+                
+                for panel in self.engine.find_panels_underneath(self.pos.x, self.pos.y):
+                    if self.clip and panel.cfgs.material['clip hitbox']:
+                        normal = None
+                        
+                        if self.engine.hitdetection.accurate:
+                            lines = []
+                            last_x = 0
+                            last_y = 0
+                            for x, y in panel.attributes.hitbox.geometry:
+                                lines.append([[x - panel.attributes.pos.x, last_x - panel.attributes.pos.x], [y - panel.attributes.pos.y, last_y - panel.attributes.pos.y]])
+                                last_x = x
+                                last_y = y
+                            
+                            line_last = lines[len(lines) - 1]
+                            
+                            resultant = None
+                            for line in lines:
+                                res = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, self.pos.x], [old_y, self.pos.y]], line, line_last)
+                                if type(res) != bool and res is not None:
+                                    resultant = res
+                                
+                                line_last = line
+                            
+                            if resultant is not None:
+                                normal = 0 - (resultant[0][1] - resultant[0][0]) / (resultant[1][1] - resultant[1][0])
+                        
+                        else:
+                            normal = (self.pos.y - panel.attributes.pos.y) / (self.pos.x - panel.attributes.pos.x)
+                            
+                        print(normal)
+                        if normal is not None:
+                            self.pos.x = old_x
+                            self.pos.y = old_y
+                            
+                            normal_angle = math.atan(normal)
+                            mom_angle = math.atan(self.pos.momentum.ymomentum / self.pos.momentum.xmomentum)
+                            resultant_angle = (2 * normal_angle) - mom_angle
+                            resultant_momentum = math.hypot(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
+                            
+                            self.pos.momentum.xmomentum = math.cos(resultant_angle) * resultant_momentum
+                            self.pos.momentum.ymomentum = math.sin(resultant_angle) * resultant_momentum
+                            
+                            print(math.degrees(resultant_angle), resultant_momentum)
+                
+                #debug messages
                 if self.engine.debug.flags['engine']['player']['pos']:
                     self.engine.debug.player_pos.set('XPOS: {} YPOS: {}'.format(round(self.pos.x, 2), round(self.pos.y, 2)))
 
