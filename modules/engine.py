@@ -789,15 +789,15 @@ class Entity:
                             normal_angle = self.engine.angle(self.pos.x - panel.attributes.pos.x, self.pos.y - panel.attributes.pos.y)
                             
                         if normal_angle is not None:
-                            self.pos.x = old_x
-                            self.pos.y = old_y
-                            
                             mom_angle = self.engine.angle(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
                             resultant_angle = (2 * normal_angle) - mom_angle
-                            resultant_momentum = math.hypot(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum) * 2
+                            resultant_momentum = math.hypot(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
                             
                             self.pos.momentum.xmomentum = math.cos(resultant_angle) * resultant_momentum
                             self.pos.momentum.ymomentum = math.sin(resultant_angle) * resultant_momentum
+                            
+                            self.pos.x += self.pos.momentum.xmomentum
+                            self.pos.y += self.pos.momentum.ymomentum
                 
                 #debug messages
                 if self.engine.debug.flags['engine']['player']['pos']:
