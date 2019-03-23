@@ -623,14 +623,14 @@
 				288,
 				224
 			],
-			"material": "stone_wall.json"
+			"material": "stone.json"
 		},
 		{
 			"coordinates": [
 				288,
 				160
 			],
-			"material": "stone.json"
+			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
@@ -693,14 +693,14 @@
 				224,
 				224
 			],
-			"material": "stone_wall.json"
+			"material": "stone.json"
 		},
 		{
 			"coordinates": [
 				224,
 				160
 			],
-			"material": "stone.json"
+			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
@@ -763,14 +763,14 @@
 				160,
 				224
 			],
-			"material": "stone_wall.json"
+			"material": "stone.json"
 		},
 		{
 			"coordinates": [
 				160,
 				160
 			],
-			"material": "stone.json"
+			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
