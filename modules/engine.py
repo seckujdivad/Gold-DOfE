@@ -748,69 +748,72 @@ class Entity:
                     if self.pos.momentum.ymomentum > velcap:
                         self.pos.momentum.ymomentum = velcap
                 
-                old_x = self.pos.x
-                old_y = self.pos.y
-                
-                self.pos.x += self.pos.momentum.xmomentum
-                self.pos.y += self.pos.momentum.ymomentum
-                
-                for panel in self.engine.find_panels_underneath(self.pos.x, self.pos.y):
-                    if self.clip and panel.cfgs.material['clip hitbox']:
-                        normal_angle = None
-                        
-                        if self.engine.hitdetection.accurate:
-                            lines = []
-                            last_x, last_y = panel.attributes.hitbox.geometry[len(panel.attributes.hitbox.geometry) - 1]
-                            for x, y in panel.attributes.hitbox.geometry:
-                                lines.append([[x, last_x], [y, last_y]])
-                                last_x = x
-                                last_y = y
-                            
-                            resultant = None
-                            for line in lines:
-                                res = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, self.pos.x], [old_y, self.pos.y]], line)
-                                if type(res) != bool and res is not None:
-                                    resultant = res
-                            
-                            if resultant is None:
-                                mindist = None
-                                minline = None
-                                for line in lines:
-                                    centre = sum(line[0]) / 2, sum(line[1]) / 2
-                                    dist = math.hypot(*centre)
-                                    
-                                    if mindist is None or dist < mindist:
-                                        mindist = dist
-                                        minline = line
-                                
-                                if mindist is not None and minline is not None:
-                                    normal_angle = self.engine.angle(minline[0][1] - minline[0][0], minline[1][1] - minline[1][0]) - (math.pi / 2)
-                                    
-                            else:
-                                normal_angle = self.engine.angle(resultant[0][1] - resultant[0][0], resultant[1][1] - resultant[1][0]) - (math.pi / 2)
-                        
-                        else:
-                            normal_angle = self.engine.angle(self.pos.x - panel.attributes.pos.x, self.pos.y - panel.attributes.pos.y)
-                            
-                        if normal_angle is not None:
-                            mom_angle = self.engine.angle(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
-                            resultant_angle = (2 * normal_angle) - mom_angle
-                            resultant_momentum = math.hypot(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
-                            
-                            self.pos.momentum.xmomentum = math.cos(resultant_angle) * resultant_momentum
-                            self.pos.momentum.ymomentum = math.sin(resultant_angle) * resultant_momentum
-                            
-                            self.pos.x += self.pos.momentum.xmomentum
-                            self.pos.y += self.pos.momentum.ymomentum
-                
                 #debug messages
                 if self.engine.debug.flags['engine']['player']['pos']:
-                    self.engine.debug.player_pos.set('XPOS: {} YPOS: {}'.format(round(self.pos.x, 2), round(self.pos.y, 2)))
+                    self.engine.debug.player_pos.set('XPOS: {:<6} YPOS: {:<6}'.format(round(self.pos.x, 2), round(self.pos.y, 2)))
 
                 if self.engine.debug.flags['engine']['player']['speed']:
-                    self.engine.debug.player_speed.set('XSPEED: {} YSPEED: {}'.format(round(self.pos.momentum.xmomentum, 2), round(self.pos.momentum.ymomentum, 2)))
+                    self.engine.debug.player_speed.set('XSPEED: {:<6} YSPEED: {:<6}'.format(round(self.pos.momentum.xmomentum, 2), round(self.pos.momentum.ymomentum, 2)))
+            
+            old_x = self.pos.x
+            old_y = self.pos.y
+            
+            self.pos.x += self.pos.momentum.xmomentum
+            self.pos.y += self.pos.momentum.ymomentum
+            
+            for panel in self.engine.find_panels_underneath(self.pos.x, self.pos.y):
+                if self.clip and panel.cfgs.material['clip hitbox']:
+                    normal_angle = None
+                    
+                    if self.engine.hitdetection.accurate:
+                        lines = []
+                        last_x, last_y = panel.attributes.hitbox.geometry[len(panel.attributes.hitbox.geometry) - 1]
+                        for x, y in panel.attributes.hitbox.geometry:
+                            lines.append([[x, last_x], [y, last_y]])
+                            last_x = x
+                            last_y = y
+                        
+                        resultant = None
+                        for line in lines:
+                            res = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, self.pos.x], [old_y, self.pos.y]], line)
+                            if type(res) != bool and res is not None:
+                                resultant = res
+                        
+                        if resultant is None:
+                            mindist = None
+                            minline = None
+                            for line in lines:
+                                centre = sum(line[0]) / 2, sum(line[1]) / 2
+                                dist = math.hypot(*centre)
+                                
+                                if mindist is None or dist < mindist:
+                                    mindist = dist
+                                    minline = line
+                            
+                            if mindist is not None and minline is not None:
+                                normal_angle = self.engine.angle(minline[0][1] - minline[0][0], minline[1][1] - minline[1][0]) - (math.pi / 2)
+                                
+                        else:
+                            normal_angle = self.engine.angle(resultant[0][1] - resultant[0][0], resultant[1][1] - resultant[1][0]) - (math.pi / 2)
+                    
+                    else:
+                        normal_angle = self.engine.angle(self.pos.x - panel.attributes.pos.x, self.pos.y - panel.attributes.pos.y)
+                        
+                    if normal_angle is not None:
+                        self.pos.x -= self.pos.momentum.xmomentum
+                        self.pos.y -= self.pos.momentum.ymomentum
+                        
+                        mom_angle = self.engine.angle(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
+                        resultant_angle = (2 * normal_angle) - mom_angle
+                        resultant_momentum = math.hypot(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
+                        
+                        self.pos.momentum.xmomentum = math.cos(resultant_angle) * resultant_momentum
+                        self.pos.momentum.ymomentum = math.sin(resultant_angle) * resultant_momentum
+                        
+                        #self.pos.x += self.pos.momentum.xmomentum
+                        #self.pos.y += self.pos.momentum.ymomentum
                 
-                self.setpos()
+            self.setpos()
     
     def script_bind_handler(self):
         touching_last_loop = []
