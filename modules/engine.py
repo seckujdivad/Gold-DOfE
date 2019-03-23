@@ -317,25 +317,21 @@ class Engine:
         
         if self.debug.flags['engine']['panels']['show intersections']:
             self.debug.panel_intersections = DynamicStringDisplay(self.game.canvcont, 70, 300, 'debug')
-            self.debug.panel_intersections.set_styling(size = 10)
-            self.debug.panel_intersections.set_styling(colour = '#FFFFFF')
+            self.debug.panel_intersections.set_styling(size = 18, colour = '#FFFFFF')
 
         if self.debug.flags['engine']['player']['pos']:
-            self.debug.player_pos = DynamicStringDisplay(self.game.canvcont, 700, 270, 'debug')
-            self.debug.player_pos.set_styling(size = 10)
-            self.debug.player_pos.set_styling(colour = '#FFFFFF')
+            self.debug.player_pos = DynamicStringDisplay(self.game.canvcont, 620, 270, 'debug')
+            self.debug.player_pos.set_styling(size = 18, colour = '#FFFFFF')
 
         if self.debug.flags['engine']['player']['speed']:
-            self.debug.player_speed = DynamicStringDisplay(self.game.canvcont, 700, 240, 'debug')
-            self.debug.player_speed.set_styling(size = 10)
-            self.debug.player_speed.set_styling(colour = '#FFFFFF')
+            self.debug.player_speed = DynamicStringDisplay(self.game.canvcont, 620, 240, 'debug')
+            self.debug.player_speed.set_styling(size = 18, colour = '#FFFFFF')
         
         if self.debug.flags['engine']['cursor pos']:
-            self.debug.cursor_pos = DynamicStringDisplay(self.game.canvcont, 700, 300, 'debug')
-            self.debug.cursor_pos.set_styling(size = 10)
+            self.debug.cursor_pos = DynamicStringDisplay(self.game.canvcont, 620, 300, 'debug')
+            self.debug.cursor_pos.set_styling(size = 18, colour = '#FFFFFF')
             self.game.canvcont.bind('<Motion>', lambda event: self.debug.cursor_pos.set('CURSOR: ({}, {})'.format(event.x, event.y)))
             self.game.canvcont.bind('<Leave>', lambda event: self.debug.cursor_pos.set('CURSOR: Outside of screen'))
-            self.debug.cursor_pos.set_styling(colour = '#FFFFFF')
         
         self.map.round_timer = DynamicStringDisplay(self.game.canvcont, 50, 35, 'hud')
         self.map.round_timer.set_styling(size = self.map.settingscfg['hud']['round timer']['size'],
