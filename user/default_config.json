@@ -68,7 +68,7 @@
 		"accurate hit detection": true,
 		"default port": 4321,
 		"default tickrate": 15,
-		"interpolations per second": 50,
+		"interpolations per second": 10,
 		"servers": [
 			{
 				"address": "localhost",
