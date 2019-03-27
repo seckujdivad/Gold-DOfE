@@ -119,11 +119,10 @@ class Game:
                 
                 for data in positions:
                     if data['id'] in self.engine.map.other_players.entities:
-                        self.engine.map.other_players.entities[data['id']].setpos_interpolate(data['x'],
-                                                                                           data['y'],
-                                                                                           data['rotation'],
-                                                                                           1 / self.client.serverdata.raw['tickrate'],
-                                                                                           int(self.engine.map.settingscfg['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
+                        self.engine.map.other_players.entities[data['id']].set(x = data['x'],
+                                                                               y = data['y'],
+                                                                               rotation = data['rotation'],
+                                                                               timeframe = 1 / self.client.serverdata.raw['tickrate'])
                     else:
                         self.engine.map.other_players.entities[data['id']] = Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]),
                                                                                  self.engine.map.path,
@@ -153,7 +152,7 @@ class Game:
                 self.vars['team'] = request.arguments['value']
                 
             elif request.subcommand == 'client position':
-                self.engine.map.player.setpos(request.arguments['x'], request.arguments['y'], request.arguments['rotation'])
+                self.engine.map.player.set(request.arguments['x'], request.arguments['y'], request.arguments['rotation'])
                 
             elif request.subcommand == 'health':
                 self.engine.map.player.set_health(request.arguments['value'])
