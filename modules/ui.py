@@ -488,7 +488,7 @@ class UI:
                 
                 frame = tk.Frame(main.page_frame)
                 
-                canvas = tk.Canvas(frame, width = 800, height = 600, **self.styling.get(font_size = 'medium', object_type = tk.Canvas))
+                canvas = tk.Canvas(frame, width = 800, height = 600, bg = 'purple', **self.styling.get(font_size = 'medium', object_type = tk.Canvas))
                 
                 canvas.grid(row = 0, column = 0)
                 

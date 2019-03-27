@@ -82,8 +82,8 @@ class Game:
     def main(self):
         while self.running:
             time.sleep(0.05)
-            if self.engine.map.player is not None:
-                self.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'position', arguments = {'x': self.engine.map.player.attributes.pos.x, 'y': self.engine.map.player.attributes.pos.y, 'rotation': self.engine.map.player.attributes.rotation}))
+            if self.engine.current_map.player is not None:
+                self.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'position', arguments = {'x': self.engine.current_map.player.attributes.pos.x, 'y': self.engine.current_map.player.attributes.pos.y, 'rotation': self.engine.current_map.player.attributes.rotation}))
     
     def close(self):
         self.running = False
@@ -106,7 +106,7 @@ class Game:
                 
         elif request.command == 'var update w':
             if request.subcommand == 'map':
-                if not self.engine.map.name == request.arguments['map name']:
+                if not self.engine.current_map.name == request.arguments['map name']:
                     self.engine.load_map(request.arguments['map name'])
                 self.vars[request.subcommand] = request.arguments['map name']
                 
@@ -114,56 +114,56 @@ class Game:
                 positions = request.arguments['positions']
                 
                 for data in positions:
-                    if data['id'] in self.engine.map.other_players.entities:
-                        self.engine.map.other_players.entities[data['id']].set(x = data['x'],
-                                                                               y = data['y'],
-                                                                               rotation = data['rotation'],
-                                                                               timeframe = 1 / self.client.serverdata.raw['tickrate'])
+                    if data['id'] in self.engine.current_map.other_players:
+                        self.engine.current_map.other_players[data['id']].set(x = data['x'],
+                                                                              y = data['y'],
+                                                                              rotation = data['rotation'],
+                                                                              timeframe = 1 / self.client.serverdata.raw['tickrate'])
                     else:
-                        self.engine.map.other_players.entities[data['id']] = Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]),
-                                                                                 self.engine.map.path,
+                        self.engine.current_map.other_players[data['id']] = Entity(random.choice(self.engine.cfgs.current_map['entity models'][self.engine.cfgs.current_map['player']['entity']]),
+                                                                                 self.engine.current_map.path,
                                                                                  self.engine,
                                                                                  'player models',
                                                                                  is_player = False)
-                        self.engine.map.other_players.entities[data['id']].setpos(x = data['x'],
+                        self.engine.current_map.other_players[data['id']].setpos(x = data['x'],
                                                                                y = data['y'],
                                                                                rotation = data['rotation'])
                         self.engine.log.add('players', 'Client-server discrepancy, created id {}'.format(data['id']))
                 
                 to_remove = []
-                for conn_id in self.engine.map.other_players.entities:
+                for conn_id in self.engine.current_map.other_players:
                     destroy = True
                     for data in positions:
                         if data['id'] == conn_id:
                             destroy = False
                     if destroy:
-                        self.engine.map.other_players.entities[conn_id].destroy()
+                        self.engine.current_map.other_players[conn_id].destroy()
                         to_remove.append(conn_id)
                 
                 for conn_id in to_remove:
-                    self.engine.map.other_players.entities.pop(conn_id)
+                    self.engine.current_map.other_players.pop(conn_id)
                     self.engine.log.add('players', 'Client-server discrepancy, destroyed id {}'.format(conn_id))
                     
             elif request.subcommand == 'team':
                 self.vars['team'] = request.arguments['value']
                 
             elif request.subcommand == 'client position':
-                self.engine.map.player.set(request.arguments['x'], request.arguments['y'], request.arguments['rotation'])
+                self.engine.current_map.player.set(request.arguments['x'], request.arguments['y'], request.arguments['rotation'])
                 
             elif request.subcommand == 'health':
-                self.engine.map.player.set_health(request.arguments['value'])
+                self.engine.current_map.player.set_health(request.arguments['value'])
                 
             elif request.subcommand == 'scoreline':
                 self.scoreline_display.set_twoitems(*request.arguments['scores'])
             
             elif request.subcommand == 'round time':
                 if request.arguments['value'] is None or request.arguments['value'] <= 0:
-                    self.engine.map.round_timer.set('')
+                    self.engine.hud.round_timer.set('')
                 else:
                     request.arguments['value'] = math.ceil(request.arguments['value'])
                     t_mins = math.floor(request.arguments['value'] / 60)
                     t_secs = '{:0>2}'.format(math.ceil(request.arguments['value'] - t_mins * 60))
-                    self.engine.map.round_timer.set_twoitems(t_mins, t_secs, sep = ':')
+                    self.engine.hud.round_timer.set_twoitems(t_mins, t_secs, sep = ':')
                 
             else:
                 self.vars[request.subcommand] = request.arguments['value']
@@ -171,10 +171,10 @@ class Game:
         elif request.command == 'give':
             for item in request.arguments['items']:
                 i = 0
-                while self.engine.map.invdisp.inv_items[i]['quantity'] != 0:
+                while self.engine.hud.invdisp.inv_items[i]['quantity'] != 0:
                     i += 1
                     
-                self.engine.map.invdisp.set_slot(i, item['item'], item['quantity'])
+                self.engine.hud.invdisp.set_slot(i, item['item'], item['quantity'])
                 
         elif request.command == 'var update r':
             if request.subcommand == 'username':
@@ -185,24 +185,24 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.map.name), self.engine, 'items')
+                        entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.current_map.name), self.engine, 'items')
                         entity.setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
-                        self.engine.map.items.append({'ticket': data['ticket'],
-                                                      'object': entity})
+                        self.engine.current_map.items.append({'ticket': data['ticket'],
+                                                              'object': entity})
                         
                     elif data['type'] == 'remove':
                         to_remove = []
-                        for i in self.engine.map.items:
+                        for i in self.engine.current_map.items:
                             if i['ticket'] == data['ticket']:
                                 to_remove.append(i)
                                 
                         for i in to_remove:
                             i['object'].destroy()
-                            self.engine.map.items.remove(i)
+                            self.engine.current_map.items.remove(i)
                     
                     elif data['type'] == 'update position':
                         to_update = []
-                        for i in self.engine.map.items:
+                        for i in self.engine.current_map.items:
                             if i['ticket'] == data['ticket']:
                                 to_update.append(i)
                                 
@@ -212,7 +212,7 @@ class Game:
                             if not 'rotation' in data:
                                 data['rotation'] = None
                                 
-                            i['object'].setpos_interpolate(data['position'][0], data['position'][1], data['rotation'], 1 / self.client.serverdata.raw['tickrate'], int(self.engine.map.settingscfg['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
+                            i['object'].setpos_interpolate(data['position'][0], data['position'][1], data['rotation'], 1 / self.client.serverdata.raw['tickrate'], int(self.engine.cfgs.user['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
         
         elif request.command == 'popmsg':
             self.popmsg.queue_message(request.arguments['text'], self.settingsdict['hud']['popmsg']['duration'][request.subcommand])
@@ -223,12 +223,13 @@ class Game:
         
         elif request.command == 'set mode':
             if request.subcommand == 'spectator':
-                if self.engine.map.player is not None or not self.engine.map.player.running:
-                    self.engine.map.player.destroy()
+                if self.engine.current_map.player is not None or not self.engine.current_map.player.running:
+                    self.engine.current_map.player.destroy()
+                    
             elif request.subcommand == 'player':
-                if not self.engine.map.player.attributes.running:
-                    self.engine.map.player = Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = True)
-                self.engine.map.player.setpos(400, 300, 0)
+                if not self.engine.current_map.player.attributes.running:
+                    self.engine.current_map.player = Entity(random.choice(self.engine.cfgs.current_map['entity models'][self.engine.cfgs.current_map['player']['entity']]), self.engine.current_map.path, self.engine, 'player models', is_player = True)
+                self.engine.current_map.player.set(x = 400, y = 300, rotation = 0)
         
         elif request.command == 'set hit model':
             if request.subcommand == 'accurate' and not self.engine.hitdetection.accurate:
@@ -239,11 +240,11 @@ class Game:
             self.engine.hitdetection.accurate = request.subcommand == 'accurate' #accurate or loose
         
         elif request.command == 'clear inventory':
-            self.engine.map.invdisp.make_empty()
+            self.engine.hud.invdisp.make_empty()
         
         elif request.command == 'increment inventory slot':
-            if not self.engine.map.invdisp.get_slot_info(request.arguments['index'])['data']['unlimited']:
-                self.engine.map.invdisp.increment_slot(request.arguments['index'], request.arguments['increment'])
+            if not self.engine.hud.invdisp.get_slot_info(request.arguments['index'])['data']['unlimited']:
+                self.engine.hud.invdisp.increment_slot(request.arguments['index'], request.arguments['increment'])
                 
 
 class Engine:
@@ -252,43 +253,45 @@ class Engine:
         
         self.log = modules.logging.Log(os.path.join(sys.path[0], 'user', 'logs', 'engine.txt'))
         
-        class map:
-            class textures:
-                base = None
-                overlay = None
-                
-                obj_base = None
-                obj_overlay = None
-                obj_scatter = []
-                
-                event_overlays = {}
-                event_overlays_models = {}
-                
-            class layout:
-                data = {}
-                panels = []
-                
+        self.rendermethod = None
+        
+        class cfgs:
+            layout = {}
+            current_map = {}
+            user = {}
+        self.cfgs = cfgs
+        
+        class current_map:
+            event_overlays = {}
+            player = None
+            lightmap = None
+            
+            name = None
+            path = None
+            
             class materials:
                 data = {}
-                textures = {}
                 scripts = {}
                 scripts_generic = {}
-                
-            class other_players:
-                entities = {}
-                
-            name = None
-            cfg = {}
-            rendermethod = None
-            player = None
+            
+            class statics:
+                panels = []
+                scatters = []
+                base = None
+                overlay = None
+            
+            items = []
+            
+            other_players = {}
+        self.current_map = current_map
+        
+        class hud:
             healthbar = None
             invdisp = None
-            items = []
-            pulse_in_progress = False
-            settingscfg = None
-            lightmap = None
             round_timer = None
-        self.map = map
+            
+            pulse_in_progress = False
+        self.hud = hud
         
         class hitdetection:
             accurate = False
@@ -305,7 +308,7 @@ class Engine:
         
         #check user cfg
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
-            self.map.settingscfg = json.load(file)
+            self.cfgs.user = json.load(file)
         
         #get debugging settings
         with open(os.path.join(sys.path[0], 'user', 'debug.json'), 'r') as file:
@@ -329,181 +332,180 @@ class Engine:
             self.game.canvcont.bind('<Motion>', lambda event: self.debug.cursor_pos.set('CURSOR: ({}, {})'.format(event.x, event.y)))
             self.game.canvcont.bind('<Leave>', lambda event: self.debug.cursor_pos.set('CURSOR: Outside of screen'))
         
-        self.map.round_timer = DynamicStringDisplay(self.game.canvcont, 50, 35, 'hud')
-        self.map.round_timer.set_styling(size = self.map.settingscfg['hud']['round timer']['size'],
-                                         typeface = self.map.settingscfg['hud']['round timer']['font'],
-                                         colour = self.map.settingscfg['hud']['round timer']['colour'])
-        self.map.round_timer.set_twoitems(0, 0, sep = ':')
+        self.hud.round_timer = DynamicStringDisplay(self.game.canvcont, 50, 35, 'hud')
+        self.hud.round_timer.set_styling(size = self.cfgs.user['hud']['round timer']['size'],
+                                         typeface = self.cfgs.user['hud']['round timer']['font'],
+                                         colour = self.cfgs.user['hud']['round timer']['colour'])
+        self.hud.round_timer.set_twoitems(0, 0, sep = ':')
 
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
     
     def load_map(self, name):
-        self.map.path = os.path.join(sys.path[0], 'server', 'maps', name)
-        if os.path.isdir(self.map.path):
+        path = os.path.join(sys.path[0], 'server', 'maps', name)
+        
+        if os.path.isdir(path):
+            #unload current map
+            self.unload_current_map()
+            
+            #set new map name and path
+            self.current_map.path = path
+            self.current_map.name = name
+            
             self.game.message_pipe.send(['map load', 'Loading map "{}"'.format(name)])
             
             #use correct rendering method
-            if self.map.settingscfg['graphics']['PILrender']:
-                self.map.rendermethod = __import__('PIL.ImageTk').ImageTk.PhotoImage
+            if self.cfgs.user['graphics']['PILrender']:
+                self.rendermethod = __import__('PIL.ImageTk').ImageTk.PhotoImage
                 self.game.message_pipe.send(['map load', 'Loaded PIL image renderer'])
             else:
-                self.map.rendermethod = tk.PhotoImage
+                self.rendermethod = tk.PhotoImage
                 self.game.message_pipe.send(['map load', 'Loaded internal image renderer'])
-        
-            #delete old scatters, background and overlays
-            self.unload_current_map()
             
             #open map cfg
-            self.map.name = name
-            with open(os.path.join(self.map.path, 'list.json'), 'r') as file:
-                self.map.cfg = json.load(file)
+            with open(os.path.join(self.current_map.path, 'list.json'), 'r') as file:
+                self.cfgs.current_map = json.load(file)
             self.game.message_pipe.send(['map load', 'Loaded map cfg'])
             
-            #load base and overlay into memory
-            if self.map.cfg['background']['base'] is None:
+            #load and render base and overlay textures
+            if self.cfgs.current_map['background']['base'] is None:
                 self.game.message_pipe.send(['map load', 'No base texture'])
             else:
-                self.map.textures.base = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['base']))
+                self.current_map.statics.base = modules.bettercanvas.Model(self.game.canvcont, self.cfgs.current_map['background']['base'], self.current_map.path, 'base texture')
+                self.current_map.statics.base.set(x = 402, y = 302)
                 self.game.message_pipe.send(['map load', 'Loaded base texture'])
             
-            if self.map.cfg['background']['overlay'] is None:
+            if self.cfgs.current_map['background']['overlay'] is None:
                 self.game.message_pipe.send(['map load', 'No overlay texture'])
             else:
-                self.map.textures.overlay = self.map.rendermethod(file = os.path.join(self.map.path, self.map.cfg['background']['overlay']))
+                self.current_map.statics.overlay = modules.bettercanvas.Model(self.game.canvcont, self.cfgs.current_map['background']['overlay'], self.current_map.path, 'overlay')
+                self.current_map.statics.overlay.set(x = 402, y = 302)
                 self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
             
-            #render base layer
-            self.map.textures.obj_base = self.game.canvcont.create_image(402, 302, image = self.map.textures.base, layer = 'base texture')
-            self.game.message_pipe.send(['map load', 'Rendered base texture'])
-            
             #create lightmap model
-            self.map.lightmap = modules.bettercanvas.Model(self.game.canvcont, os.path.join('system', 'lightmap'), self.map.path, 'lightmap')
-            self.map.lightmap.setpos(402, 302)
+            self.current_map.lightmap = modules.bettercanvas.Model(self.game.canvcont, os.path.join('system', 'lightmap'), self.current_map.path, 'lightmap')
+            self.current_map.lightmap.setpos(402, 302)
             
-            #load event textures into memory
-            self.map.textures.event_overlays['damage'] = modules.bettercanvas.Model(self.game.canvcont, self.map.settingscfg['hud']['overlays']['damage'], self.map.path, 'event overlays')
-            self.map.textures.event_overlays['damage'].set(402, 302, 0, 0)
+            #load all event textures into memory
+            for name in self.cfgs.user['hud']['overlays']:
+                self.current_map.event_overlays[name] = modules.bettercanvas.Model(self.game.canvcont, self.cfgs.user['hud']['overlays'][name], self.current_map.path, 'event overlays')
+                self.current_map.event_overlays[name].set(x = 402, y = 302, rotation = 0, transparency = 0)
             
             #open layout
-            with open(os.path.join(self.map.path, 'layout.json'), 'r') as file:
-                self.map.layout.data = json.load(file)
+            with open(os.path.join(self.current_map.path, 'layout.json'), 'r') as file:
+                self.cfgs.layout = json.load(file)
             self.game.message_pipe.send(['map load', 'Loaded layout data'])
             
-            #load textures
-            for texture_name in os.listdir(os.path.join(self.map.path, 'textures')):
-                if texture_name.endswith('.png'):
-                    self.map.materials.textures[texture_name] = self.map.rendermethod(file = os.path.join(self.map.path, 'textures', texture_name))
-            self.game.message_pipe.send(['map load', 'Loaded material textures'])
-            
             #load scripts
-            self.map.materials.scripts = {}
-            for script in os.listdir(os.path.join(self.map.path, 'scripts')):
+            self.current_map.materials.scripts = {}
+            for script in os.listdir(os.path.join(self.current_map.path, 'scripts')):
                 if not (script.startswith('.') or script.startswith('_')):
-                    spec = importlib.util.spec_from_file_location('matscript', os.path.join(self.map.path, 'scripts', script))
+                    spec = importlib.util.spec_from_file_location('matscript', os.path.join(self.current_map.path, 'scripts', script))
                     script_module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(script_module)
-                    self.map.materials.scripts[script] = script_module.Script
+                    self.current_map.materials.scripts[script] = script_module.Script
                     
-                    self.map.materials.scripts_generic[script] = script_module.Script()
+                    self.current_map.materials.scripts_generic[script] = script_module.Script()
             
             #make layout panels
-            for panel in self.map.layout.data['geometry']:
-                panel_object = Panel(self.game.canvcont, panel['material'], self.map.path, 'map panels')
-                panel_object.load_scripts(self.map.materials.scripts)
+            for panel in self.cfgs.layout['geometry']:
+                panel_object = Panel(self.game.canvcont, panel['material'], self.current_map.path, 'map panels')
+                panel_object.load_scripts(self.current_map.materials.scripts)
                 panel_object.set(x = panel['coordinates'][0], y = panel['coordinates'][1])
-                self.map.layout.panels.append(panel_object)
+                self.current_map.statics.panels.append(panel_object)
                 
             self.game.message_pipe.send(['map load', 'Rendered layout panels'])
             
             #render scatters
-            self.map.textures.obj_scatter = []
-            if len(self.map.cfg['background']['scatters']) > 0:
-                for i in range(int(self.map.cfg['background']['scatternum'] / len(self.map.cfg['background']['scatters']))):
-                    for scatter in self.map.cfg['background']['scatters']:
-                        scattermdl = modules.bettercanvas.Model(self.game.canvcont, random.choice(self.map.cfg['entity models'][scatter]), self.map.path, 'scatters')
-                        scattermdl.set(random.randint(0, 800), random.randint(0, 600))
-                        self.map.textures.obj_scatter.append(scattermdl)
+            if len(self.cfgs.current_map['background']['scatters']) > 0:
+                for i in range(int(self.cfgs.current_map['background']['scatternum'] / len(self.cfgs.current_map['background']['scatters']))):
+                    for scatter in self.cfgs.current_map['background']['scatters']:
+                        scattermdl = modules.bettercanvas.Model(self.game.canvcont, random.choice(self.cfgs.current_map['entity models'][scatter]), self.current_map.path, 'scatters')
+                        scattermdl.set(x = random.randint(0, 800), y = random.randint(0, 600))
+                        self.current_map.statics.scatters.append(scattermdl)
+                        
                 self.game.message_pipe.send(['map load', 'Loaded scatters'])
             
             #load player
             self.game.message_pipe.send(['map load', 'Creating player model...'])
-            self.map.player = Entity(random.choice(self.map.cfg['entity models'][self.map.cfg['player']['entity']]), self.map.path, self, 'player models', is_player = True)
+            self.current_map.player = Entity(random.choice(self.cfgs.current_map['entity models'][self.cfgs.current_map['player']['entity']]), self.current_map.path, self, 'player models', is_player = True)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
-            self.map.player.setpos(400, 300, 0)
-            
-            #render overlay
-            self.map.textures.obj_overlay = self.game.canvcont.create_image(402, 302, image = self.map.textures.overlay, layer = 'overlay')
-            self.game.message_pipe.send(['map load', 'Rendered overlay'])
+            self.current_map.player.set(x = 400, y = 300, rotation = 0)
             
             #make healthbar
-            self.map.healthbar = DisplayBar(self.game.canvcont, 0, 100, [10, 10, 100, 20], 'gray', 'red')
-            self.map.healthbar.set_value(100)
+            self.hud.healthbar = DisplayBar(self.game.canvcont, 0, 100, [10, 10, 100, 20], 'gray', 'red')
+            self.hud.healthbar.set_value(100)
             
             #make inventory display
-            self.map.invdisp = InventoryBar(self.game.canvcont, [400, 550], os.path.join(self.map.path, 'textures'), os.path.join(self.map.path, 'items'), self.map.rendermethod)
-            self.map.invdisp.select_index(0)
+            self.hud.invdisp = InventoryBar(self.game.canvcont, [400, 550], os.path.join(self.current_map.path, 'textures'), os.path.join(self.current_map.path, 'items'), self.rendermethod)
+            self.hud.invdisp.select_index(0)
             
             #set up binds for inventory display
             with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
                 keybinds_data = json.load(file)
-            self.keybindhandler.bind(keybinds_data['inventory']['slot0'], lambda: self.map.invdisp.select_index(0))
-            self.keybindhandler.bind(keybinds_data['inventory']['slot1'], lambda: self.map.invdisp.select_index(1))
-            self.keybindhandler.bind(keybinds_data['inventory']['slot2'], lambda: self.map.invdisp.select_index(2))
-            self.keybindhandler.bind(keybinds_data['inventory']['slot3'], lambda: self.map.invdisp.select_index(3))
-            self.keybindhandler.bind(keybinds_data['inventory']['slot4'], lambda: self.map.invdisp.select_index(4))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot0'], lambda: self.hud.invdisp.select_index(0))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot1'], lambda: self.hud.invdisp.select_index(1))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot2'], lambda: self.hud.invdisp.select_index(2))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot3'], lambda: self.hud.invdisp.select_index(3))
+            self.keybindhandler.bind(keybinds_data['inventory']['slot4'], lambda: self.hud.invdisp.select_index(4))
             self.keybindhandler.bind(keybinds_data['inventory']['use'], self.use_current_item)
             
             #set values for health bar and inventory bar
-            self.map.healthbar.set_value(100)
-            self.map.invdisp.select_index(0)
+            self.hud.healthbar.set_value(100)
+            self.hud.invdisp.select_index(0)
             
             #tell the server that the player has loaded in
             self.game.client.send(modules.netclients.Request(command = 'map loaded'))
-            self.log.add('map', 'Finished loading map "{}"'.format(self.map.name))
+            self.log.add('map', 'Finished loading map "{}"'.format(self.current_map.name))
             
             #centre scoreline display
             self.game.scoreline_display.pos.x = self.game.canvas.winfo_width() / 2
             self.game.scoreline_display.refresh()
     
     def unload_current_map(self):
-        if not self.map.textures.obj_scatter == []:
-            for scatter in self.map.textures.obj_scatter:
-                scatter.destroy()
-            self.map.textures.obj_scatter = []
-            
-        if self.map.textures.obj_base is not None:
-            
-            self.game.canvcont.delete(self.map.textures.obj_base)
-            self.map.textures.obj_base = None
-            
-        if self.map.textures.obj_overlay is not None:
-            self.game.canvcont.delete(self.map.textures.obj_overlay)
-            self.map.textures.obj_overlay = None
-            
-        if self.map.player is not None:
-            self.map.player.model.destroy()
-            
-        if self.map.healthbar is not None:
-            self.map.healthbar.destroy()
-            
-        if self.map.invdisp is not None:
-            self.map.invdisp.destroy()
-            
-        for item in self.map.items:
-            item['object'].destroy()
-            
-        for panel in self.map.layout.panels:
+        for scatter in self.current_map.statics.scatters:
+            scatter.destroy()
+        self.current_map.scatters = []
+        
+        for panel in self.current_map.statics.panels:
             panel.destroy()
-        self.map.layout.data = {}
+        self.current_map.panels = []
+        
+        for overlay in self.current_map.event_overlays:
+            self.current_map.event_overlays[overlay].destroy()
+        self.current_map.event_overlays = {}
+        
+        if self.current_map.player is not None:
+            self.current_map.player.destroy()
+            self.current_map.player = None
+        
+        if self.current_map.lightmap is not None:
+            self.current_map.lightmap.destroy()
+            self.current_map.lightmap = None
+        
+        self.current_map.materials.data = None
+        self.current_map.materials.scripts = {}
+        
+        for script_name in self.current_map.materials.scripts_generic: #these have all been activated
+            script = self.current_map.materials.scripts_generic[script_name]
+            if 'destroy' in script:
+                script.destroy()
+        self.current_map.materials.scripts_generic = {}
+        
+        for item in self.current_map.items:
+            item.destroy()
             
         self.game.message_pipe.send(['map load', 'Cleared old map assets'])
         
-        self.keybindhandler.unbind_all()
+        if self.keybindhandler is not None:
+            self.keybindhandler.unbind_all()
+        
+        self.current_map.name = None
+        self.current_map.path = None
     
     def find_panels_underneath(self, x, y):
         output = []
-        for panel in self.map.layout.panels:
+        for panel in self.current_map.statics.panels:
             relative_coords = [x - panel.attributes.pos.x, y - panel.attributes.pos.y]
             
             if math.hypot(*relative_coords) <= panel.attributes.hitbox.maxdist:
@@ -549,19 +551,19 @@ class Engine:
             return has_smaller and has_bigger
     
     def use_current_item(self):
-        if self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['quantity'] > 0:
+        if self.hud.invdisp.get_slot_info(self.hud.invdisp.selection_index)['quantity'] > 0:
             self.game.client.send(modules.netclients.Request(command = 'use',
                                                              subcommand = 'client item',
-                                                             arguments = {'item': self.map.invdisp.get_slot_info(self.map.invdisp.selection_index)['file name'],
-                                                                          'rotation': self.map.player.angle_to_pos(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx(), self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty()),
-                                                                          'position': [self.map.player.pos.x, self.map.player.pos.y],
-                                                                          'slot': self.map.invdisp.selection_index}))
+                                                             arguments = {'item': self.hud.invdisp.get_slot_info(self.hud.invdisp.selection_index)['file name'],
+                                                                          'rotation': math.degrees(self.angle(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx(), self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty())),
+                                                                          'position': [self.current_map.player.pos.x, self.current_map.player.pos.y],
+                                                                          'slot': self.hud.invdisp.selection_index}))
             
-            self.map.player.model.play_anim('attack')
+            self.current_map.player.play_anim('attack')
     
     def pulse_item_transparency(self, model, timescale = 0.2):
-        if not self.map.pulse_in_progress:
-            self.map.pulse_in_progress = True
+        if not self.hud.pulse_in_progress:
+            self.hud.pulse_in_progress = True
             threading.Thread(target = self._pulse_item_transparency, args = [model, timescale], name = 'Item transparency pulse').start()
     
     def _pulse_item_transparency(self, model, timescale):
@@ -585,7 +587,7 @@ class Engine:
             time.sleep(max(0, delay - (time.time() - start)))
             
         model.set(transparency = 0)
-        self.map.pulse_in_progress = False
+        self.hud.pulse_in_progress = False
     
     def angle(self, delta_x, delta_y):
         if delta_x == 0:
@@ -1129,12 +1131,12 @@ class Entity(modules.bettercanvas.Model):
     def set_health(self, value):
         if value is not None and self.attributes.is_player:
             if self.attributes.health is not None and self.attributes.health > value:
-                self.engine.pulse_item_transparency(self.engine.map.textures.event_overlays['damage'])
+                self.engine.pulse_item_transparency(self.engine.current_map.event_overlays['damage'])
         
             self.attributes.health = value
             
-            if self.engine.map.healthbar is not None:
-                self.engine.map.healthbar.set_value(self.attributes.health)
+            if self.engine.hud.healthbar is not None:
+                self.engine.hud.healthbar.set_value(self.attributes.health)
             
             self.engine.game.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.attributes.health}))
     
@@ -1169,10 +1171,10 @@ class Entity(modules.bettercanvas.Model):
                                     
             touching_last_loop = touching_this_loop
             
-            if self.attributes.pos.x < 0 or self.attributes.pos.x > self.engine.map.cfg['geometry'][0] or self.attributes.pos.y < 0 or self.attributes.pos.y > self.engine.map.cfg['geometry'][1]:
+            if self.attributes.pos.x < 0 or self.attributes.pos.x > self.cfgs.map['geometry'][0] or self.attributes.pos.y < 0 or self.attributes.pos.y > self.cfgs.map['geometry'][1]:
                 if self.ent_name in self.cfgs.map['events'] and 'outside map' in self.cfgs.map['events'][self.ent_name]:
                     for path in self.cfgs.map['events'][self.ent_name]['outside map']:
-                        obj = self.engine.map.materials.scripts_generic[path]
+                        obj = self.engine.current_map.materials.scripts_generic[path]
                         if 'when outside map' in obj.binds:
                             for func in obj.binds['when outside map']:
                                 func(self)

@@ -1,6 +1,6 @@
 {
 	"background": {
-		"base": "textures/background/base.png",
+		"base": "system/background",
 		"overlay": null,
 		"scatternum": 10,
 		"scatters": []
