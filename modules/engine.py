@@ -117,8 +117,7 @@ class Game:
                     if data['id'] in self.engine.current_map.other_players:
                         self.engine.current_map.other_players[data['id']].set(x = data['x'],
                                                                               y = data['y'],
-                                                                              rotation = data['rotation'],
-                                                                              timeframe = 1 / self.client.serverdata.raw['tickrate'])
+                                                                              rotation = data['rotation'])
                     else:
                         self.engine.current_map.other_players[data['id']] = Entity(random.choice(self.engine.cfgs.current_map['entity models'][self.engine.cfgs.current_map['player']['entity']]),
                                                                                  self.engine.current_map.path,
