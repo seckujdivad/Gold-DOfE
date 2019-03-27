@@ -277,6 +277,7 @@ class Engine:
                 data = {}
                 textures = {}
                 scripts = {}
+                scripts_generic = {}
                 
             class other_players:
                 entities = {}
@@ -408,6 +409,8 @@ class Engine:
                     script_module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(script_module)
                     self.map.materials.scripts[script] = script_module.Script
+                    
+                    self.map.materials.scripts_generic[script] = script_module.Script()
             
             #make layout panels
             for panel in self.map.layout.data['geometry']:
@@ -1470,11 +1473,10 @@ class Entity(modules.bettercanvas.Model):
             if self.attributes.pos.x < 0 or self.attributes.pos.x > self.engine.map.cfg['geometry'][0] or self.attributes.pos.y < 0 or self.attributes.pos.y > self.engine.map.cfg['geometry'][1]:
                 if self.ent_name in self.cfgs.map['events'] and 'outside map' in self.cfgs.map['events'][self.ent_name]:
                     for path in self.cfgs.map['events'][self.ent_name]['outside map']:
-                        obj = self.engine.map.materials.scripts[path]()
+                        obj = self.engine.map.materials.scripts_generic[path]
                         if 'when outside map' in obj.binds:
                             for func in obj.binds['when outside map']:
                                 func(self)
-                        del obj
             
             delay = self.attributes.script_delay - (time.time() - start)
             if delay > 0:
