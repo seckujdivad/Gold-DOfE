@@ -177,6 +177,7 @@ class Model:
                 playing_onetime = False
                 revert_to = None
                 sync = False
+                revert_frame = None
             
             class snap:
                 use = False
@@ -587,8 +588,28 @@ class Model:
             time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
             
             if self.attributes.anim_controller.playing_onetime and self.attributes.animation.frames - 1 == self.attributes.animation.current_frame:
+                num_frames = self.attributes.animation.frames
+                frame_duration = self.attributes.animation.delay
+                
+                
+                time_elapsed = num_frames * frame_duration
+                
+                print(num_frames, frame_duration, time_elapsed)
+                
                 self.attributes.anim_controller.playing_onetime = False
+                
                 self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0)
+                
+                frames_elapsed = int(time_elapsed / self.attributes.animation.delay)
+                
+                next_frame = (self.attributes.anim_controller.revert_frame + frames_elapsed) % self.attributes.animation.frames
+                self.set(frame = next_frame)
+                print(next_frame, frames_elapsed, self.attributes.animation.delay)
+                
+                delay = time_elapsed % self.attributes.animation.delay
+                time.sleep(delay)
+                print(delay)
+                
                 self.attributes.anim_controller.revert_to = None
             
             self.increment(frame = 1)
@@ -615,6 +636,7 @@ class Model:
             
             if not self.attributes.image_set == name:
                 self.attributes.anim_controller.revert_to = self.attributes.image_set
+                self.attributes.anim_controller.revert_frame = self.attributes.animation.current_frame
             
             self.set(image_set = name, frame = 0)
     
