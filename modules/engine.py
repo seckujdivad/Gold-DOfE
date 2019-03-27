@@ -757,8 +757,10 @@ class Entity:
             self.pos.x += self.pos.momentum.xmomentum
             self.pos.y += self.pos.momentum.ymomentum
             
+            has_clipped = False
             for panel in self.engine.find_panels_underneath(self.pos.x, self.pos.y):
-                if self.clip and panel.cfgs.material['clip hitbox']:
+                if self.clip and panel.cfgs.material['clip hitbox'] and not has_clipped:
+                    has_clipped = True
                     normal_angle = None
                     
                     if self.engine.hitdetection.accurate:
@@ -787,10 +789,10 @@ class Entity:
                                     minline = line
                             
                             if mindist is not None and minline is not None:
-                                normal_angle = self.engine.angle(minline[0][1] - minline[0][0], minline[1][1] - minline[1][0]) - (math.pi / 2)
+                                normal_angle = self.engine.angle(minline[0][1] - minline[0][0], minline[1][1] - minline[1][0])
                                 
                         else:
-                            normal_angle = self.engine.angle(resultant[0][1] - resultant[0][0], resultant[1][1] - resultant[1][0]) - (math.pi / 2)
+                            normal_angle = self.engine.angle(resultant[0][1] - resultant[0][0], resultant[1][1] - resultant[1][0])
                     
                     else:
                         normal_angle = self.engine.angle(self.pos.x - panel.attributes.pos.x, self.pos.y - panel.attributes.pos.y)
@@ -799,7 +801,7 @@ class Entity:
                         self.pos.x -= self.pos.momentum.xmomentum
                         self.pos.y -= self.pos.momentum.ymomentum
                         
-                        mom_angle = self.engine.angle(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
+                        mom_angle = self.engine.angle(0 - self.pos.momentum.xmomentum, 0 - self.pos.momentum.ymomentum)
                         resultant_angle = (2 * normal_angle) - mom_angle
                         resultant_momentum = math.hypot(self.pos.momentum.xmomentum, self.pos.momentum.ymomentum)
                         

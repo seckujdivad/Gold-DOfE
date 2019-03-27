@@ -4,10 +4,10 @@
 	"editor colour": "#B7B7B7",
 	"entities": {
 		"player": {
-			"accelerate": 30.0,
+			"accelerate": 50.0,
 			"damage": 0.0,
-			"decelerate": 5.0,
-			"velcap": 20.0
+			"decelerate": 7.5,
+			"velcap": 15.0
 		},
 		"player3d": {
 			"accelerate": 30.0,
