@@ -1412,6 +1412,7 @@ class Entity(modules.bettercanvas.Model):
         
         self.attributes.health = 100
         self.attributes.clip = True
+        self.attributes.script_delay = 0.05
         
         class _strafemove:
             mult = 1.5
@@ -1421,6 +1422,7 @@ class Entity(modules.bettercanvas.Model):
         self._strafemove = _strafemove
         
         threading.Thread(target = self._velocityd, name = 'Velocity daemon', daemon = True).start()
+        threading.Thread(target = self._scriptd, name = 'Script handling daemon', daemon = True).start()
     
     def set_health(self, value):
         if value is not None and self.attributes.is_player:
@@ -1437,6 +1439,51 @@ class Entity(modules.bettercanvas.Model):
     def increment_health(self, inc):
         if inc is not None and self.attributes.health is not None:
             return self.set_health(self.attributes.health + inc)
+    
+    def _scriptd(self):
+        touching_last_loop = []
+        while self.attributes.running:
+            start = time.time()
+        
+            touching_this_loop = []
+            for panel in self.engine.find_panels_underneath(self.attributes.pos.x, self.attributes.pos.y):
+                touching_this_loop.append(panel)
+                for script in panel.attributes.scripts:
+                    if 'when touching' in script.binds:
+                        for func in script.binds['when touching']:
+                            func(self)
+                            
+                    if not panel in touching_last_loop:
+                        if 'on enter' in script.binds:
+                            for func in script.binds['on enter']:
+                                func(self)
+                                    
+            for panel in touching_last_loop:
+                if not panel in touching_this_loop:
+                    for script in panel.attributes.scripts:
+                        if 'on leave' in script.binds:
+                            for func in script.binds['on leave']:
+                                func(self)
+                                    
+            touching_last_loop = touching_this_loop
+            
+            if self.attributes.pos.x < 0 or self.attributes.pos.x > self.engine.map.cfg['geometry'][0] or self.attributes.pos.y < 0 or self.attributes.pos.y > self.engine.map.cfg['geometry'][1]:
+                if self.attributes.is_player:
+                    if 'player' in self.engine.map.cfg['events']:
+                        if 'outside map' in self.engine.map.cfg['events']['player']:
+                            for path in self.engine.map.cfg['events']['player']['outside map']:
+                                if path in self.engine.map.materials.scripts:
+                                    for func in self.engine.map.materials.scripts[path](touching_last_loop).binds['player']['when outside map']:
+                                        func(self)
+                                        
+                if 'outside map' in self.engine.map.cfg['events']:
+                    for path in self.engine.map.cfg['events']['outside map']:
+                        if path in self.engine.map.materials.scripts:
+                            self.engine.map.materials.scripts[path](self)
+            
+            delay = self.attributes.script_delay - (time.time() - start)
+            if delay > 0:
+                time.sleep(delay)
     
     def _velocityd(self):
         with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
