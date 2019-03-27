@@ -92,11 +92,7 @@ class Game:
         self.engine.unload_current_map()
     
     def recv_handler(self, request):
-        try:
-            data = request.as_dict()
-            self.log.add('received', 'Data received from the server - {}'.format(request.pretty_print()))
-        except json.JSONDecodeError:
-            self.log.add('error', 'Error while reading JSON "{}"'.format(data))
+        self.log.add('received', 'Data received from the server - {}'.format(request.pretty_print()))
         
         if request.command == 'say':
             if 'category' in request.arguments:
