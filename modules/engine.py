@@ -185,35 +185,32 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        entity = Entity(data['data']['model'], os.path.join(sys.path[0], 'server', 'maps', self.engine.current_map.name), self.engine, 'items')
-                        entity.setpos(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
-                        self.engine.current_map.items.append({'ticket': data['ticket'],
-                                                              'object': entity})
+                        item = Item(self.canvcont, data['file name'], self.engine.current_map.path, 'items')
+                        item.set(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
+                        item.attributes.ticket = data['ticket']
+                        
+                        self.engine.current_map.items.append(item)
                         
                     elif data['type'] == 'remove':
                         to_remove = []
-                        for i in self.engine.current_map.items:
-                            if i['ticket'] == data['ticket']:
-                                to_remove.append(i)
+                        for item in self.engine.current_map.items:
+                            if item.attributes.ticket == data['ticket']:
+                                to_remove.append(item)
                                 
-                        for i in to_remove:
-                            i['object'].destroy()
-                            self.engine.current_map.items.remove(i)
+                        for item in to_remove:
+                            item.destroy()
+                            self.engine.current_map.items.remove(item)
                     
                     elif data['type'] == 'update position':
                         to_update = []
-                        for i in self.engine.current_map.items:
-                            if i['ticket'] == data['ticket']:
-                                to_update.append(i)
+                        for item in self.engine.current_map.items:
+                            if item.attributes.ticket == data['ticket']:
+                                to_update.append(item)
                                 
-                        for i in to_update:
-                            if not 'position' in data:
-                                data['position'] = [None, None]
-                            if not 'rotation' in data:
-                                data['rotation'] = None
-                                
-                            i['object'].setpos_interpolate(data['position'][0], data['position'][1], data['rotation'], 1 / self.client.serverdata.raw['tickrate'], int(self.engine.cfgs.user['network']['interpolations per second'] / self.client.serverdata.raw['tickrate']))
-        
+                        for item in to_update:
+                            item.set(x = data['position'][0],
+                                     y = data['position'][1])
+                        
         elif request.command == 'popmsg':
             self.popmsg.queue_message(request.arguments['text'], self.settingsdict['hud']['popmsg']['duration'][request.subcommand])
         
@@ -1342,3 +1339,16 @@ class Entity(modules.bettercanvas.Model):
                         self.attributes.pos.velocity.y = math.sin(resultant_angle) * resultant_momentum
                 
             self.set(force = True)
+
+class Item(modules.bettercanvas.Model):
+    def __init__(self, canvas_controller, item_name, map_path, layer):
+        self.item_name = item_name
+        
+        with open(os.path.join(map_path, 'items', item_name), 'r') as file:
+            item_cfg = json.load(file)
+        
+        super().__init__(canvas_controller, item_cfg['model'], map_path, layer)
+        
+        self.cfgs.item = item_cfg
+        
+        self.attributes.ticket = None

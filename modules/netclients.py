@@ -342,6 +342,7 @@ class ServerClient:
                 
         elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
             self.give(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
+            print(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
             self.write_var('team', self.metadata.team_id)
             self.read_var('username')
             self.set_mode('player')

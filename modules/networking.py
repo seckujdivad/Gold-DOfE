@@ -325,7 +325,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     to_send_loop['rotation'] = item['rotation']
                     to_send_loop['new'] = True
                     item['new'] = False
-                    to_send_loop['data'] = item['data']
+                    to_send_loop['file name'] = item['file name']
                 
                 elif not item['data']['speed'] == 0:
                     to_send_loop['type'] = 'update position'
