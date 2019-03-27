@@ -654,14 +654,27 @@ class CanvasMessages:
     def pipe_receiver(self):
         while self.running:
             data = self.pipe.recv()
+            
             if type(data) == str:
                 displaytext = data
             elif type(data) == list:
                 displaytext = self.graphical_properties.formatlib[self.graphical_properties.alignment].format(data[0], data[1])
-            self.messages.insert(0, {'text': displaytext, 'timestamp': time.time(), 'obj': self.canvcont.create_text(0, 0, text = displaytext, fill = self.graphical_properties.colour, font = self.graphical_properties.font, anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment], layer = self.layer)})
+            else:
+                displaytext = str(data)
+                
+            self.messages.insert(0, {'text': displaytext,
+                                     'timestamp': time.time(),
+                                     'obj': self.canvcont.create_text(0, 0,
+                                                                      text = displaytext,
+                                                                      fill = self.graphical_properties.colour,
+                                                                      font = self.graphical_properties.font,
+                                                                      anchor = self.graphical_properties.alignment_library[self.graphical_properties.alignment],
+                                                                      layer = self.layer)})
+            
             if len(self.messages) > self.graphical_properties.maxlen:
                 for message in self.messages[self.graphical_properties.maxlen:]:
                     self.canvcont.delete(message['obj'])
+                    
                 self.messages = self.messages[:self.graphical_properties.maxlen]
     
     def graphics_handler(self):
