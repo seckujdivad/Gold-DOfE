@@ -125,8 +125,8 @@ class Game:
                                                                                  'player models',
                                                                                  is_player = False)
                         self.engine.current_map.other_players[data['id']].setpos(x = data['x'],
-                                                                               y = data['y'],
-                                                                               rotation = data['rotation'])
+                                                                                 y = data['y'],
+                                                                                 rotation = data['rotation'])
                         self.engine.log.add('players', 'Client-server discrepancy, created id {}'.format(data['id']))
                 
                 to_remove = []
@@ -505,7 +505,6 @@ class Engine:
             relative_coords = [x - panel.attributes.pos.x, y - panel.attributes.pos.y]
             
             if math.hypot(*relative_coords) <= panel.attributes.hitbox.maxdist:
-                hitbox = panel.attributes.hitbox.geometry
                 if self.is_inside_hitbox(relative_coords[0], relative_coords[1], panel.attributes.hitbox.geometry):
                     output.append(panel)
         
@@ -524,7 +523,7 @@ class Engine:
         return self.origin_is_inside_hitbox(nhitbox)
     
     def origin_is_inside_hitbox(self, hitbox):
-        'Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)'
+        "Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)"
         if self.hitdetection.accurate:
             max_x = max(hitbox, key = lambda i: abs(i[0]))[0]
             max_y = max(hitbox, key = lambda i: abs(i[1]))[1]
@@ -548,10 +547,13 @@ class Engine:
     
     def use_current_item(self):
         if self.hud.invdisp.get_slot_info(self.hud.invdisp.selection_index)['quantity'] > 0:
+            angle = self.angle(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx() - self.current_map.player.attributes.pos.x, self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty() - self.current_map.player.attributes.pos.y)
+            angle = math.degrees(angle)
+            
             self.game.client.send(modules.netclients.Request(command = 'use',
                                                              subcommand = 'client item',
                                                              arguments = {'item': self.hud.invdisp.get_slot_info(self.hud.invdisp.selection_index)['file name'],
-                                                                          'rotation': math.degrees(self.angle(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx(), self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty())),
+                                                                          'rotation': angle,
                                                                           'position': [self.current_map.player.attributes.pos.x, self.current_map.player.attributes.pos.y],
                                                                           'slot': self.hud.invdisp.selection_index}))
             
@@ -591,8 +593,10 @@ class Engine:
                 return math.pi / 2
             else:
                 return (3 * math.pi) / 2
+        elif delta_x < 0:
+            return math.atan(delta_y / delta_x) + math.pi
         else:
-            return math.atan(delta_y /  delta_x)
+            return math.atan(delta_y / delta_x)
 
 
 class DBAccess:
