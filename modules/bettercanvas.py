@@ -8,6 +8,8 @@ import time
 import random
 import math
 
+import modules.event
+
 class CanvasController:
     def __init__(self, canvas, game = None, layers = None):
         self.canvas = canvas
@@ -411,7 +413,8 @@ class Model:
     def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None, increment = False, timeframe = None):
         if ([x, y, rotation, transparency, frame, image_set] != [None] * 6) or force:
             action = {'items': [],
-                      'delay': 0}
+                      'delay': 0,
+                      'flag': modules.event.SerializableEvent()}
             
             if timeframe is None:
                 action['items'].append([x, y, rotation, transparency, frame, force, image_set, increment])
@@ -448,7 +451,9 @@ class Model:
                 action['delay'] = timeframe / slots
             
             try:
+                action['flag'].clear()
                 self._set_pipe.send(action)
+                action['flag'].wait()
             except BrokenPipeError:
                 self.attributes.running = False
     
@@ -470,6 +475,7 @@ class Model:
                 
                 current_frame += 1
                 if current_frame == len(current_action['items']):
+                    current_action['flag'].set()
                     current_action = None
                 else:
                     time.sleep(current_action['delay'])
@@ -590,25 +596,21 @@ class Model:
             if self.attributes.anim_controller.playing_onetime and self.attributes.animation.frames - 1 == self.attributes.animation.current_frame:
                 num_frames = self.attributes.animation.frames
                 frame_duration = self.attributes.animation.delay
-                
-                
                 time_elapsed = num_frames * frame_duration
-                
-                print(num_frames, frame_duration, time_elapsed)
                 
                 self.attributes.anim_controller.playing_onetime = False
                 
                 self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0)
                 
-                frames_elapsed = int(time_elapsed / self.attributes.animation.delay)
+                while not self.attributes.image_set == self.attributes.anim_controller.revert_to:
+                    pass
                 
+                frames_elapsed = int(time_elapsed / self.attributes.animation.delay)
                 next_frame = (self.attributes.anim_controller.revert_frame + frames_elapsed) % self.attributes.animation.frames
                 self.set(frame = next_frame)
-                print(next_frame, frames_elapsed, self.attributes.animation.delay)
                 
                 delay = time_elapsed % self.attributes.animation.delay
                 time.sleep(delay)
-                print(delay)
                 
                 self.attributes.anim_controller.revert_to = None
             
