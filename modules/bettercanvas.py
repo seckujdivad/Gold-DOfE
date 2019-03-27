@@ -445,7 +445,11 @@ class Model:
                     action['items'].append([x, y, rotation, transparency, frame, force, image_set, False])
                 
                 action['delay'] = timeframe / slots
-            self._set_pipe.send(action)
+            
+            try:
+                self._set_pipe.send(action)
+            except BrokenPipeError:
+                self.attributes.running = False
     
     def _set_handler(self, pipe):
         current_action = None
