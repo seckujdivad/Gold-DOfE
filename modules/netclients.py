@@ -92,6 +92,9 @@ class NetClient:
             try:
                 data = self.connection.recv(4096).decode('UTF-8')
                 
+                if type(data) is not str:
+                    print(data)
+                
                 #unpack the data - often will get multiple dictionaries
                 escape_level = 0
                 output = []
