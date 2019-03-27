@@ -556,7 +556,7 @@ class Engine:
                                                              subcommand = 'client item',
                                                              arguments = {'item': self.hud.invdisp.get_slot_info(self.hud.invdisp.selection_index)['file name'],
                                                                           'rotation': math.degrees(self.angle(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx(), self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty())),
-                                                                          'position': [self.current_map.player.pos.x, self.current_map.player.pos.y],
+                                                                          'position': [self.current_map.player.attributes.pos.x, self.current_map.player.attributes.pos.y],
                                                                           'slot': self.hud.invdisp.selection_index}))
             
             self.current_map.player.play_anim('attack')
@@ -865,7 +865,7 @@ class DisplayBar:
         self.canvcont.delete(self.objects.display)
 
 class InventoryBar:
-    def __init__(self, canvcont, coords, textures_path, items_path, rendermethod, num_slots = 5, sprite_dimensions = [64, 64], backingcolour = '#A0A0A0', outlinewidth = 5, divider_size = 10, backingcolour_selected = '#EAEAEA'):
+    def __init__(self, canvcont, coords, textures_path, items_path, rendermethod, num_slots = 5, sprite_dimensions = None, backingcolour = '#A0A0A0', outlinewidth = 5, divider_size = 10, backingcolour_selected = '#EAEAEA'):
         self.canvcont = canvcont
         self.coords = coords #the coordinates for the top right of the inventory bar
         self.rendermethod = rendermethod
@@ -875,6 +875,11 @@ class InventoryBar:
         self.backingcolour_selected = backingcolour_selected
         self.outlinewidth = outlinewidth
         self.divider_size = divider_size
+        
+        if sprite_dimensions is None:
+            self.sprite_dimensions = [64, 64]
+        else:
+            self.sprite_dimensions = sprite_dimensions
         
         self.layer = 'hud'
         self.numbers_layer = 'inventory numbers'
@@ -1194,18 +1199,23 @@ class Entity(modules.bettercanvas.Model):
             decel = 0
             velcap = 0
             damage = 0
+            velcap_is_default = True
+            
             for panel in self.engine.find_panels_underneath(self.attributes.pos.x, self.attributes.pos.y):
-                if panel.cfgs.material['entities'][self.ent_name]['accelerate'] is not None:
-                    accel = max(accel, panel.cfgs.material['entities'][self.ent_name]['accelerate'])
+                if self.ent_name in panel.cfgs.material['entities']:
+                    velcap_is_default = False
                     
-                if panel.cfgs.material['entities'][self.ent_name]['decelerate'] is not None:
-                    decel += panel.cfgs.material['entities'][self.ent_name]['decelerate']
-                    
-                if panel.cfgs.material['entities'][self.ent_name]['velcap'] is not None:
-                    velcap = max(velcap, panel.cfgs.material['entities'][self.ent_name]['velcap'])
-                    
-                if panel.cfgs.material['entities'][self.ent_name]['damage'] is not None:
-                    damage += panel.cfgs.material['entities'][self.ent_name]['damage']
+                    if panel.cfgs.material['entities'][self.ent_name]['accelerate'] is not None:
+                        accel = max(accel, panel.cfgs.material['entities'][self.ent_name]['accelerate'])
+                        
+                    if panel.cfgs.material['entities'][self.ent_name]['decelerate'] is not None:
+                        decel += panel.cfgs.material['entities'][self.ent_name]['decelerate']
+                        
+                    if panel.cfgs.material['entities'][self.ent_name]['velcap'] is not None:
+                        velcap = max(velcap, panel.cfgs.material['entities'][self.ent_name]['velcap'])
+                        
+                    if panel.cfgs.material['entities'][self.ent_name]['damage'] is not None:
+                        damage += panel.cfgs.material['entities'][self.ent_name]['damage']
             
             self.increment_health(0 - (damage * self.attributes.pos.velocity.delay))
             
@@ -1259,6 +1269,20 @@ class Entity(modules.bettercanvas.Model):
 
                 if self.engine.debug.flags['engine']['player']['speed']:
                     self.engine.debug.player_speed.set('XSPEED: {:<6} YSPEED: {:<6}'.format(round(self.attributes.pos.velocity.x, 2), round(self.attributes.pos.velocity.y, 2)))
+            
+            else:
+                new_vel_x = self.attributes.pos.velocity.x
+                new_vel_y = self.attributes.pos.velocity.x
+                new_vel_x += accel
+                new_vel_y += accel
+                
+                if not decel == 0:
+                    new_vel_x /= decel
+                    new_vel_y /= decel
+                
+                if not velcap_is_default:
+                    self.attributes.pos.velocity.x = min(velcap, new_vel_x)
+                    self.attributes.pos.velocity.y = min(velcap, new_vel_y)
             
             old_x = self.attributes.pos.x
             old_y = self.attributes.pos.y
