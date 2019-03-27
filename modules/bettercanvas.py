@@ -405,15 +405,12 @@ class Model:
             raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
     def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, timeframe = None):
-        self.set(x, y, rotation, transparency, frame, force, True, timeframe)
+        self.set(x, y, rotation, transparency, frame, force, None, True, timeframe)
     
     def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None, increment = False, timeframe = None):
         if ([x, y, rotation, transparency, frame, image_set] != [None] * 6) or force:
             action = {'items': [],
                       'delay': 0}
-            
-            if image_set is not None and self.attributes.animation.has(image_set):
-                print('top', x, y, rotation, transparency, frame, force, image_set, increment)
             
             if timeframe is None:
                 action['items'].append([x, y, rotation, transparency, frame, force, image_set, increment])
@@ -486,14 +483,11 @@ class Model:
             transparency += self.attributes.transparency
         
         if frame is not None:
-            frame = (frame + self.attributes.animation.current_frame) % len(self.attributes.animation.frames)
+            frame = (frame + self.attributes.animation.current_frame) % self.attributes.animation.frames
         
         self._set(x, y, rotation, transparency, frame, force, image_set)
     
     def _set(self, x, y, rotation, transparency, frame, force, image_set):
-        if image_set is not None and not self.attributes.animation.has(image_set):
-            print(x, y, rotation, transparency, frame, force, image_set)
-    
         if image_set is None:
             prev_image_set = None
         else:
