@@ -313,7 +313,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     elif item['position'][1] < 0 - item['data']['hitbox']['radius']:
                         out_of_bounds = True
             
-                if ((not item['data']['range'] == None) and item['distance travelled'] >= item['data']['range']) or out_of_bounds:
+                if ((item['data']['range'] is not None) and item['distance travelled'] >= item['data']['range']) or out_of_bounds:
                     to_send_loop['type'] = 'remove'
                     to_send_loop['ticket'] = item['ticket']
                     to_remove.append(i)
