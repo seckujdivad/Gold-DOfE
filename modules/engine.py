@@ -168,6 +168,7 @@ class Game:
                 self.vars[request.subcommand] = request.arguments['value']
                 
         elif request.command == 'give':
+            print(request.pretty_print())
             for item in request.arguments['items']:
                 i = 0
                 while self.engine.hud.invdisp.inv_items[i]['quantity'] != 0:
