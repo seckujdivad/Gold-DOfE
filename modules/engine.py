@@ -1391,3 +1391,33 @@ class Panel(modules.bettercanvas.Model):
                     self.attributes.scripts.append(library[script](self))
                 else:
                     print('Script "{}" not in script library'.format(script))
+
+'''class Entity(modules.bettercanvas.Model):
+    def __init__(self, ent_name, map_path, engine, layer, is_player = False):
+        self.ent_name = ent_name
+        self.engine = engine
+        self.map_path = map_path
+    
+        super().__init__(self.engine.game.canvcont, self.ent_name, self.map_path, self.layer)
+        
+        self.engine = engine
+        self.attributes.is_player = is_player
+        
+        class velocity:
+            x = 0
+            y = 0
+            base_increment = 1
+            delay = 0.05
+        self.attributes.pos.velocity = velocity
+        
+        class _strafemove:
+            mult = 1.5
+            increment = 0.05
+            current_strafe = None
+            current_mult = 1
+        self._strafemove = _strafemove
+        
+        class _set:
+            current_action = None
+            method = super(self).set
+        self._set = set'''

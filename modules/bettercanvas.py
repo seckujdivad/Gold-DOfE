@@ -1,4 +1,5 @@
 import tkinter as tk
+import multiprocessing as mp
 import os
 import sys
 import json
@@ -182,11 +183,15 @@ class Model:
                 x = 1
                 y = 1
                 
+            interps_per_second = 0
+                
             render_quality = 0 #0-3 - render quality as defined in the user's config
             image_set = None #e.g. idle
             
             num_layers = 0 #number of image layers loaded into memory
             num_layers_total = 0 #number of image layers that exist on the disk
+            
+            running = True
         self.attributes = attributes
         
         class cfgs:
@@ -228,6 +233,8 @@ class Model:
         self.attributes.render_quality = self.cfgs.user['graphics']['model quality']
         self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
         self.attributes.num_layers = self.cfgs.model['layers'][self.attributes.render_quality]
+        
+        self.attributes.interps_per_second = self.cfgs.user['network']['interpolations per second']
         
         ##load grid snap values
         if 'use grid' in self.cfgs.model:
@@ -381,6 +388,10 @@ class Model:
         if self.attributes.animation.run_loop:
             threading.Thread(target = self._anim_player, name = 'Model animation player', daemon = True).start()
         
+        # start interpolation thread
+        self._set_pipe, pipe = mp.Pipe()
+        threading.Thread(target = self._set_handler, args = [pipe], name = 'Interpolation handler', daemon = True).start()
+        
         ## call set
         self.set(force = True)
     
@@ -393,29 +404,88 @@ class Model:
         except ValueError:
             raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
-    def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False):
-        args = {}
-        
+    def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, timeframe = None):
+        self.set(x, y, rotation, transparency, frame, force, True, timeframe)
+    
+    def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None, increment = False, timeframe = None):
+        action = Action()
+        if timeframe is None:
+            action.add(x, y, rotation, transparency, frame, force, image_set, increment)
+            
+        else:
+            slots = timeframe * self.attributes.interps_per_second
+            
+            if x is None:
+                xinc = None
+            else:
+                xinc = x / slots
+            
+            if y is None:
+                yinc = None
+            else:
+                yinc = y / slots
+            
+            if rotation is None:
+                rotationinc = None
+            else:
+                rotationinc = rotation / slots
+            
+            if transparency is None:
+                transparencyinc = None
+            else:
+                transparencyinc = transparency / slots
+                
+            for i in range(int(slots)):
+                action.add(xinc, yinc, rotationinc, transparencyinc, frame, force, image_set, True)
+            action.add(x, y, rotation, transparency, frame, force, image_set, increment)
+            
+            action.delay = timeframe / slots
+        self._set_pipe.send(action)
+    
+    def _set_handler(self, pipe):
+        current_action = None
+        while self.attributes.running:
+            if current_action is None:
+                current_action = pipe.recv()
+                current_action.goto(0)
+                
+            else:
+                frame = current_action.current()
+                arg_slice = frame[:7]
+                
+                print(arg_slice[0])
+                
+                if frame[7]: #increment
+                    self._increment(*arg_slice)
+                else:
+                    self._set(*arg_slice)
+                
+                if current_action.frame == len(frame) - 1:
+                    del current_action
+                    current_action = None
+    
+    def _increment(self, x, y, rotation, transparency, frame, force, image_set):
         if x is not None:
-            args['x'] = self.attributes.pos.x + x
+            x += self.attributes.pos.x
             
         if y is not None:
-            args['y'] = self.attributes.pos.y + y
-            
-        if rotation is not None:
-            args['rotation'] = self.attributes.rotation + rotation
-            
-        if transparency is not None:
-            args['transparency'] = self.attributes.transparency + transparency
-            
-        if frame is not None:
-            args['frame'] = (self.attributes.animation.current_frame + frame) % self.attributes.animation.frames
+            y += self.attributes.pos.y
         
-        args['force'] = force
+        if rotation is not None:
+            rotation += self.attributes.rotation
+        
+        if transparency is not None:
+            transparency += self.attributes.transparency
+        
+        if frame is not None:
+            frame += self.attributes.animation.current_frame
             
-        self.set(**args)
+        if image_set is not None:
+            x += self.attributes.image_set
+        
+        self._set(x, y, rotation, transparency, frame, force, image_set)
     
-    def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None):
+    def _set(self, x, y, rotation, transparency, frame, force, image_set):
         if image_set is None:
             prev_image_set = None
         else:
@@ -501,6 +571,7 @@ class Model:
                             self.canvas_controller.delete(obj)
         
         self.attributes.animation.cont = False
+        self.attributes.running = False
     
     def _anim_player(self):
         if self.attributes.animation.sync:
@@ -591,3 +662,27 @@ class AnimAttr:
             return False
         elif anim0 in self._ranks and anim1 in self._ranks:
             return self._ranks.index(anim0) < self._ranks.index(anim1)
+
+class Action:
+    def __init__(self):
+        self._actions = []
+        self.frame = 0
+        self.delay = 0
+    
+    def add(self, x, y, rotation, transparency, frame, force, image_set, increment):
+        self._actions.append([x, y, rotation, transparency, frame, force, image_set, increment])
+        print('x', x)
+    
+    def goto(self, index):
+        return self.frame
+    
+    def current(self, autoscroll = True):
+        frame = self.frame
+        
+        if autoscroll:
+            self.frame = (self.frame + 1) % len(self)
+        
+        return self._actions[frame]
+    
+    def __len__(self):
+        return len(self._actions)
