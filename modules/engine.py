@@ -95,7 +95,7 @@ class Game:
         try:
             data = request.as_dict()
             self.log.add('received', 'Data received from the server - {}'.format(request.pretty_print()))
-        except json.decoder.JSONDecoderError:
+        except json.JSONDecodeError:
             self.log.add('error', 'Error while reading JSON "{}"'.format(data))
         
         if request.command == 'say':
