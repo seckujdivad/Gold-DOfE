@@ -230,7 +230,7 @@ class Game:
                 if self.engine.map.player is not None or not self.engine.map.player.running:
                     self.engine.map.player.destroy()
             elif request.subcommand == 'player':
-                if not self.engine.map.player.running:
+                if not self.engine.map.player.attributes.running:
                     self.engine.map.player = Entity(random.choice(self.engine.map.cfg['entity models'][self.engine.map.cfg['player']['entity']]), self.engine.map.path, self.engine, 'player models', is_player = True)
                 self.engine.map.player.setpos(400, 300, 0)
         
@@ -1247,7 +1247,7 @@ class Entity(modules.bettercanvas.Model):
                     self.engine.debug.player_pos.set('XPOS: {:<6} YPOS: {:<6}'.format(round(self.attributes.pos.x, 2), round(self.attributes.pos.y, 2)))
 
                 if self.engine.debug.flags['engine']['player']['speed']:
-                    self.engine.debug.player_speed.set('XSPEED: {:<6} YSPEED: {:<6}'.format(round(self.attributes.pos.velocity.x, 2), round(attributes.pos.velocity.y, 2)))
+                    self.engine.debug.player_speed.set('XSPEED: {:<6} YSPEED: {:<6}'.format(round(self.attributes.pos.velocity.x, 2), round(self.attributes.pos.velocity.y, 2)))
             
             old_x = self.attributes.pos.x
             old_y = self.attributes.pos.y
