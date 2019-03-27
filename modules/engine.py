@@ -1468,18 +1468,13 @@ class Entity(modules.bettercanvas.Model):
             touching_last_loop = touching_this_loop
             
             if self.attributes.pos.x < 0 or self.attributes.pos.x > self.engine.map.cfg['geometry'][0] or self.attributes.pos.y < 0 or self.attributes.pos.y > self.engine.map.cfg['geometry'][1]:
-                if self.attributes.is_player:
-                    if 'player' in self.engine.map.cfg['events']:
-                        if 'outside map' in self.engine.map.cfg['events']['player']:
-                            for path in self.engine.map.cfg['events']['player']['outside map']:
-                                if path in self.engine.map.materials.scripts:
-                                    for func in self.engine.map.materials.scripts[path](touching_last_loop).binds['player']['when outside map']:
-                                        func(self)
-                                        
-                if 'outside map' in self.engine.map.cfg['events']:
-                    for path in self.engine.map.cfg['events']['outside map']:
-                        if path in self.engine.map.materials.scripts:
-                            self.engine.map.materials.scripts[path](self)
+                if self.ent_name in self.cfgs.map['events'] and 'outside map' in self.cfgs.map['events'][self.ent_name]:
+                    for path in self.cfgs.map['events'][self.ent_name]['outside map']:
+                        obj = self.engine.map.materials.scripts[path]()
+                        if 'when outside map' in obj.binds:
+                            for func in obj.binds['when outside map']:
+                                func(self)
+                        del obj
             
             delay = self.attributes.script_delay - (time.time() - start)
             if delay > 0:
