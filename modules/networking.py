@@ -564,21 +564,26 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                 time.sleep(0.1)
 
 class Request:
-    def __init__(self, data = {}, **args):
+    def __init__(self, data = None, **args):
+        self.command = None
+        self.subcommand = None
+        self.arguments = {}
+        
         #priorities data from the data variable over the flags
-        if not data == {}:
+        if data is None:
+            if args == {}:
+                raise ValueError('Some arguments must be provided - one of args or data must be specified')
+            else:
+                self.dict_in(args)
+        else:
             if type(data) == str:
                 self.json_in(data)
+                
             elif type(data) == dict:
                 self.dict_in(data)
+                
             else:
                 raise TypeError('Data must be dict or str, not {} (value = {})'.format(type(data).__name__, data))
-                
-        elif not args == {}:
-            self.dict_in(args)
-            
-        else:
-            self.dict_in(data)
     
     def as_json(self):
         return json.dumps(self.as_dict())
@@ -597,15 +602,17 @@ class Request:
         if 'command' in data:
             self.command = data['command']
         else:
-            self.command = ''
+            self.command = None
+            
         if 'subcommand' in data:
             self.subcommand = data['subcommand']
         else:
             self.subcommand = None
+            
         if 'arguments' in data:
             self.arguments = data['arguments']
         else:
-            self.arguments = []
+            self.arguments = {}
         
     def _clear_all_values(self):
         self.request_id = None
