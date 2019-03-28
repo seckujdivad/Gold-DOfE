@@ -210,6 +210,11 @@ class Model:
             gifimage = None
         self.pillow = pillow
         
+        class _set_queue_output:
+            ticket = 0
+            outputs = {}
+        self._set_queue_output = _set_queue_output
+        
         ## load data into structures
         #load configs
         with open(os.path.join(self.map_path, 'models', self.mdl_name, 'list.json'), 'r') as file:
@@ -407,14 +412,17 @@ class Model:
         except ValueError:
             raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
-    def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, timeframe = None):
-        self.set(x, y, rotation, transparency, frame, force, None, True, timeframe)
+    def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, timeframe = None, wait = False):
+        return self.set(x, y, rotation, transparency, frame, force, None, True, timeframe, wait)
     
-    def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None, increment = False, timeframe = None):
+    def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None, increment = False, timeframe = None, wait = False):
         if ([x, y, rotation, transparency, frame, image_set] != [None] * 6) or force:
             action = {'items': [],
-                      'delay': 0,
-                      'flag': modules.event.SerializableEvent()}
+                      'delay': 0}
+            
+            if wait:
+                action['ticket'] = self._set_queue_output.ticket
+                self._set_queue_output.ticket += 1
             
             if timeframe is None:
                 action['items'].append([x, y, rotation, transparency, frame, force, image_set, increment])
@@ -451,15 +459,24 @@ class Model:
                 action['delay'] = timeframe / slots
             
             try:
-                action['flag'].clear()
                 self._set_pipe.send(action)
-                action['flag'].wait()
+                
+                if 'ticket' in action:
+                    while not action['ticket'] in self._set_queue_output.outputs:
+                        pass
+                    
+                    output = self._set_queue_output.outputs[action['ticket']]
+                    self._set_queue_output.outputs.pop(action['ticket'])
+                    return output
+                
             except BrokenPipeError:
                 self.attributes.running = False
     
     def _set_handler(self, pipe):
         current_action = None
         current_frame = 0
+        last_output = None
+        
         while self.attributes.running:
             if current_action is None:
                 current_action = pipe.recv()
@@ -469,13 +486,15 @@ class Model:
                 arg_slice = current_action['items'][current_frame][:7]
                 
                 if current_action['items'][current_frame][7]: #increment
-                    self._increment(*arg_slice)
+                    last_output = self._increment(*arg_slice)
                 else:
-                    self._set(*arg_slice)
+                    last_output = self._set(*arg_slice)
                 
                 current_frame += 1
                 if current_frame == len(current_action['items']):
-                    current_action['flag'].set()
+                    if 'ticket' in current_action:
+                        self._set_queue_output.outputs[current_action['ticket']] = last_output
+                    
                     current_action = None
                 else:
                     time.sleep(current_action['delay'])
@@ -600,10 +619,7 @@ class Model:
                 
                 self.attributes.anim_controller.playing_onetime = False
                 
-                self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0)
-                
-                while not self.attributes.image_set == self.attributes.anim_controller.revert_to:
-                    pass
+                self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0, wait = True)
                 
                 frames_elapsed = int(time_elapsed / self.attributes.animation.delay)
                 next_frame = (self.attributes.anim_controller.revert_frame + frames_elapsed) % self.attributes.animation.frames
