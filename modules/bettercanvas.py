@@ -8,8 +8,6 @@ import time
 import random
 import math
 
-import modules.event
-
 class CanvasController:
     def __init__(self, canvas, game = None, layers = None):
         self.canvas = canvas
