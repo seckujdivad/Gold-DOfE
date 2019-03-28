@@ -593,6 +593,9 @@ class Model:
         return self.attributes.offset.x * real_index, self.attributes.offset.y * real_index
     
     def destroy(self):
+        for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
+            self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.offscreen.x, self.attributes.offscreen.y)
+        
         for image_set in self.attributes.canvobjs:
             for layers in self.attributes.canvobjs[image_set]:
                 for rotations in layers:
