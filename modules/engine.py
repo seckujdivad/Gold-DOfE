@@ -415,7 +415,7 @@ class Engine:
                 if panel_object.attributes.animation.run_loop:
                     anim_panels.append(panel_object)
         
-            self.game.canvcont.set_time(time.time() + self.cfgs.user['graphics']['anim play delay'])
+            self.game.canvcont.set_time(time.time() + self.cfgs.current_map['animation']['sync window'][self.cfgs.user['graphics']['model quality']])
             
             for panel in anim_panels:
                 panel.start_anims()
