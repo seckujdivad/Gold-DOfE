@@ -21,6 +21,8 @@ class CanvasController:
         self.unbind = self.canvas.unbind
         self.unbind_all = self.canvas.unbind_all
         
+        self.global_time = 0
+        
         class pillow:
             image = None
             image_chops = None
@@ -43,7 +45,7 @@ class CanvasController:
         with open(os.path.join(sys.path[0], *layers), 'r') as file:
             self.layer_config = json.load(file) #load user defined order for screen items to be rendered in
         
-        self.global_time = time.time()
+        self.reset_time()
         
     def create_rectangle(self, *coords, **args):
         'Wrapper function to provide tk canvas-like syntax'
@@ -142,6 +144,12 @@ class CanvasController:
     
     def winfo_height(self):
         return self.canvas.winfo_height()
+    
+    def reset_time(self):
+        self.set_time(time.time())
+    
+    def set_time(self, value):
+        self.global_time = value
 
 class Model:
     '''
@@ -152,7 +160,7 @@ class Model:
     map_path - path to map files
     layer - string or int for canvas controller
     '''
-    def __init__(self, canvas_controller, mdl_name, map_path, layer):
+    def __init__(self, canvas_controller, mdl_name, map_path, layer, autoplay_anims = True):
         self.mdl_name = mdl_name
         self.map_path = map_path
         self.canvas_controller = canvas_controller
@@ -394,8 +402,8 @@ class Model:
                 self.attributes.canvobjs[tex_set].append(new_rotations)
         
         ## start animation player if necessary
-        if self.attributes.animation.run_loop:
-            threading.Thread(target = self._anim_player, name = 'Model animation player', daemon = True).start()
+        if self.attributes.animation.run_loop and autoplay_anims:
+            self.start_anims()
         
         # start interpolation thread
         self._set_pipe, pipe = mp.Pipe()
@@ -668,6 +676,10 @@ class Model:
         self.attributes.anim_controller.playing_onetime = False
         self.attributes.anim_controller.revert_to = self.attributes.image_set
         self.set(image_set = name, frame = 0)
+    
+    def start_anims(self):
+        if self.attributes.animation.run_loop:
+            threading.Thread(target = self._anim_player, name = 'Model animation player', daemon = True).start()
     
     setpos = set
 
