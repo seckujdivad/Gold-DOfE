@@ -191,6 +191,7 @@ class Model:
                 revert_to = None
                 sync = False
                 revert_frame = None
+                onetime_start = None
             
             class snap:
                 use = False
@@ -618,18 +619,18 @@ class Model:
             if self.attributes.anim_controller.playing_onetime and self.attributes.animation.frames - 1 == self.attributes.animation.current_frame:
                 num_frames = self.attributes.animation.frames
                 frame_duration = self.attributes.animation.delay
-                time_elapsed = num_frames * frame_duration
+                time_elapsed = time.time() - self.attributes.anim_controller.onetime_start
                 
                 self.attributes.anim_controller.playing_onetime = False
                 
                 self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0, wait = True)
                 
                 frames_elapsed = int(time_elapsed / self.attributes.animation.delay)
-                next_frame = (self.attributes.anim_controller.revert_frame + frames_elapsed) % self.attributes.animation.frames
+                next_frame = (self.attributes.anim_controller.revert_frame + frames_elapsed + 1) % self.attributes.animation.frames
                 self.set(frame = next_frame)
                 
-                delay = time_elapsed % self.attributes.animation.delay
-                time.sleep(delay)
+                delay = (time.time() - self.attributes.anim_controller.onetime_start) % self.attributes.animation.delay
+                time.sleep(self.attributes.animation.delay - delay)
                 
                 self.attributes.anim_controller.revert_to = None
             
@@ -654,6 +655,7 @@ class Model:
         'Plays an animation once through. If the animation is already playing, it will reset to the start'
         if self.attributes.animation.is_higher(name, self.attributes.image_set) or not ignore_precedence:
             self.attributes.anim_controller.playing_onetime = True
+            self.attributes.anim_controller.onetime_start = time.time()
             
             if not self.attributes.image_set == name:
                 self.attributes.anim_controller.revert_to = self.attributes.image_set
