@@ -39,6 +39,11 @@ class Client:
         self.send_raw(data.as_json())
     
     def recv_loop(self):
+        escape_level = 0
+        current_string = ''
+        is_escaped = False
+        is_string = False
+    
         cont = True
         while cont:
             reqs = []
@@ -46,14 +51,24 @@ class Client:
                 data = self.connection.recv(4096).decode('UTF-8')
                 
                 #unpack the data - often will get multiple dictionaries
-                escape_level = 0
+                
                 output = []
-                current_string = ''
                 for char in data:
-                    if char == '{':
+                    if char == '{' and not is_escaped and not is_string:
                         escape_level += 1
-                    elif char == '}':
+                        
+                    elif char == '}' and not is_escaped and not is_string:
                         escape_level -= 1
+                        
+                    elif char == '"' and not is_escaped:
+                        is_string = not is_string
+                        
+                    elif char == '\\':
+                        is_escaped = not is_escaped
+                    
+                    if not char == '\\':
+                        is_escaped = False
+                    
                     current_string += char
                     if escape_level == 0 and not len(current_string) == 0:
                         output.append(current_string)
@@ -61,11 +76,14 @@ class Client:
                 
                 for json_data in output:
                     reqs.append(Request(json_data))
+                    
             except ConnectionAbortedError:
                 reqs = [Request(command = 'disconnect')]
                 cont = False
+                
             except json.decoder.JSONDecodeError:
                 pass
+                
             for bind in self.recv_binds:
                 for req in reqs:
                     bind(req)
@@ -99,11 +117,25 @@ class NetClient:
                 escape_level = 0
                 output = []
                 current_string = ''
+                is_escaped = False
+                is_string = False
+                
                 for char in data:
-                    if char == '{':
+                    if char == '{' and not is_escaped and not is_string:
                         escape_level += 1
-                    elif char == '}':
+                        
+                    elif char == '}' and not is_escaped and not is_string:
                         escape_level -= 1
+                        
+                    elif char == '"' and not is_escaped:
+                        is_string = not is_string
+                        
+                    elif char == '\\':
+                        is_escaped = not is_escaped
+                    
+                    if not char == '\\':
+                        is_escaped = False
+                    
                     current_string += char
                     if escape_level == 0 and not len(current_string) == 0:
                         output.append(current_string)
