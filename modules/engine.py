@@ -337,6 +337,9 @@ class Engine:
 
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
+        
+        #bind player look to mouse motion event
+        self.game.canvas.bind('<Motion>', self._on_mouse_motion)
     
     def load_map(self, name):
         path = os.path.join(sys.path[0], 'server', 'maps', name)
@@ -607,6 +610,10 @@ class Engine:
             return math.atan(delta_y / delta_x) + math.pi
         else:
             return math.atan(delta_y / delta_x)
+    
+    def _on_mouse_motion(self, event):
+        if self.current_map.player is not None:
+            self.current_map.player.set(rotation = math.degrees(self.angle(event.x, event.y)))
 
 
 class DBAccess:
