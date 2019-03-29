@@ -613,7 +613,7 @@ class Engine:
     
     def _on_mouse_motion(self, event):
         if self.current_map.player is not None:
-            angle = math.degrees(self.angle(event.x - (self.game.canvas.winfo_width() / 2), event.y - (self.game.canvas.winfo_height() / 2))) % 360
+            angle = math.degrees(self.angle(event.x - self.current_map.player.attributes.pos.x, event.y - self.current_map.player.attributes.pos.y)) % 360
             
             res_angle = 0
             if 45 <= angle < 135:
