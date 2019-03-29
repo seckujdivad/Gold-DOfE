@@ -405,12 +405,21 @@ class Engine:
                     self.current_map.materials.scripts_generic[script] = script_module.Script()
             
             #make layout panels
+            anim_panels = []
             for panel in self.cfgs.layout['geometry']:
-                panel_object = Panel(self.game.canvcont, panel['material'], self.current_map.path, 'map panels')
+                panel_object = Panel(self.game.canvcont, panel['material'], self.current_map.path, 'map panels', autoplay_anims = False)
                 panel_object.load_scripts(self.current_map.materials.scripts)
                 panel_object.set(x = panel['coordinates'][0], y = panel['coordinates'][1])
                 self.current_map.statics.panels.append(panel_object)
                 
+                if panel_object.attributes.animation.run_loop:
+                    anim_panels.append(panel_object)
+        
+            self.game.canvcont.set_time(time.time() + self.cfgs.user['graphics']['anim play delay'])
+            
+            for panel in anim_panels:
+                panel.start_anims()
+            
             self.game.message_pipe.send(['map load', 'Rendered layout panels'])
             
             #render scatters
@@ -1077,13 +1086,13 @@ class DynamicStringDisplay:
         self.refresh()
 
 class Panel(modules.bettercanvas.Model):
-    def __init__(self, canvas_controller, mat_name, map_path, layer):
+    def __init__(self, canvas_controller, mat_name, map_path, layer, autoplay_anims = False):
         self.mat_name = mat_name
         
         with open(os.path.join(map_path, 'materials', mat_name), 'r') as file:
             mat_cfg = json.load(file)
         
-        super().__init__(canvas_controller, mat_cfg['model'], map_path, layer)
+        super().__init__(canvas_controller, mat_cfg['model'], map_path, layer, autoplay_anims)
         
         self.cfgs.material = mat_cfg
         
