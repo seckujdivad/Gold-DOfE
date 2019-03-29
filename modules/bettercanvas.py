@@ -625,8 +625,6 @@ class Model:
             time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
             
             if self.attributes.anim_controller.playing_onetime and self.attributes.animation.frames - 1 == self.attributes.animation.current_frame:
-                num_frames = self.attributes.animation.frames
-                frame_duration = self.attributes.animation.delay
                 time_elapsed = time.time() - self.attributes.anim_controller.onetime_start
                 
                 self.attributes.anim_controller.playing_onetime = False
@@ -634,7 +632,7 @@ class Model:
                 self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0, wait = True)
                 
                 frames_elapsed = int(time_elapsed / self.attributes.animation.delay)
-                next_frame = (self.attributes.anim_controller.revert_frame + frames_elapsed) % self.attributes.animation.frames
+                next_frame = (self.attributes.anim_controller.revert_frame + frames_elapsed + 1) % self.attributes.animation.frames
                 self.set(frame = next_frame)
                 
                 delay = (time.time() - self.attributes.anim_controller.onetime_start) % self.attributes.animation.delay

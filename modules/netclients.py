@@ -119,6 +119,9 @@ class SocketListen:
                 reqs.append(Request(command = 'disconnect', arguments = {'clean': False})) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
                 self.running = False
             
+            except json.JSONDecodeError:
+                pass
+            
             for bind in self.binds:
                 for req in reqs:
                     bind(req)
