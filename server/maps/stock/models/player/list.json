@@ -1,7 +1,7 @@
 {
 	"textures": {
-		"idle": "player_idle.gif",
-		"attack": "player_attack.gif"
+		"idle": [["anims/idle/1.png", "anims/idle/2.png"]],
+		"attack": [["anims/attack/1.png", "anims/attack/2.png"]]
 	},
 	"default textures": "idle",
 	"offscreen": [-100, -100],
