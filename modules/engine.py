@@ -1,5 +1,4 @@
 import tkinter as tk
-import sqlite3 as sql
 import multiprocessing as mp
 import time
 import threading
@@ -624,20 +623,6 @@ class Engine:
                 res_angle = 270
             
             self.current_map.player.set(rotation = res_angle)
-
-
-class DBAccess:
-    def __init__(self, address):
-        self.address = address
-        
-        self.connection = sql.connect(self.address)
-    
-    def load_map(self, name):
-        pass
-    
-    def close(self):
-        self.connection.commit()
-        self.connection.close()
         
 class CanvasMessages:
     def __init__(self, canvcont, pipe, chatbox = True):
