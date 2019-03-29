@@ -9,7 +9,7 @@ import random
 import math
 
 class CanvasController:
-    def __init__(self, canvas, game = None, layers = None):
+    def __init__(self, canvas, game = None, layers = None, get_pil = False):
         self.canvas = canvas
         self.game = game
         
@@ -20,6 +20,19 @@ class CanvasController:
         self.bind = self.canvas.bind
         self.unbind = self.canvas.unbind
         self.unbind_all = self.canvas.unbind_all
+        
+        class pillow:
+            image = None
+            image_chops = None
+            photoimage = None
+            gifimage = None
+        self.pillow = pillow
+        
+        if get_pil:
+            self.pillow.image = __import__('PIL.Image').Image
+            self.pillow.image_chops = __import__('PIL.ImageChops').ImageChops
+            self.pillow.photoimage = __import__('PIL.ImageTk').ImageTk.PhotoImage
+            self.pillow.gifimage = __import__('PIL.GifImagePlugin').GifImagePlugin.GifImageFile
         
         if layers is None:
             layers = ['user', 'layers.json']
@@ -201,13 +214,6 @@ class Model:
             map = {}
         self.cfgs = cfgs
         
-        class pillow:
-            image = None
-            image_chops = None
-            photoimage = None
-            gifimage = None
-        self.pillow = pillow
-        
         class _set_queue_output:
             ticket = 0
             outputs = {}
@@ -277,12 +283,8 @@ class Model:
         else:
             self.attributes.rotation_steps = 1
             
-        #load PIL modules
-        if self.attributes.uses_PIL:
-            self.pillow.image = __import__('PIL.Image').Image
-            self.pillow.image_chops = __import__('PIL.ImageChops').ImageChops
-            self.pillow.photoimage = __import__('PIL.ImageTk').ImageTk.PhotoImage
-            self.pillow.gifimage = __import__('PIL.GifImagePlugin').GifImagePlugin.GifImageFile
+        #retrieve PIL modules
+        self.pillow = self.canvas_controller.pillow
         
         ##load textures
         #check for no PIL textures

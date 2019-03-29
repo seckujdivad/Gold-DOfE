@@ -32,7 +32,7 @@ class Game:
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             self.settingsdict = json.load(file)
         
-        self.canvcont = modules.bettercanvas.CanvasController(self.canvas, self)
+        self.canvcont = modules.bettercanvas.CanvasController(self.canvas, self, get_pil = self.settingsdict['graphics']['PILrender'])
         
         self.message_pipe, pipe = mp.Pipe()
         self.messagedisplay = CanvasMessages(self.canvcont, pipe)
