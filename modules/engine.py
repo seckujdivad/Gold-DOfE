@@ -69,7 +69,7 @@ class Game:
         # display IP
         self.message_pipe.send(['info', 'Connected to {}:{}'.format(self.client.serverdata.host, self.client.serverdata.port)])
         
-        self.client.recv_binds.append(self.recv_handler)
+        self.client.listener.binds.append(self.recv_handler)
         self.client.send(modules.netclients.Request(command = 'var update r', subcommand = 'map'))
         
         self.running = True

@@ -17,8 +17,6 @@ class Client:
         
         self.ui = ui
         
-        self.recv_binds = [] #functions to be called when data is received
-        
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         try:
@@ -30,63 +28,14 @@ class Client:
             messagebox.showerror('Address not found', 'The server address could not be found. Check it for misspellings and make sure that it is accessible on your network')
             raise socket.gaierror()
         
-        threading.Thread(target = self.recv_loop, name = 'Client receiver loop').start()
+        self.listener = SocketListen(self)
+        self.listener.listen()
     
     def send_raw(self, text):
         self.connection.send(text.encode())
     
     def send(self, data):
         self.send_raw(data.as_json())
-    
-    def recv_loop(self):
-        escape_level = 0
-        current_string = ''
-        is_escaped = False
-        is_string = False
-    
-        cont = True
-        while cont:
-            reqs = []
-            try:
-                data = self.connection.recv(4096).decode('UTF-8')
-                
-                #unpack the data - often will get multiple dictionaries
-                
-                output = []
-                for char in data:
-                    if char == '{' and not is_escaped and not is_string:
-                        escape_level += 1
-                        
-                    elif char == '}' and not is_escaped and not is_string:
-                        escape_level -= 1
-                        
-                    elif char == '"' and not is_escaped:
-                        is_string = not is_string
-                        
-                    elif char == '\\':
-                        is_escaped = not is_escaped
-                    
-                    if not char == '\\':
-                        is_escaped = False
-                    
-                    current_string += char
-                    if escape_level == 0 and not len(current_string) == 0:
-                        output.append(current_string)
-                        current_string = ''
-                
-                for json_data in output:
-                    reqs.append(Request(json_data))
-                    
-            except ConnectionAbortedError:
-                reqs = [Request(command = 'disconnect')]
-                cont = False
-                
-            except json.decoder.JSONDecodeError:
-                pass
-                
-            for bind in self.recv_binds:
-                for req in reqs:
-                    bind(req)
     
     def disconnect(self):
         self.connection.close()
@@ -96,19 +45,41 @@ class NetClient:
         self.address = address
         self.connection = connection
         
-        self.passthroughs = []
+        self.listener = SocketListen(self)
+        
         self.running = False
     
     def start(self):
         self.running = True
         
-        threading.Thread(target = self.listen, name = 'Client listen daemon').start()
+        self.listener.listen()
+    
+    def send(self, req):
+        self.send_to(self.connection, req)
+    
+    def send_to(self, connection, req):
+        connection.send(req.as_json().encode())
+    
+    def close(self):
+        self.connection.close()
+        self.running = False
+        
+class SocketListen:
+    def __init__(self, parent):
+        self.parent = parent
+        
+        self.binds = []
+        self.running = False
     
     def listen(self):
+        self.running = True
+        threading.Thread(target = self._listen, name = 'Socket listener', daemon = True).start()
+    
+    def _listen(self):
         while self.running:
             reqs = []
             try:
-                data = self.connection.recv(4096).decode('UTF-8')
+                data = self.parent.connection.recv(4096).decode('UTF-8')
                 
                 if type(data) is not str:
                     print(data)
@@ -148,27 +119,18 @@ class NetClient:
                 reqs.append(Request(command = 'disconnect', arguments = {'clean': False})) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
                 self.running = False
             
-            for passthrough in self.passthroughs:
+            for bind in self.binds:
                 for req in reqs:
-                    passthrough.handle(req)
-        self.connection.close()
-    
-    def send(self, req):
-        self.send_to(self.connection, req)
-    
-    def send_to(self, connection, req):
-        connection.send(req.as_json().encode())
-    
-    def close(self):
-        self.connection.close()
-        self.running = False
+                    bind(req)
+                    
+        self.parent.connection.close()
 
 class ServerClient:
     def __init__(self, server, interface):
         self.server = server
         self.interface = interface
         
-        self.interface.passthroughs.append(self)
+        self.interface.listener.binds.append(self.handle)
         
         class metadata:
             model = None
