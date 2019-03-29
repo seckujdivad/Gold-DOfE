@@ -613,7 +613,17 @@ class Engine:
     
     def _on_mouse_motion(self, event):
         if self.current_map.player is not None:
-            self.current_map.player.set(rotation = math.degrees(self.angle(event.x, event.y)))
+            angle = math.degrees(self.angle(event.x - (self.game.canvas.winfo_width() / 2), event.y - (self.game.canvas.winfo_height() / 2))) % 360
+            
+            res_angle = 0
+            if 45 <= angle < 135:
+                res_angle = 90
+            elif 135 <= angle < 225:
+                res_angle = 180
+            elif 225 <= angle < 315:
+                res_angle = 270
+            
+            self.current_map.player.set(rotation = res_angle)
 
 
 class DBAccess:
