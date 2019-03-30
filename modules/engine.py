@@ -336,9 +336,6 @@ class Engine:
 
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
-        
-        #bind player look to mouse motion event
-        self.game.canvas.bind('<Motion>', self._on_mouse_motion)
     
     def load_map(self, name):
         path = os.path.join(sys.path[0], 'server', 'maps', name)
@@ -764,6 +761,11 @@ class KeyBind:
         self._keystates = {}
         self._isactive = True #stores whether or not the keyboard
         
+        class mouse:
+            x = 0
+            y = 0
+        self.mouse = mouse
+        
         threading.Thread(target = self._keyhandlerd, name = 'Keyboard input handler daemon').start()
         threading.Thread(target = self._checkfocusd, name = 'Root has focus daemon').start()
     
@@ -771,6 +773,7 @@ class KeyBind:
         keypress_funcid = self.root.bind('<KeyPress>', self._onkeypress)
         keyrelease_funcid = self.root.bind('<KeyRelease>', self._onkeyrelease)
         m1_funcid = self.root.bind('<Button-1>', self._mouse1)
+        mmove_funcid = self.root.bind('<Motion>', self._mousemove)
         
         while self._isactive:
             start = time.time()
@@ -787,6 +790,7 @@ class KeyBind:
         self.root.unbind('<KeyPress>', keypress_funcid)
         self.root.unbind('<KeyRelease>', keyrelease_funcid)
         self.root.unbind('<Button1>', m1_funcid)
+        self.root.unbind('<Motion>', mmove_funcid)
     
     def _onkeypress(self, event):
         self._keystates[event.keysym.lower()] = True
@@ -845,6 +849,14 @@ class KeyBind:
     def _mouse1(self, event):
         if "mouse1" in self.binds:
             for bind in self.binds["mouse1"]:
+                bind()
+    
+    def _mousemove(self, event):
+        self.mouse.x = event.x
+        self.mouse.y = event.y
+        
+        if 'look' in self.binds:
+            for bind in self.binds['look']:
                 bind()
         
         
