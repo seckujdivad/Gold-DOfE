@@ -527,71 +527,97 @@ class Model:
         self._set(x, y, rotation, transparency, frame, force, image_set)
     
     def _set(self, x, y, rotation, transparency, frame, force, image_set):
-        if image_set is None:
-            prev_image_set = None
-        else:
-            prev_image_set = self.attributes.image_set
+        prev_image_set = self.attributes.image_set
+        if image_set is not None:
             self.attributes.image_set = image_set
-    
+
+        prev_x = self.attributes.pos.x
         if x is not None:
             self.attributes.pos.x = x
-        
+            
+        prev_y = self.attributes.pos.y
         if y is not None:
             self.attributes.pos.y = y
         
-        if rotation is None:
-            prev_rotation = None
-        else:
-            prev_rotation = self.attributes.rotation
+        prev_rotation = self.attributes.rotation
+        if rotation is not None:
             self.attributes.rotation = rotation
-        
-        if transparency is None:
-            prev_transparency = None
-        else:
-            prev_transparency = self.attributes.transparency
+            
+        prev_transparency = self.attributes.transparency
+        if transparency is not None:
             self.attributes.transparency = transparency
         
-        if frame is None:
-            prev_frame = None
-        else:
-            prev_frame = self.attributes.animation.current_frame
+        prev_frame = self.attributes.animation.current_frame
+        if frame is not None:
             self.attributes.animation.current_frame = frame
         
         #check if the function has been called with any arguments at all
         if x is None and y is None and rotation is None and transparency is None and frame is None and not force:
             return None
         
+        #find what fields were changed
+        if force:
+            fields_changed = ['x', 'y', 'image set', 'rotation', 'transparency', 'frame']
+        
+        else:
+            fields_changed = []
+            if (prev_image_set is None and image_set is not None) or self.attributes.image_set != prev_image_set:
+                fields_changed.append('image set')
+            
+            if (prev_x is None and x is not None) or self.snap_coords(self.attributes.pos.x, 0)[0] != self.snap_coords(prev_x, 0)[0]:
+                fields_changed.append('x')
+            
+            if (prev_y is None and y is not None) or self.snap_coords(0, self.attributes.pos.y)[1] != self.snap_coords(0, prev_y)[1]:
+                fields_changed.append('y')
+                
+            if (prev_rotation is None and rotation is not None) or int((self.attributes.rotation / 360) * self.attributes.rotation_steps) != int((prev_rotation / 360) * self.attributes.rotation_steps):
+                fields_changed.append('rotation')
+            
+            if (prev_transparency is None and transparency is not None) or int((self.attributes.transparency / 256) * self.attributes.transparency_steps) != int((prev_transparency / 256) * self.attributes.transparency_steps):
+                fields_changed.append('transparency')
+            
+            if prev_frame is None or self.attributes.animation.current_frame != prev_frame:
+                fields_changed.append('frame')
+        
         #check if only the positions were changed
-        if ((rotation is None) ^ (rotation == prev_rotation)) and ((transparency is None) ^ (transparency == prev_transparency)) and ((frame is None) ^ (frame == prev_frame)) and ((image_set is None) ^ (image_set == prev_image_set)):
-            for i in range(len(self.attributes.canvobjs)):
-                self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.pos.x, self.attributes.pos.y)
-        else: #too many parameters were changed, replace all images
-            #if previous is equal to current, set to current
-            if prev_rotation is None:
-                prev_rotation = self.attributes.rotation
-            
-            if prev_transparency is None:
-                prev_transparency = self.attributes.transparency
-            
-            if prev_frame is None:
-                prev_frame = self.attributes.animation.current_frame
-            
-            if prev_image_set is None:
-                prev_image_set = self.attributes.image_set
-            
-            #move currently onscreen objects offscreen
-            for i in range(len(self.attributes.canvobjs[prev_image_set])):
-                self.canvas_controller.coords(self.get_object(prev_image_set, i, prev_rotation, prev_transparency, prev_frame), self.attributes.offscreen.x, self.attributes.offscreen.y)
-            
-            #move currently offscreen objects offscreen
-            for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
-                x = self.attributes.pos.x + self.get_offsets(i)[0]
-                y = self.attributes.pos.y + self.get_offsets(i)[1]
+        if fields_changed != []: #make sure at least one field was changed
+            if False not in [key in ['x', 'y'] for key in fields_changed]:
+                for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
+                    xpos = self.attributes.pos.x + self.get_offsets(i)[0]
+                    ypos = self.attributes.pos.y + self.get_offsets(i)[1]
+                    
+                    if self.attributes.snap.use:
+                        xpos, ypos = self.snap_coords(xpos, ypos)
+                    
+                    self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), xpos, ypos)
+                    
+            else: #too many parameters were changed, replace all images
+                #if previous is equal to current, set to current
+                if prev_rotation is None:
+                    prev_rotation = self.attributes.rotation
                 
-                if self.attributes.snap.use:
-                    x, y = self.snap_coords(x, y)
+                if prev_transparency is None:
+                    prev_transparency = self.attributes.transparency
                 
-                self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), x, y)
+                if prev_frame is None:
+                    prev_frame = self.attributes.animation.current_frame
+                
+                if prev_image_set is None:
+                    prev_image_set = self.attributes.image_set
+                
+                #move currently onscreen objects offscreen
+                for i in range(len(self.attributes.canvobjs[prev_image_set])):
+                    self.canvas_controller.coords(self.get_object(prev_image_set, i, prev_rotation, prev_transparency, prev_frame), self.attributes.offscreen.x, self.attributes.offscreen.y)
+                
+                #move currently offscreen objects offscreen
+                for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
+                    x = self.attributes.pos.x + self.get_offsets(i)[0]
+                    y = self.attributes.pos.y + self.get_offsets(i)[1]
+                    
+                    if self.attributes.snap.use:
+                        x, y = self.snap_coords(x, y)
+                    
+                    self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), x, y)
     
     def get_object(self, image_set, index, rotation, transparency, frame):
         if not self.attributes.uses_PIL:
