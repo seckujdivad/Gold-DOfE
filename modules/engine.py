@@ -251,6 +251,8 @@ class Engine:
         
         self.rendermethod = None
         
+        self.running = True
+        
         class cfgs:
             layout = {}
             current_map = {}
@@ -336,6 +338,9 @@ class Engine:
 
         #make keybind handler
         self.keybindhandler = KeyBind(self.game.canvas)
+        
+        #player rotation thread
+        threading.Thread(target = self._player_rotationd, name = 'Player rotation daemon').start()
     
     def load_map(self, name):
         path = os.path.join(sys.path[0], 'server', 'maps', name)
@@ -607,19 +612,21 @@ class Engine:
         else:
             return math.atan(delta_y / delta_x)
     
-    def _on_mouse_motion(self, event):
-        if self.current_map.player is not None:
-            angle = math.degrees(self.angle(event.x - self.current_map.player.attributes.pos.x, event.y - self.current_map.player.attributes.pos.y)) % 360
+    def _player_rotationd(self):
+        while self.running:
+            while self.current_map.player is not None:
+                angle = math.degrees(self.angle(self.keybindhandler.mouse.x - self.current_map.player.attributes.pos.x, self.keybindhandler.mouse.y - self.current_map.player.attributes.pos.y)) % 360
             
-            res_angle = 0
-            if 45 <= angle < 135:
-                res_angle = 90
-            elif 135 <= angle < 225:
-                res_angle = 180
-            elif 225 <= angle < 315:
-                res_angle = 270
-            
-            self.current_map.player.set(rotation = res_angle)
+                res_angle = 0
+                if 45 <= angle < 135:
+                    res_angle = 90
+                elif 135 <= angle < 225:
+                    res_angle = 180
+                elif 225 <= angle < 315:
+                    res_angle = 270
+                
+                self.current_map.player.set(rotation = res_angle)
+            time.sleep(0.1)
         
 class CanvasMessages:
     def __init__(self, canvcont, pipe, chatbox = True):
