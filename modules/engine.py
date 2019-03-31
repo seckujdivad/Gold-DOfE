@@ -626,6 +626,7 @@ class Engine:
                     res_angle = 270
                 
                 self.current_map.player.set(rotation = res_angle)
+                time.sleep(0.1)
             time.sleep(0.1)
         
 class CanvasMessages:
