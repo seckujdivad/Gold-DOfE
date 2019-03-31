@@ -185,7 +185,9 @@ class Game:
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
                         item = Item(self.canvcont, data['file name'], self.engine.current_map.path, 'items')
-                        item.set(x = data['position'][0], y = data['position'][1], rotation = data['rotation'])
+                        item.set(x = data['position'][0],
+                                 y = data['position'][1],
+                                 rotation = self.engine.snap_angle(data['rotation']))
                         item.attributes.ticket = data['ticket']
                         
                         self.engine.current_map.items.append(item)
@@ -612,20 +614,22 @@ class Engine:
         else:
             return math.atan(delta_y / delta_x)
     
+    def snap_angle(self, angle):
+        angle = angle % 360
+        if 45 <= angle < 135:
+            return 90
+        elif 135 <= angle < 225:
+            return 180
+        elif 225 <= angle < 315:
+            return 270
+        else:
+            return 0
+    
     def _player_rotationd(self):
         while self.running:
             while self.current_map.player is not None:
-                angle = math.degrees(self.angle(self.keybindhandler.mouse.x - self.current_map.player.attributes.pos.x, self.keybindhandler.mouse.y - self.current_map.player.attributes.pos.y)) % 360
-            
-                res_angle = 0
-                if 45 <= angle < 135:
-                    res_angle = 90
-                elif 135 <= angle < 225:
-                    res_angle = 180
-                elif 225 <= angle < 315:
-                    res_angle = 270
-                
-                self.current_map.player.set(rotation = res_angle)
+                self.current_map.player.set(rotation = self.snap_angle(math.degrees(self.angle(self.keybindhandler.mouse.x - self.current_map.player.attributes.pos.x,
+                                                                                               self.keybindhandler.mouse.y - self.current_map.player.attributes.pos.y))))
                 time.sleep(0.1)
             time.sleep(0.1)
         
