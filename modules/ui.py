@@ -79,78 +79,6 @@ class UI:
             current = None
             page_frame = tk.Frame(self.root)
             page_frame.pack(fill = tk.BOTH, expand = True)
-        
-        class uiobjects:
-            class menu: #menu ui
-                config = {'name': 'Menu'}
-                
-                @classmethod
-                def on_load(self):
-                    self.frame.pack(fill = tk.BOTH, expand = True)
-                    with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
-                        settingsdict = json.load(file)
-                        
-                    pilrender_msg = settingsdict['graphics']['PILrender']
-                    if not pilrender_msg:
-                        pilrender_msg = 'False (WARNING! - disables sprite rotation)'
-                        
-                    text_ = 'Name: {}, PIL rendering: {} \nGo to settings to make sure all packages have been installed'.format(settingsdict['user']['name'], pilrender_msg)
-                    self.label_userdata.config(text = text_)
-                    
-                    self.button_editor.config(command = self.load_editor)
-                    self.button_connect.config(command = self.load_connect_server)
-                    self.button_host.config(command = self.load_host_server)
-                    self.button_settings.config(command = self.load_settings)
-                    self.button_server_settings.config(command = self.load_server_settings)
-                    self.button_quit.config(command = self.close_window)
-                
-                @classmethod
-                def on_close(self):
-                    self.frame.pack_forget()
-                
-                @classmethod
-                def load_settings(self):
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.settings)
-                
-                @classmethod
-                def load_host_server(self):
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.server_host)
-                
-                @classmethod
-                def load_connect_server(self):
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.connect_server)
-                
-                @classmethod
-                def load_editor(self):
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.editor_choose_file)
-                
-                @classmethod
-                def load_server_settings(self):
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.server_settings)
-                
-                @classmethod
-                def close_window(self):
-                    self.config['methods'].uiobject.call_trigger('quit')
-                    
-                frame = tk.Frame(main.page_frame)
-                label_title = tk.Label(frame, text = 'Hydrophobes', **self.styling.get(font_size = 'large', object_type = tk.Label))
-                button_editor = tk.Button(frame, text = 'Map editor', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_connect = tk.Button(frame, text = 'Connect to a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_host = tk.Button(frame, text = 'Host a server', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_settings = tk.Button(frame, text = 'Change client settings', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_server_settings = tk.Button(frame, text = 'Change server settings', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_quit = tk.Button(frame, text = 'Quit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                label_userdata = tk.Label(frame, text = 'Loading...', **self.styling.get(font_size = 'small', object_type = tk.Label))
-                
-                label_title.grid(row = 0, column = 0, sticky = 'NESW')
-                button_editor.grid(row = 1, column = 0, sticky = 'NESW')
-                button_connect.grid(row = 2, column = 0, sticky = 'NESW')
-                button_host.grid(row = 3, column = 0, sticky = 'NESW')
-                button_settings.grid(row = 4, column = 0, sticky = 'NESW')
-                button_server_settings.grid(row = 5, column = 0, sticky = 'NESW')
-                button_quit.grid(row = 6, column = 0, sticky = 'NESW')
-                label_userdata.grid(row = 7, column = 0, sticky = 'NESW')
-                self.styling.set_weight(frame, 1, 8)
                 
             class settings:
                 config = {'name': 'Settings'}
@@ -862,6 +790,12 @@ class UIObject:
         self._ui = ui
         
         self._call_trigger = self._ui.call_trigger
+        self._styling = self._ui.styling
+        self._load_page = self._ui.load
+        
+        class _elements:
+            pass
+        self._elements = _elements
         
     def on_load(self):
         self.frame.pack(fill = tk.BOTH, expand = True)
