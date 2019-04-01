@@ -854,3 +854,27 @@ class TkFlipSwitch:
         
         if run_binds and 'command' in self.internal_args['options'][index] and (not self.internal_args['options'][index]['command'] is None):
             self.internal_args['options'][index]['command']()
+
+class UIObject:
+    def __init__(self, frame, ui):
+        self.name = ''
+        self.frame = frame
+        self._ui = ui
+        
+        self._call_trigger = self._ui.call_trigger
+        
+    def on_load(self):
+        self.frame.pack(fill = tk.BOTH, expand = True)
+        self._on_load()
+    
+    def on_close(self):
+        self._on_close()
+        self.frame.pack_forget()
+    
+    def _on_load(self):
+        'Empty method. To be overwritten by the inheriting class'
+        pass
+    
+    def _on_close(self):
+        'Empty method. To be overwritten by the inheriting class'
+        pass
