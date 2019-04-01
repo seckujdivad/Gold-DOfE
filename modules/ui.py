@@ -710,6 +710,19 @@ class UI:
                 
                 self.styling.set_weight(frame, 1, 2, dorows = False)
                 frame.rowconfigure(0, weight = 1)
+            
+            class settings_debug:
+                config = {'name': 'Settings - Debug'}
+                
+                @classmethod
+                def on_load(self):
+                    self.frame.pack(fill = tk.BOTH, expand = True)
+                
+                @classmethod
+                def on_close(self):
+                    self.frame.pack_forget()
+                
+                frame = tk.Frame(main.page_frame)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects
@@ -731,7 +744,7 @@ class UI:
     
     def load(self, page, *pageargs, **pagekwargs):
         'Load a page'
-        if (not self.uiobjects.main.current == None) and 'on_close' in dir(self.uiobjects.main.current):
+        if self.uiobjects.main.current is not None and 'on_close' in dir(self.uiobjects.main.current):
             self.uiobjects.main.current.on_close() #close current page if one exists
         self.uiobjects.main.current = page #set loading page as current page
         if 'on_load' in dir(page):
@@ -740,10 +753,12 @@ class UI:
     
     def set_title(self, title):
         self.uiobjects.main.title = title
-        if self.uiobjects.main.current == None:
+        if self.uiobjects.main.current is None:
             self.uiobjects.root.title(self.uiobjects.main.title)
-        elif self.uiobjects.main.current.config['methods'].current_title == None:
+            
+        elif self.uiobjects.main.current.config['methods'].current_title is None:
             self.uiobjects.root.title(self.uiobjects.main.title)
+            
         else:
             self.uiobjects.main.current.config['methods'].set_title(self.uiobjects.main.current.config['methods'].current_title)
     
@@ -764,7 +779,7 @@ class UI:
     def call_trigger(self, string, args = None):
         if string in self.triggers:
             for function in self.triggers[string]:
-                if args == None:
+                if args is None:
                     function()
                 else:
                     function(*args)
@@ -779,7 +794,7 @@ class PageMethods:
         self.current_title = None
     
     def set_title(self, title = None):
-        if not title == None:
+        if title is not None:
             self.current_title = title
         self.uiobject.root.title('{} - {}'.format(self.uiobject.uiobjects.main.title, self.current_title))
 
