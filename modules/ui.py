@@ -1,4 +1,5 @@
 from tkinter import messagebox
+from typing import Type, Union
 import tkinter as tk
 import threading
 import time
@@ -33,14 +34,25 @@ class UI:
         
         class styling: #consistent styling tools
             @classmethod
-            def get(self, font_size = 'medium', object_type = tk.Label, relief = 'default', fonts = 'default'):
+            def get(self, font_size = 'medium', object_type: Union[Type[tk.Label],
+                                                                   Type[tk.Button],
+                                                                   Type[tk.Canvas],
+                                                                   Type[tk.Scrollbar],
+                                                                   Type[tk.Frame],
+                                                                   Type[tk.Text],
+                                                                   Type[tk.Entry],
+                                                                   Type[tk.Spinbox],
+                                                                   Type[tk.Listbox]] = tk.Label, relief = 'default', fonts = 'default') -> dict:
                 'Get styling for a specific type of widget'
                 output = {}
                 if object_type == tk.Button:
                     output['overrelief'] = self.reliefs[relief]['overrelief']
+                
                 output['relief'] = self.reliefs[relief]['relief']
+            
                 if not object_type in [tk.Canvas, tk.Scrollbar]:
                     output['font'] = self.fonts[fonts][font_size]
+                
                 return output
             
             @classmethod
