@@ -76,8 +76,14 @@ class SocketListen:
         threading.Thread(target = self._listen, name = 'Socket listener', daemon = True).start()
     
     def _listen(self):
+        current_string = ''
+        escape_level = 0
+        is_escaped = False
+        is_string = False
+        
         while self.running:
             reqs = []
+            output = []
             try:
                 data = self.parent.connection.recv(4096).decode('UTF-8')
                 
@@ -85,12 +91,6 @@ class SocketListen:
                     print(data)
                 
                 #unpack the data - often will get multiple dictionaries
-                escape_level = 0
-                output = []
-                current_string = ''
-                is_escaped = False
-                is_string = False
-                
                 for char in data:
                     if char == '{' and not is_escaped and not is_string:
                         escape_level += 1
