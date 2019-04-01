@@ -786,6 +786,7 @@ class TkFlipSwitch:
 class UIObject:
     def __init__(self, frame, ui):
         self.name = ''
+        self.internal_name = ''
         self.frame = frame
         self._ui = ui
         
