@@ -580,7 +580,7 @@ class Model:
                 fields_changed.append('frame')
         
         #check if only the positions were changed
-        if fields_changed != []: #make sure at least one field was changed
+        if len(fields_changed) > 0: #make sure at least one field was changed
             if False not in [key in ['x', 'y'] for key in fields_changed]:
                 for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
                     xpos = self.attributes.pos.x + self.get_offsets(i)[0]
@@ -592,24 +592,11 @@ class Model:
                     self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), xpos, ypos)
                     
             else: #too many parameters were changed, replace all images
-                #if previous is equal to current, set to current
-                if prev_rotation is None:
-                    prev_rotation = self.attributes.rotation
-                
-                if prev_transparency is None:
-                    prev_transparency = self.attributes.transparency
-                
-                if prev_frame is None:
-                    prev_frame = self.attributes.animation.current_frame
-                
-                if prev_image_set is None:
-                    prev_image_set = self.attributes.image_set
-                
                 #move currently onscreen objects offscreen
                 for i in range(len(self.attributes.canvobjs[prev_image_set])):
                     self.canvas_controller.coords(self.get_object(prev_image_set, i, prev_rotation, prev_transparency, prev_frame), self.attributes.offscreen.x, self.attributes.offscreen.y)
-                
-                #move currently offscreen objects offscreen
+                    
+                #move currently offscreen objects onscreen
                 for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
                     x = self.attributes.pos.x + self.get_offsets(i)[0]
                     y = self.attributes.pos.y + self.get_offsets(i)[1]
