@@ -79,36 +79,6 @@ class UI:
             current = None
             page_frame = tk.Frame(self.root)
             page_frame.pack(fill = tk.BOTH, expand = True)
-            
-            class server_host:
-                config = {'name': 'Hosting server'}
-                
-                @classmethod
-                def on_load(self):
-                    self.frame.pack(fill = tk.BOTH, expand = True)
-                    self.config['methods'].uiobject.call_trigger('host server', [self.console_frame])
-                    
-                    self.button_exit.config(command = self.choose_exit)
-                
-                @classmethod
-                def on_close(self):
-                    self.config['methods'].uiobject.call_trigger('close server', [])
-                    self.frame.pack_forget()
-                
-                @classmethod
-                def choose_exit(self):
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
-                
-                frame = tk.Frame(main.page_frame)
-                
-                console_frame = tk.Frame(frame)
-                button_exit = tk.Button(frame, text = 'Exit', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                
-                console_frame.grid(column = 0, row = 0, sticky = 'NESW')
-                button_exit.grid(column = 0, row = 1, sticky = 'NESW')
-                
-                self.styling.set_weight(frame, 1, 2, dorows = False)
-                frame.rowconfigure(0, weight = 1)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects

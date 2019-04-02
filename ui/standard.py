@@ -524,3 +524,25 @@ class UIServerSettings(modules.ui.UIObject):
     
     def _choice_cancel(self):
         self._load_page('menu')
+
+class UIServerHost(modules.ui.UIObject):
+    def __init__(self, frame, ui):
+        super().__init__(frame, ui)
+        
+        self.name = 'Hosting server'
+        self.internal_name = 'server host'
+        
+        self._elements.console_frame = tk.Frame(frame)
+        self._elements.button_exit = tk.Button(frame, command = lambda: self._load_page('menu'), text = 'Exit', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        
+        self._elements.console_frame.grid(column = 0, row = 0, sticky = 'NESW')
+        self._elements.button_exit.grid(column = 0, row = 1, sticky = 'NESW')
+        
+        self._styling.set_weight(frame, 1, 2, dorows = False)
+        frame.rowconfigure(0, weight = 1)
+    
+    def _on_load(self):
+        self._call_trigger('host server', [self._elements.console_frame])
+    
+    def _on_close(self):
+        self._call_trigger('close server')
