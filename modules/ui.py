@@ -16,6 +16,58 @@ class UI:
         
         self.root = None
         
+        class styling: #consistent styling tools
+            @classmethod
+            def get(cls, font_size = 'medium', object_type: Union[Type[tk.Label],
+                                                                   Type[tk.Button],
+                                                                   Type[tk.Canvas],
+                                                                   Type[tk.Scrollbar],
+                                                                   Type[tk.Frame],
+                                                                   Type[tk.Text],
+                                                                   Type[tk.Entry],
+                                                                   Type[tk.Spinbox],
+                                                                   Type[tk.Listbox]] = tk.Label, relief = 'default', fonts = 'default') -> dict:
+                'Get styling for a specific type of widget'
+                output = {}
+                if object_type == tk.Button:
+                    output['overrelief'] = cls.reliefs[relief]['overrelief']
+                
+                output['relief'] = cls.reliefs[relief]['relief']
+            
+                if not object_type in [tk.Canvas, tk.Scrollbar]:
+                    output['font'] = cls.fonts[fonts][font_size]
+                
+                return output
+            
+            @classmethod
+            def set_weight(cls, frame, width, height, weight_ = 1, dorows = True, docolumns = True):
+                'Set uniform weighting across a frame'
+                for cheight in range(height):
+                    if dorows:
+                        frame.rowconfigure(cheight, weight = weight_)
+                    for cwidth in range(width):
+                        if docolumns:
+                            frame.columnconfigure(cwidth, weight = weight_)
+                            
+            fonts = {}
+            reliefs = {}
+            
+            with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+                settingsdata = json.load(file)
+                
+            for style_type in settingsdata['styling']:
+                fonts[style_type] = settingsdata['styling'][style_type]['fonts']
+                reliefs[style_type] = settingsdata['styling'][style_type]['reliefs']
+        self.styling = styling
+        
+        class pages:
+            title = ''
+            current = None
+            modules = []
+            pages = {}
+            page_frame = None
+        self.pages = pages
+        
         if autostart:
             threading.Thread(target = self.tkthread).start() #start tkinter window in separate thread
             self.wait_for_checkin()
@@ -32,66 +84,8 @@ class UI:
     def tkthread(self):
         self.root = tk.Tk() #create tkinter window
         
-        class styling: #consistent styling tools
-            @classmethod
-            def get(self, font_size = 'medium', object_type: Union[Type[tk.Label],
-                                                                   Type[tk.Button],
-                                                                   Type[tk.Canvas],
-                                                                   Type[tk.Scrollbar],
-                                                                   Type[tk.Frame],
-                                                                   Type[tk.Text],
-                                                                   Type[tk.Entry],
-                                                                   Type[tk.Spinbox],
-                                                                   Type[tk.Listbox]] = tk.Label, relief = 'default', fonts = 'default') -> dict:
-                'Get styling for a specific type of widget'
-                output = {}
-                if object_type == tk.Button:
-                    output['overrelief'] = self.reliefs[relief]['overrelief']
-                
-                output['relief'] = self.reliefs[relief]['relief']
-            
-                if not object_type in [tk.Canvas, tk.Scrollbar]:
-                    output['font'] = self.fonts[fonts][font_size]
-                
-                return output
-            
-            @classmethod
-            def set_weight(self, frame, width, height, weight_ = 1, dorows = True, docolumns = True):
-                'Set uniform weighting across a frame'
-                for cheight in range(height):
-                    if dorows:
-                        frame.rowconfigure(cheight, weight = weight_)
-                    for cwidth in range(width):
-                        if docolumns:
-                            frame.columnconfigure(cwidth, weight = weight_)
-            fonts = {}
-            reliefs = {}
-            with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
-                settingsdata = json.load(file)
-            for style_type in settingsdata['styling']:
-                fonts[style_type] = settingsdata['styling'][style_type]['fonts']
-                reliefs[style_type] = settingsdata['styling'][style_type]['reliefs']
-        self.styling = styling        
-        
-        class main: #store data to do with ui
-            title = ''
-            geometry = None
-            current = None
-            page_frame = tk.Frame(self.root)
-            page_frame.pack(fill = tk.BOTH, expand = True)
-                
-        uiobjects.main = main
-        self.uiobjects = uiobjects
-        
-        #apply additional setup to pages
-        for itemname in dir(self.uiobjects):
-            ismagicvariable = itemname.startswith('__') and itemname.endswith('__')
-            isspecialcase = itemname in ['main']
-            if not (ismagicvariable or isspecialcase):
-                item = self.uiobjects.__getattribute__(self.uiobjects, itemname) #get class from name
-                if not 'config' in dir(item):
-                    item.config = {'name': itemname}
-                item.config['methods'] = PageMethods(self, item)
+        self.pages.page_frame = tk.Frame(self.root)
+        self.pages.page_frame.pack(fill = tk.BOTH, expand = True)
         
         self.ready['tkthread'] = True
         self.root.mainloop()
