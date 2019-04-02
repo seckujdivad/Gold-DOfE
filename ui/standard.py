@@ -3,6 +3,7 @@ import tkinter as tk
 import os
 import json
 import sys
+import shutil
 
 import modules.ui
 
@@ -44,7 +45,7 @@ class UIMenu(modules.ui.UIObject):
         text_ = 'Name: {}, PIL rendering: {} \nGo to settings to make sure all packages have been installed'.format(settingsdict['user']['name'], pilrender_msg)
         self._elements.label_userdata.config(text = text_)
         
-        self._elements.button_editor.config(command = lambda: self._load_page('editor'))
+        self._elements.button_editor.config(command = lambda: self._load_page('editor choose map'))
         self._elements.button_connect.config(command = lambda: self._load_page('server connect'))
         self._elements.button_host.config(command = lambda: self._load_page('server host'))
         self._elements.button_settings.config(command = lambda: self._load_page('client settings'))
@@ -372,3 +373,59 @@ class UIGame(modules.ui.UIObject):
     def _on_close(self):
         self._call_trigger('close game')
         self._call_trigger('close server')
+
+class UIEditorChooseFile(modules.ui.UIObject):
+    def __init__(self, frame, ui):
+        super().__init__(frame, ui)
+        
+        self.name = 'Editor - Choose map'
+        self.internal_name = 'editor choose map'
+        
+        #create UI elements
+        self._elements.listbox_frame = tk.Frame(frame)
+        self._elements.listbox_box = tk.Listbox(self._elements.listbox_frame, **self._styling.get(font_size = 'small', object_type = tk.Listbox))
+        self._elements.listbox_bar = tk.Scrollbar(self._elements.listbox_frame, command = self._elements.listbox_box.yview)
+        self._elements.listbox_box.config(yscrollcommand = self._elements.listbox_bar.set)
+        
+        self._elements.listbox_bar.pack(side = tk.RIGHT, fill = tk.Y)
+        self._elements.listbox_box.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+        
+        self._elements.entry_mapname = tk.Entry(frame, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
+        self._elements.button_new = tk.Button(frame, text = 'Create new map', command = self._create_new_map, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.button_choose = tk.Button(frame, text = 'Open map', command = self._open_map, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.button_go_back = tk.Button(frame, text = 'Return to menu', command = lambda: self._load_page('menu'), **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        
+        self._elements.listbox_frame.grid(row = 0, column = 0, columnspan = 4, sticky = 'NESW')
+        
+        self._elements.entry_mapname.grid(row = 1, column = 0, sticky = 'NESW')
+        self._elements.button_new.grid(row = 1, column = 1, sticky = 'NESW')
+        self._elements.button_choose.grid(row = 1, column = 2, sticky = 'NESW')
+        self._elements.button_go_back.grid(row = 1, column = 3, sticky = 'NESW')
+        
+        self._styling.set_weight(frame, 4, 2)
+        frame.rowconfigure(1, weight = 0)
+        
+        self._elements.listbox_box.bind('<Return>', self._open_map())
+        
+    def _on_load(self):
+        self._elements.listbox_box.delete(0, tk.END)
+        
+        for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps')):
+            if (not name.startswith('_')) and os.path.isdir(os.path.join(sys.path[0], 'server', 'maps', name)):
+                self._elements.listbox_box.insert(tk.END, name)
+    
+    def _open_map(self, event = None):
+        index = self._elements.listbox_box.curselection()
+        if type(index[0]) == int: #if there is a selection
+            map_name = self._elements.listbox_box.get(index[0])
+            self._call_trigger('edit map', [map_name])
+    
+    def _create_new_map(self):
+        if self._elements.entry_mapname.get() == '':
+            messagebox.showerror('Error while creating new map', 'You must enter a map name')
+            
+        elif os.path.isdir(os.path.join(sys.path[0], 'server', 'maps', self._elements.entry_mapname.get())):
+            messagebox.showerror('Error while creating new map', 'The map name "{}" is already in use'.format(self._elements.entry_mapname.get()))
+            
+        else:
+            shutil.copytree('_template', self._elements.entry_mapname.get())
