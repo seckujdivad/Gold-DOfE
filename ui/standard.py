@@ -442,3 +442,85 @@ class UIEditor(modules.ui.UIObject):
     
     def _on_close(self):
         self._call_trigger('close editor')
+
+class UIServerSettings(modules.ui.UIObject):
+    def __init__(self, frame, ui):
+        super().__init__(frame, ui)
+        
+        self.name = 'Server settings'
+        self.internal_name = 'server settings'
+        
+        self._vars.tickrate = tk.IntVar()
+        self._vars.port = tk.IntVar()
+        
+        #create UI elements
+        self._elements.settings_frame = tk.Frame(frame)
+        
+        widget_row = 0
+        
+        #network
+        self._elements.cat_network = tk.Label(self._elements.settings_frame, text = 'Network', **self._styling.get(font_size = 'medium', object_type = tk.Label))
+        self._elements.hitbox_precision_label = tk.Label(self._elements.settings_frame, text = 'Hitbox precision', **self._styling.get(font_size = 'medium', object_type = tk.Label))
+        self._elements.hitbox_precision_flipswitch = modules.ui.TkFlipSwitch(self._elements.settings_frame, options = [{'text': 'Low (stock python)'}, {'text': 'High (requires numpy)'}], **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.tickrate_label = tk.Label(self._elements.settings_frame, text = 'Tickrate', **self._styling.get(font_size = 'medium', object_type = tk.Label))
+        self._elements.tickrate_spinbox = tk.Spinbox(self._elements.settings_frame, from_ = 1, to = 1024, textvariable = self._vars.tickrate, **self._styling.get(font_size = 'medium', object_type = tk.Spinbox))
+        self._elements.port_label = tk.Label(self._elements.settings_frame, text = 'Port', **self._styling.get(font_size = 'medium', object_type = tk.Label))
+        self._elements.port_spinbox = tk.Spinbox(self._elements.settings_frame, from_ = 1024, to = 49151, textvariable = self._vars.port, **self._styling.get(font_size = 'medium', object_type = tk.Spinbox))
+        
+        self._elements.cat_network.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
+        self._elements.hitbox_precision_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
+        self._elements.hitbox_precision_flipswitch.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
+        self._elements.tickrate_label.grid(row = widget_row + 2, column = 0, sticky = 'NESW')
+        self._elements.tickrate_spinbox.grid(row = widget_row + 2, column = 1, sticky = 'NESW')
+        self._elements.port_label.grid(row = widget_row + 3, column = 0, sticky = 'NESW')
+        self._elements.port_spinbox.grid(row = widget_row + 3, column = 1, sticky = 'NESW')
+        
+        widget_row += 4
+        
+        #functional buttons
+        self._elements.button_close = tk.Button(frame, text = 'Accept', command = self._choice_accept, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.button_cancel = tk.Button(frame, text = 'Cancel', command = self._choice_cancel, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.button_reset_default = tk.Button(frame, text = 'Reset to default', command = self._choice_reset, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        
+        self._elements.settings_frame.grid(row = 0, column = 0, columnspan = 3, sticky = 'NESW')
+        self._elements.button_close.grid(row = 2, column = 0, sticky = 'NESW')
+        self._elements.button_cancel.grid(row = 2, column = 1, sticky = 'NESW')
+        self._elements.button_reset_default.grid(row = 2, column = 2, sticky = 'NESW')
+        
+        #set weights
+        self._styling.set_weight(self._elements.settings_frame, 2, widget_row, dorows = False)
+        frame.columnconfigure(0, weight = 1)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 1)
+        frame.rowconfigure(0, weight = 1)
+        
+    def _on_load(self):
+        self._fetch_settings(os.path.join(sys.path[0], 'server', 'config.json'))
+    
+    def _fetch_settings(self, path):
+        with open(path, 'r') as file:
+            settingsdict = json.load(file)
+        
+        self._elements.hitbox_precision_flipswitch.on_option_press(settingsdict['network']['accurate hit detection'])
+        self._vars.tickrate.set(settingsdict['network']['tickrate'])
+        self._vars.port.set(settingsdict['network']['port'])
+    
+    def _push_settings(self, path):
+        with open(path, 'r') as file:
+            settingsdict = json.load(file)
+        
+        settingsdict['network']['accurate hit detection'] = bool(self._elements.hitbox_precision_flipswitch.state)
+        settingsdict['network']['tickrate'] = int(self._vars.tickrate.get())
+        settingsdict['network']['port'] = int(self._vars.port.get())
+        
+        with open(path, 'w') as file:
+            json.dump(settingsdict, file, sort_keys=True, indent='\t')
+    
+    def _choice_accept(self):
+        self._push_settings(os.path.join(sys.path[0], 'server', 'config.json'))
+    
+    def _choice_reset(self):
+        self._fetch_settings(os.path.join(sys.path[0], 'server', 'default_config.json'))
+    
+    def _choice_cancel(self):
+        self._load_page('menu')

@@ -80,107 +80,6 @@ class UI:
             page_frame = tk.Frame(self.root)
             page_frame.pack(fill = tk.BOTH, expand = True)
             
-            class server_settings:
-                config = {'name': 'Server settings'}
-                
-                @classmethod
-                def on_load(self):
-                    self.button_close.config(command = self.choose_accept)
-                    self.button_cancel.config(command = self.choose_cancel)
-                    self.button_reset_default.config(command = self.choose_reset_default)
-                    
-                    self.frame.pack(fill = tk.BOTH, expand = True)
-                    
-                    self.fetch_settings(os.path.join(sys.path[0], 'server', 'config.json'))
-                
-                @classmethod
-                def on_close(self):
-                    self.frame.pack_forget()
-                
-                @classmethod
-                def choose_cancel(self):
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
-                
-                @classmethod
-                def choose_accept(self):
-                    self.push_settings(os.path.join(sys.path[0], 'server', 'config.json'))
-                       
-                    self.config['methods'].uiobject.load(self.config['methods'].uiobject.uiobjects.menu)
-                
-                @classmethod
-                def choose_reset_default(self):
-                    self.fetch_settings(os.path.join(sys.path[0], 'server', 'default_config.json'))
-                
-                @classmethod
-                def push_settings(self, path):
-                    with open(path, 'r') as file:
-                        settingsdict = json.load(file)
-                    
-                    settingsdict['network']['accurate hit detection'] = bool(self.hitbox_precision_flipswitch.state)
-                    settingsdict['network']['tickrate'] = int(self.vars.tickrate.get())
-                    settingsdict['network']['port'] = int(self.vars.port.get())
-                    
-                    with open(os.path.join(sys.path[0], 'server', 'config.json'), 'w') as file:
-                       json.dump(settingsdict, file, sort_keys=True, indent='\t')
-                
-                @classmethod
-                def fetch_settings(self, path):
-                    with open(path, 'r') as file:
-                        settingsdict = json.load(file)
-                    
-                    self.hitbox_precision_flipswitch.on_option_press(settingsdict['network']['accurate hit detection'])
-                    self.vars.tickrate.set(settingsdict['network']['tickrate'])
-                    self.vars.port.set(settingsdict['network']['port'])
-                    
-                #variables
-                class vars:
-                    tickrate = tk.IntVar()
-                    port = tk.IntVar()
-                self.vars = vars
-                
-                frame = tk.Frame(main.page_frame)
-                
-                settings_frame = tk.Frame(frame)
-                
-                widget_row = 0
-                
-                #network
-                cat_network = tk.Label(settings_frame, text = 'Network', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                hitbox_precision_label = tk.Label(settings_frame, text = 'Hitbox precision', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                hitbox_precision_flipswitch = TkFlipSwitch(settings_frame, options = [{'text': 'Low (stock python)'},
-                                                                                      {'text': 'High (requires numpy)'}], **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                tickrate_label = tk.Label(settings_frame, text = 'Tickrate', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                tickrate_spinbox = tk.Spinbox(settings_frame, from_ = 1, to = 1024, textvariable = self.vars.tickrate, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
-                port_label = tk.Label(settings_frame, text = 'Port', **self.styling.get(font_size = 'medium', object_type = tk.Label))
-                port_spinbox = tk.Spinbox(settings_frame, from_ = 1024, to = 49151, textvariable = self.vars.port, **self.styling.get(font_size = 'medium', object_type = tk.Spinbox))
-                
-                cat_network.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
-                hitbox_precision_label.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
-                hitbox_precision_flipswitch.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
-                tickrate_label.grid(row = widget_row + 2, column = 0, sticky = 'NESW')
-                tickrate_spinbox.grid(row = widget_row + 2, column = 1, sticky = 'NESW')
-                port_label.grid(row = widget_row + 3, column = 0, sticky = 'NESW')
-                port_spinbox.grid(row = widget_row + 3, column = 1, sticky = 'NESW')
-                
-                widget_row += 4
-                
-                #functional buttons
-                button_close = tk.Button(frame, text = 'Accept', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_cancel = tk.Button(frame, text = 'Cancel', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                button_reset_default = tk.Button(frame, text = 'Reset to default', **self.styling.get(font_size = 'medium', object_type = tk.Button))
-                
-                settings_frame.grid(row = 0, column = 0, columnspan = 3, sticky = 'NESW')
-                button_close.grid(row = 2, column = 0, sticky = 'NESW')
-                button_cancel.grid(row = 2, column = 1, sticky = 'NESW')
-                button_reset_default.grid(row = 2, column = 2, sticky = 'NESW')
-                
-                #set weights
-                self.styling.set_weight(settings_frame, 2, widget_row, dorows = False)
-                frame.columnconfigure(0, weight = 1)
-                frame.columnconfigure(1, weight = 1)
-                frame.columnconfigure(2, weight = 1)
-                frame.rowconfigure(0, weight = 1)
-            
             class server_host:
                 config = {'name': 'Hosting server'}
                 
@@ -210,19 +109,6 @@ class UI:
                 
                 self.styling.set_weight(frame, 1, 2, dorows = False)
                 frame.rowconfigure(0, weight = 1)
-            
-            class settings_debug:
-                config = {'name': 'Settings - Debug'}
-                
-                @classmethod
-                def on_load(self):
-                    self.frame.pack(fill = tk.BOTH, expand = True)
-                
-                @classmethod
-                def on_close(self):
-                    self.frame.pack_forget()
-                
-                frame = tk.Frame(main.page_frame)
                 
         uiobjects.main = main
         self.uiobjects = uiobjects
