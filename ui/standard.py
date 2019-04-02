@@ -221,3 +221,154 @@ class UIClientSettings(modules.ui.UIObject):
     
     def _choice_reset(self):
         self._read_settings(os.path.join(sys.path[0], 'user', 'default_config.json'))
+
+class UIConnectToServer(modules.ui.UIObject):
+    def __init__(self, frame, ui):
+        super().__init__(frame, ui)
+        
+        self._vars.address = tk.StringVar()
+        self._vars.port = tk.StringVar()
+        self._vars.name = tk.StringVar()
+        self._vars.tickrate = tk.IntVar()
+        
+        self._elements.serverlist_frame = tk.Frame(frame)
+        self._elements.serverlist_list = tk.Listbox(self._elements.serverlist_frame, **self._styling.get(font_size = 'small', object_type = tk.Listbox))
+        self._elements.serverlist_bar = tk.Scrollbar(self._elements.serverlist_frame, command = self._elements.serverlist_list.yview)
+        self._elements.serverlist_list.config(yscrollcommand = self._elements.serverlist_bar.set)
+        
+        self._elements.button_connect = tk.Button(frame, text = 'Connect', command = self._choose_server, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.button_back = tk.Button(frame, text = 'Return to menu', command = lambda: self._load_page('menu'), **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        
+        self._elements.addserver_frame = tk.Frame(frame)
+        self._elements.addserver_choose_button = tk.Button(self._elements.addserver_frame, command = self._add_server, text = 'Add server', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.addserver_name_label = tk.Label(self._elements.addserver_frame, text = 'Name', **self._styling.get(font_size = 'small', object_type = tk.Label))
+        self._elements.addserver_name_entry = tk.Entry(self._elements.addserver_frame, textvariable = self._vars.name, **self._styling.get(font_size = 'small', object_type = tk.Entry))
+        self._elements.addserver_address_label = tk.Label(self._elements.addserver_frame, text = 'Address', **self._styling.get(font_size = 'small', object_type = tk.Label))
+        self._elements.addserver_address_entry = tk.Entry(self._elements.addserver_frame, textvariable = self._vars.address, **self._styling.get(font_size = 'small', object_type = tk.Entry))
+        self._elements.addserver_port_label = tk.Label(self._elements.addserver_frame, text = 'Port', **self._styling.get(font_size = 'small', object_type = tk.Label))
+        self._elements.addserver_port_spinbox = tk.Spinbox(self._elements.addserver_frame, textvariable = self._vars.port, from_ = 1024, to = 65535, **self._styling.get(font_size = 'small', object_type = tk.Spinbox))
+        self._elements.addserver_tickrate_label = tk.Label(self._elements.addserver_frame, text = 'Tickrate', **self._styling.get(font_size = 'small', object_type = tk.Label))
+        self._elements.addserver_tickrate_spinbox = tk.Spinbox(self._elements.addserver_frame, textvariable = self._vars.tickrate, from_ = 1, to = 1024, **self._styling.get(font_size = 'small', object_type = tk.Spinbox))
+        self._elements.addserver_islocal_flipswitch = modules.ui.TkFlipSwitch(self._elements.addserver_frame, options = [{'text': 'Local machine (host server)'}, {'text': 'Open to LAN'}], **self._styling.get(font_size = 'small', object_type = tk.Button))
+        
+        self._elements.serverlist_bar.pack(side = tk.RIGHT, fill = tk.Y)
+        self._elements.serverlist_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+        
+        self._elements.serverlist_frame.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
+        self._elements.button_back.grid(row = 1, column = 0, sticky = 'NESW')
+        self._elements.button_connect.grid(row = 1, column = 1, sticky = 'NESW')
+        self._elements.addserver_frame.grid(row = 2, column = 0, columnspan = 2, sticky = 'NESW')
+        
+        self._elements.addserver_name_label.grid(row = 0, column = 0, sticky = 'NESW')
+        self._elements.addserver_name_entry.grid(row = 0, column = 1, sticky = 'NESW')
+        self._elements.addserver_address_label.grid(row = 1, column = 0, sticky = 'NESW')
+        self._elements.addserver_address_entry.grid(row = 1, column = 1, sticky = 'NESW')
+        self._elements.addserver_port_label.grid(row = 2, column = 0, sticky = 'NESW')
+        self._elements.addserver_port_spinbox.grid(row = 2, column = 1, sticky = 'NESW')
+        self._elements.addserver_tickrate_label.grid(row = 3, column = 0, sticky = 'NESW')
+        self._elements.addserver_tickrate_spinbox.grid(row = 3, column = 1, sticky = 'NESW')
+        self._elements.addserver_islocal_flipswitch.grid(row = 4, column = 0, columnspan = 2, sticky = 'NESW')
+        self._elements.addserver_choose_button.grid(row = 0, column = 2, rowspan = 4, sticky = 'NESW')
+        
+        self._styling.set_weight(frame, 2, 4)
+        frame.rowconfigure(1, weight = 0)
+        frame.rowconfigure(2, weight = 0)
+        frame.rowconfigure(3, weight = 0)
+        
+        self._styling.set_weight(self._elements.addserver_frame, 3, 4)
+        
+        self._elements.serverlist_list.bind('<Return>', self._choose_server)
+        
+    def _on_load(self):
+        self._populate_server_list()
+        
+        with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+            settingsdata = json.load(file)
+        
+        self._vars.tickrate.set(settingsdata['network']['default tickrate'])
+        self._vars.port.set(settingsdata['network']['default port'])
+    
+    def _populate_server_list(self):
+        with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+            settingsdata = json.load(file)
+            
+        self._elements.serverlist_list.delete(0, tk.END)
+        
+        formatter = '{} ({}:{}){}'
+        for server in settingsdata['network']['servers']:
+            if server['port'] == 'normal':
+                server['port'] = settingsdata['network']['default port']
+                
+            if server['internal']:
+                additional_text = ' - limited to local network'
+                
+            else:
+                additional_text = ''
+                
+            self._elements.serverlist_list.insert(tk.END, formatter.format(server['name'], server['address'], server['port'], additional_text))
+    
+    def _choose_server(self, event = None):
+        curselection = self._elements.serverlist_list.curselection()
+        if not curselection == ():
+            with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+                settingsdata = json.load(file)
+                
+            self._call_trigger('connect to server', [settingsdata['network']['servers'][curselection[0]]])
+    
+    def _add_server(self):
+        with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
+            settingsdata = json.load(file)
+            
+        sv_dict = {'address': self._vars.address.get(),
+                   'internal': not bool(self._elements.addserver_islocal_flipswitch.state),
+                   'name': self._vars.name.get(),
+                   'port': self._vars.port.get(),
+                   'tickrate': self._vars.tickrate.get()}
+        try:
+            sv_dict['port'] = int(sv_dict['port'])
+            
+        except ValueError: #is a word (normal), do nothing
+            sv_dict['port'] = 'normal'
+            
+        settingsdata['network']['servers'].append(sv_dict)
+        
+        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'w') as file:
+            json.dump(settingsdata, file, sort_keys = True, indent = '\t')
+    
+        self._populate_server_list()
+        self._vars.address.set('')
+        self._vars.name.set('')
+        self._vars.tickrate.set(settingsdata['network']['default tickrate'])
+        self._vars.port.set(settingsdata['network']['default port'])
+
+class UIGame(modules.ui.UIObject):
+    def __init__(self, frame, ui):
+        super().__init__(frame, ui)
+        
+        self.name = 'Game'
+        self.internal_name = 'game'
+        
+        #create UI elements
+        self._elements.canvas = tk.Canvas(frame, width = 800, height = 600, bg = 'purple', **self._styling.get(font_size = 'medium', object_type = tk.Canvas))
+                
+        self._elements.canvas.grid(row = 0, column = 0)
+        
+        self._styling.set_weight(frame, 1, 1)
+        frame.rowconfigure(1, weight = 0)
+    
+    def _on_load(self):
+        self._call_trigger('create game object', [self._elements.canvas])
+        
+        #set keybinds for returning to the menu
+        with open(os.path.join(sys.path[0], 'user', 'keybinds.json'), 'r') as file:
+            keybinds_data = json.load(file)
+            
+        if type(keybinds_data['window']['return to menu']) == str:
+            keybinds_data['window']['return to menu'] = [keybinds_data['window']['return to menu']]
+            
+        for key in keybinds_data['window']['return to menu']:
+            self._elements.canvas.bind('<{}>'.format(key), lambda: self._load_page('menu'))
+    
+    def _on_close(self):
+        self._call_trigger('close game')
+        self._call_trigger('close server')
