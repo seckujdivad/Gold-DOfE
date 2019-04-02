@@ -80,21 +80,6 @@ class UI:
             page_frame = tk.Frame(self.root)
             page_frame.pack(fill = tk.BOTH, expand = True)
             
-            class editor:
-                config = {'name': 'Editor'}
-                
-                @classmethod
-                def on_load(self):
-                    self.frame.pack(fill = tk.BOTH, expand = True)
-                    self.config['methods'].uiobject.call_trigger('start editor', [self.frame, self.config['methods']])
-                
-                @classmethod
-                def on_close(self):
-                    self.config['methods'].uiobject.call_trigger('close editor', [])
-                    self.frame.pack_forget()
-                
-                frame = tk.Frame(main.page_frame)
-            
             class server_settings:
                 config = {'name': 'Server settings'}
                 

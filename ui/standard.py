@@ -429,3 +429,16 @@ class UIEditorChooseFile(modules.ui.UIObject):
             
         else:
             shutil.copytree('_template', self._elements.entry_mapname.get())
+
+class UIEditor(modules.ui.UIObject):
+    def __init__(self, frame, ui):
+        super().__init__(frame, ui)
+        
+        self.name = 'Editor'
+        self.internal_name = 'editor'
+    
+    def _on_load(self):
+        self._call_trigger('start editor', [self])
+    
+    def _on_close(self):
+        self._call_trigger('close editor')
