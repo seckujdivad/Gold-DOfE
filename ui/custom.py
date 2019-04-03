@@ -163,18 +163,20 @@ class EditorLayout:
             if canvobj[0] in self.canvas.find_overlapping(event.x, event.y, event.x, event.y):
                 canvobj = canvobj[0]
                 
+                item = None
                 #find the canvas object in screen_data
                 for scan_item in self.screen_data:
                     if scan_item['canvobj'] == canvobj:
                         item = scan_item
                 
-                self.select_index(self.screen_data.index(item))
+                if item is not None:
+                    self.select_index(self.screen_data.index(item))
                 
     def select_index(self, index):
         item = self.screen_data[index]
         
         #remove formatting from previous selection (if there was one)
-        if not self.selection == None:
+        if self.selection is not None:
             current = self.screen_data[self.selection]
             self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['editor colour'], outline = current['material data']['editor colour'])
         
@@ -239,7 +241,7 @@ class EditorLayout:
             self.polylist_list.insert(0, '{} at {}, {}'.format(dict['material data']['display name'], dict['coordinates'][0], dict['coordinates'][1]))
     
     def remove_object(self, event = None):
-        if not self.selection == None:
+        if self.selection is not None:
             item = self.screen_data[self.selection]
             
             index = self.selection
@@ -251,7 +253,7 @@ class EditorLayout:
             self.repopulate_poly_list()
     
     def select_none(self):
-        if self.selection is None:
+        if self.selection is not None:
             item = self.screen_data[self.selection]
             self.canvas.itemconfigure(item['canvobj'], fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
             self.update_polycoord_display('----', '----')
@@ -317,7 +319,7 @@ class EditorLayout:
                     pass
     
     def set_scripts(self, event = None): #set the script in another thread so that the selection can update
-        if not self.selection == None:
+        if self.selection is not None:
             threading.Thread(target = self._set_scripts).start()
     
     def _set_scripts(self):
@@ -1208,15 +1210,14 @@ class EditorPanelHitbox:
                 overlapping = item_overlapping
                 is_current_point = False
                 i = 0
-                c_x = None
-                c_y = None
+                index = None
                 for obj, x, y in self.editor.current_points:
                     if obj == overlapping:
                         is_current_point = True
                         index = i
                     i += 1
                 
-                if is_current_point:
+                if is_current_point and index is not None:
                     self.choose_handle(index)
     
     def choose_handle(self, index):
