@@ -38,8 +38,8 @@ class App:
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
             settingsdata = json.load(file)
         
-        self.ui.load(self.ui.uiobjects.menu)
-        self.ui.set_title('Hydrophobes')
+        self.ui.load('menu')
+        self.ui.set_base_title('Hydrophobes')
         self.ui.set_geometry('800x600')
         if settingsdata['default window state'] in [0, 1]:
             self.ui.root.state(['normal', 'zoomed'][settingsdata['default window state']])

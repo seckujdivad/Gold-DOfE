@@ -405,7 +405,7 @@ class UIEditorChooseFile(modules.ui.UIObject):
         self._styling.set_weight(frame, 4, 2)
         frame.rowconfigure(1, weight = 0)
         
-        self._elements.listbox_box.bind('<Return>', self._open_map())
+        self._elements.listbox_box.bind('<Return>', self._open_map)
         
     def _on_load(self):
         self._elements.listbox_box.delete(0, tk.END)

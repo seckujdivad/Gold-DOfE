@@ -61,6 +61,9 @@ class UI:
         
         class pages:
             title = ''
+            base_title = ''
+            top_title = ''
+            window_geometry = None
             current = None
             uninitialised = []
             pages = {}
@@ -107,29 +110,35 @@ class UI:
         
         self.call_trigger('window closed')
     
-    def load(self, page, *pageargs, **pagekwargs):
+    def load(self, page):
         'Load a page'
-        if self.uiobjects.main.current is not None and 'on_close' in dir(self.uiobjects.main.current):
-            self.uiobjects.main.current.on_close() #close current page if one exists
-        self.uiobjects.main.current = page #set loading page as current page
-        if 'on_load' in dir(page):
-            page.on_load(*pageargs, **pagekwargs) #run the load function for the page
-        page.config['methods'].set_title(page.config["name"]) #set correct window title
+        if self.pages.current is not None:
+            self.pages.pages[self.pages.current].on_close()
+        
+        if page in self.pages.pages:
+            self.pages.current = page
+            self.pages.pages[self.pages.current].on_load()
+            self.set_title(self.pages.pages[self.pages.current].name)
     
     def set_title(self, title):
-        self.uiobjects.main.title = title
-        if self.uiobjects.main.current is None:
-            self.uiobjects.root.title(self.uiobjects.main.title)
-            
-        elif self.uiobjects.main.current.config['methods'].current_title is None:
-            self.uiobjects.root.title(self.uiobjects.main.title)
-            
+        if title is None:
+            self.pages.top_title = ''
+            title = self.pages.base_title
+        
         else:
-            self.uiobjects.main.current.config['methods'].set_title(self.uiobjects.main.current.config['methods'].current_title)
+            self.pages.top_title = title
+            title = '{} - {}'.format(self.pages.base_title, self.pages.top_title)
+        
+        self.pages.title = title
+        self.root.title(self.pages.title)
+    
+    def set_base_title(self, base_title):
+        self.pages.base_title = base_title
+        self.set_title(self.pages.top_title)
     
     def set_geometry(self, geometry):
-        self.uiobjects.main.geometry = geometry
-        self.root.geometry(self.uiobjects.main.geometry)
+        self.pages.window_geometry = geometry
+        self.root.geometry(self.pages.window_geometry)
     
     def set_trigger(self, string, function):
         if string in self.triggers:
