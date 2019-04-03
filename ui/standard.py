@@ -371,7 +371,7 @@ class UIGame(modules.ui.UIObject):
             keybinds_data['window']['return to menu'] = [keybinds_data['window']['return to menu']]
             
         for key in keybinds_data['window']['return to menu']:
-            self._elements.canvas.bind('<{}>'.format(key), lambda: self._load_page('menu'))
+            self._elements.canvas.bind('<{}>'.format(key), lambda event: self._load_page('menu'))
     
     def _on_close(self):
         self._call_trigger('close game')
