@@ -223,6 +223,7 @@ class UIClientSettings(modules.ui.UIObject):
     def _choice_reset(self):
         self._read_settings(os.path.join(sys.path[0], 'user', 'default_config.json'))
 
+
 class UIConnectToServer(modules.ui.UIObject):
     def __init__(self, frame, ui):
         super().__init__(frame, ui)
@@ -345,6 +346,7 @@ class UIConnectToServer(modules.ui.UIObject):
         self._vars.tickrate.set(settingsdata['network']['default tickrate'])
         self._vars.port.set(settingsdata['network']['default port'])
 
+
 class UIGame(modules.ui.UIObject):
     def __init__(self, frame, ui):
         super().__init__(frame, ui)
@@ -376,6 +378,7 @@ class UIGame(modules.ui.UIObject):
     def _on_close(self):
         self._call_trigger('close game')
         self._call_trigger('close server')
+
 
 class UIEditorChooseFile(modules.ui.UIObject):
     def __init__(self, frame, ui):
@@ -433,6 +436,7 @@ class UIEditorChooseFile(modules.ui.UIObject):
         else:
             shutil.copytree('_template', self._elements.entry_mapname.get())
 
+
 class UIEditor(modules.ui.UIObject):
     def __init__(self, frame, ui):
         super().__init__(frame, ui)
@@ -445,6 +449,7 @@ class UIEditor(modules.ui.UIObject):
     
     def _on_close(self):
         self._call_trigger('close editor')
+
 
 class UIServerSettings(modules.ui.UIObject):
     def __init__(self, frame, ui):
@@ -528,6 +533,7 @@ class UIServerSettings(modules.ui.UIObject):
     def _choice_cancel(self):
         self._load_page('menu')
 
+
 class UIServerHost(modules.ui.UIObject):
     def __init__(self, frame, ui):
         super().__init__(frame, ui)
@@ -549,3 +555,138 @@ class UIServerHost(modules.ui.UIObject):
     
     def _on_close(self):
         self._call_trigger('close server')
+
+
+class EditorText:
+    '''
+    Edit a text file in the map directory
+    '''
+    def __init__(self, frame, editorobj, tabobj):
+        self.frame = frame
+        self.editorobj = editorobj
+        self.tabobj = tabobj
+        
+        self.name = 'Text'
+        
+        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        
+        self.toprow = tk.Frame(self.frame)
+        self.path = tk.Entry(self.toprow, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
+        self.save = tk.Button(self.toprow, text = 'Save', command = self.save_text, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+        self.reload = tk.Button(self.toprow, text = 'Reload', command = self.reload_text, **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+        
+        self.path.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+        self.save.pack(side = tk.RIGHT, fill = tk.Y)
+        self.reload.pack(side = tk.RIGHT, fill = tk.Y)
+        
+        self.textentry = tk.Text(self.frame, **self.ui_styling.get(font_size = 'small', object_type = tk.Text))
+        
+        self.toprow.grid(row = 0, column = 0, sticky = 'NESW')
+        self.textentry.grid(row = 1, column = 0, sticky = 'NESW')
+        
+        self.frame.rowconfigure(1, weight = 1)
+        self.frame.columnconfigure(0, weight = 1)
+    
+    def reload_text(self):
+        path = self.path.get()
+        self.textentry.delete(0.0, tk.END)
+        self.textentry.insert(tk.END, self.editorobj.map.get_text(self.path.get()))
+        
+        self.tabobj.set_title(path)
+    
+    def save_text(self):
+        try:
+            text = self.textentry.get(0.0, tk.END)
+        except tk.TclError:
+            text = ''
+        path = self.path.get()
+        self.editorobj.map.write_text(path, text)
+        self.tabobj.set_title(path)
+
+
+class EditorTree:
+    '''
+    View the entire map directory, copy file paths
+    '''
+    def __init__(self, frame, editorobj, tabobj):
+        self.frame = frame
+        self.editorobj = editorobj
+        self.tabobj = tabobj
+        
+        self.name = 'Tree'
+        
+        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        
+        self.all_paths = []
+        
+        self.list_frame = tk.Frame(self.frame)
+        self.list_list = tk.Listbox(self.list_frame, font = ('Courier New', 9))
+        self.list_bar = tk.Scrollbar(self.list_frame, command = self.list_list.yview)
+        self.list_list.config(yscrollcommand = self.list_bar.set)
+        
+        self.button_copy = tk.Button(self.frame, text = 'Copy', command = self.copy_selection_to_clipboard, **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
+        self.button_open = tk.Button(self.frame, text = 'Open with system', command = self.open_selection_with_system, **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
+        
+        self.list_bar.pack(side = tk.RIGHT, fill = tk.Y)
+        self.list_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+        
+        self.list_frame.grid(row = 0, column = 0, columnspan = 2, sticky = 'NESW')
+        self.button_copy.grid(row = 1, column = 0, sticky = 'NESW')
+        self.button_open.grid(row = 1, column = 1, sticky = 'NESW')
+        self.ui_styling.set_weight(self.frame, 2, 2)
+        self.frame.rowconfigure(1, weight = 0)
+        
+        self.frame.bind('<Control-C>', self.threaded_copy_selection_to_clipboard) #doesn't work yet; may fix (button is an alright workaround)
+        
+        self.tabobj.set_title(self.editorobj.map.name)
+        
+        self.populate_list()
+        
+    def populate_list(self):
+        cfg = self.editorobj.map.get_json('editorcfg.json')
+        
+        all_items, self.all_paths = self.index_dir('', 0, cfg['ignore'])
+        
+        for item in all_items:
+            self.list_list.insert(tk.END, item)
+    
+    def index_dir(self, path, depth, ignore):
+        map_path = self.editorobj.map.path
+        output = []
+        prefix = '    ' * depth
+        paths = []
+        for item in os.listdir(os.path.join(map_path, path)):
+            if os.path.isdir(os.path.join(map_path, path, item)):
+                paths.append(os.path.join(path, item))
+                output.append('+{}{}'.format(prefix, item))
+                if not os.path.join(path, item) in ignore:
+                    noutput, npaths = self.index_dir(os.path.join(path, item), depth + 1, ignore)
+                    output += noutput
+                    paths += npaths
+            else:
+                paths.append(os.path.join(path, item))
+                if depth == 0:
+                    output.append(' {}{}'.format(prefix, item))
+                else:
+                    output.append('|{}{}'.format(prefix, item))
+            #paths.append(os.path.join(path, item))
+        return output, paths
+    
+    def copy_selection_to_clipboard(self, event = None):
+        selection = self.list_list.curselection()
+        if not selection == ():
+            text = self.all_paths[selection[0]]
+            self.set_clipboard(text)
+    
+    def threaded_copy_selection_to_clipboard(self, event = None):
+        threading.Thread(target = self.copy_selection_to_clipboard, name = 'Threaded copy selection to clipboard').start()
+    
+    def open_selection_with_system(self, event = None):
+        selection = self.list_list.curselection()
+        if not selection == ():
+            text = self.all_paths[selection[0]]
+            os.system('start "" "{}"'.format(os.path.join(self.editorobj.map.path, text)))
+    
+    def set_clipboard(self, text):
+        self.editorobj.page._ui.root.clipboard_clear()
+        self.editorobj.page._ui.uiobject.root.clipboard_append(text)
