@@ -11,16 +11,15 @@ import modules.engine
 import modules.editor
 import modules.bettercanvas
 
-class EditorLayout:
+class EditorLayout(modules.editor.EditorSnapin):
     """
     Edit the basic layout of the map
     """
+    
+    name = 'Layout'
+    
     def __init__(self, frame, editorobj, tabobj):
-        self.frame = frame
-        self.editorobj = editorobj
-        self.tabobj = tabobj
-        
-        self.name = 'Layout'
+        super().__init__(frame, editorobj, tabobj)
         
         self.ui_styling = self.editorobj.uiobjs.ui_styling
         
@@ -423,18 +422,15 @@ class AddObject:
         if not selection == (): #make sure that something has been selected
             self.parent.set_selection_material(self.paths[selection[0]])
 
-class EditorMaterials:
+class EditorMaterials(modules.editor.EditorSnapin):
     """
     Edit materials and their properties
     """
+    
+    name = 'Materials'
+    
     def __init__(self, frame, editorobj, tabobj):
-        self.frame = frame
-        self.editorobj = editorobj
-        self.tabobj = tabobj
-        
-        self.name = 'Materials'
-        
-        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        super().__init__(frame, editorobj, tabobj)
         
         class vars:
             damage = tk.StringVar()
@@ -739,18 +735,15 @@ class EditorMaterials:
         for name in self.material_dicts:
             self.editorobj.map.write_json(os.path.join('materials', name), self.material_dicts[name])
     
-class EditorConfig:
+class EditorConfig(modules.editor.EditorSnapin):
     """
     An editor for editing the map config files
     """
+    
+    name = 'Config'
+    
     def __init__(self, frame, editorobj, tabobj):
-        self.frame = frame
-        self.editorobj = editorobj
-        self.tabobj = tabobj
-        
-        self.name = 'Config'
-        
-        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        super().__init__(frame, editorobj, tabobj)
         
         self.tabobj.set_title('constructing...')
         
@@ -877,20 +870,17 @@ class EditorConfig:
     def save(self):
         pass
 
-class EditorLightMap:
+class EditorLightMap(modules.editor.EditorSnapin):
     """
     Generate a light map for the level
     """
+    
+    name = 'Lightmaps'
+    
     def __init__(self, frame, editorobj, tabobj):
-        self.frame = frame
-        self.editorobj = editorobj
-        self.tabobj = tabobj
+        super().__init__(frame, editorobj, tabobj)
         
         self.lightcalc = None
-        
-        self.name = 'Lightmaps'
-        
-        self.ui_styling = self.editorobj.uiobjs.ui_styling
         
         self.tabobj.set_title('loading...')
         
@@ -1048,18 +1038,15 @@ class EditorLightMap:
     def _see_bottom(self, event = None):
         self.log_list.see(tk.END)
         
-class EditorPanelHitbox:
+class EditorPanelHitbox(modules.editor.EditorSnapin):
     """
     Edit the hitboxes for the panels in the level
     """
+    
+    name = 'Panel hitboxes'
+    
     def __init__(self, frame, editorobj, tabobj):
-        self.frame = frame
-        self.editorobj = editorobj
-        self.tabobj = tabobj
-        
-        self.name = 'Panel hitboxes'
-        
-        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        super().__init__(frame, editorobj, tabobj)
         
         class editor:
             current_img = None

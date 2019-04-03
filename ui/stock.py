@@ -4,8 +4,10 @@ import os
 import json
 import sys
 import shutil
+import threading
 
 import modules.ui
+import modules.editor
 
 class UIMenu(modules.ui.UIObject):
     def __init__(self, frame, ui):
@@ -557,18 +559,15 @@ class UIServerHost(modules.ui.UIObject):
         self._call_trigger('close server')
 
 
-class EditorText:
+class EditorText(modules.editor.EditorSnapin):
     '''
     Edit a text file in the map directory
     '''
+    
+    name = 'Text'
+    
     def __init__(self, frame, editorobj, tabobj):
-        self.frame = frame
-        self.editorobj = editorobj
-        self.tabobj = tabobj
-        
-        self.name = 'Text'
-        
-        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        super().__init__(frame, editorobj, tabobj)
         
         self.toprow = tk.Frame(self.frame)
         self.path = tk.Entry(self.toprow, **self.ui_styling.get(font_size = 'small', object_type = tk.Entry))
@@ -604,18 +603,15 @@ class EditorText:
         self.tabobj.set_title(path)
 
 
-class EditorTree:
+class EditorTree(modules.editor.EditorSnapin):
     '''
     View the entire map directory, copy file paths
     '''
+    
+    name = 'Tree'
+    
     def __init__(self, frame, editorobj, tabobj):
-        self.frame = frame
-        self.editorobj = editorobj
-        self.tabobj = tabobj
-        
-        self.name = 'Tree'
-        
-        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        super().__init__(frame, editorobj, tabobj)
         
         self.all_paths = []
         

@@ -4,6 +4,8 @@ import sys
 import functools
 import json
 
+import modules.modloader
+
 class Map:
     def __init__(self, name):
         self.name = name
@@ -32,6 +34,16 @@ class Map:
         with open(os.path.join(self.path, path), 'w') as file:
             json.dump(data, file, sort_keys=True, indent='\t')
 
+class EditorSnapin:
+    def __init__(self, frame, editorobj, tabobj):
+        self.frame = frame
+        self.editorobj = editorobj
+        self.tabobj = tabobj
+        
+        self.ui_styling = self.editorobj.uiobjs.ui_styling
+        
+        self.name = '[generic]'
+
 class Editor:
     def __init__(self, page):
         self.page = page
@@ -39,41 +51,20 @@ class Editor:
         
         self.ui_styling = self.page._styling
         
-        class editors:
-            class _Template:
-                """
-                A template for making editors
-                """
-                def __init__(self, frame, editorobj, tabobj):
-                    self.frame = frame
-                    self.editorobj = editorobj
-                    self.tabobj = tabobj
-                    
-                    self.ui_styling = self.editorobj.uiobjs.ui_styling
-                    
-            library = {'Text': Text,
-                       'Tree': Tree,
-                       'Layout': Layout,
-                       'Materials': MaterialEditor,
-                       'Config': ConfigEditor,
-                       'Light maps': LightMap,
-                       'Panel hitboxes': PanelHitbox} #all the types of tab
-            
-            @classmethod
-            def create_new(self, name):
-                'Make a new pane/tab'
-                new_pane = EditorTab(name, self, len(self.uiobjs.tabs))
-                new_pane.show()
-                self.uiobjs.tabs.append(new_pane)
-            
-            uiobjs = None
-        self.editors = editors
+        self.map = None
+        
+        self.mod_loader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'ui'))
+        
+        #load modules
+        self.plugin_library = {}
+        for plugin in self.mod_loader.load('Editor'):
+            self.plugin_library[plugin.name] = plugin
         
         class uiobjs:
             editor_pane_frame = tk.Frame(self.frame)
             editor_panes = []
-            for name in self.editors.library: #make buttons to open new types of tab
-                editor_panes.append(tk.Button(editor_pane_frame, text = name, command = functools.partial(self.editors.create_new, name), **self.ui_styling.get(font_size = 'small', object_type = tk.Button)))
+            for name in self.plugin_library: #make buttons to open new types of tab
+                editor_panes.append(tk.Button(editor_pane_frame, text = name, command = functools.partial(self.create_new, name), **self.ui_styling.get(font_size = 'small', object_type = tk.Button)))
             
             tabs_frame = tk.Frame(self.frame)
             tabs_current_frame = tk.Frame(self.frame)
@@ -83,7 +74,6 @@ class Editor:
             return_to_menu_button = tk.Button(editor_pane_frame, text = 'Back', command = functools.partial(self.page._load_page, 'editor choose map'), **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         self.uiobjs = uiobjs
         self.uiobjs.frame = self.frame
-        self.editors.uiobjs = uiobjs
         self.uiobjs.ui_styling = self.ui_styling
         
         #pack all items
@@ -104,10 +94,16 @@ class Editor:
     def load(self, map_name):
         'Specify the map file to be used. Must be called before the editor is interacted with'
         self.map = Map(map_name) #this handles most of the interactions with the map files
-        self.editors.map = self.map
     
     def close(self):
         pass
+    
+    def create_new(self, name):
+        'Make a new pane/tab'
+        new_pane = EditorTab(name, self, len(self.uiobjs.tabs))
+        new_pane.show()
+        self.uiobjs.tabs.append(new_pane)
+        
 
 class EditorTab:
     '''
@@ -139,11 +135,11 @@ class EditorTab:
         
         self.frame = tk.Frame(self.editorobj.uiobjs.tabs_current_frame)
         
-        self.editor = self.editorobj.library[self.name](self.frame, self.editorobj, self)
+        self.editor = self.editorobj.plugin_library[self.name](self.frame, self.editorobj, self)
     
     def show(self):
         'Show the tab'
-        if not self.editorobj.uiobjs.tabs_current == None: #hide the current tab if there is one
+        if self.editorobj.uiobjs.tabs_current is not None: #hide the current tab if there is one
             self.editorobj.uiobjs.tabs[self.editorobj.uiobjs.tabs_current].hide()
         self.frame.pack(fill = tk.BOTH, expand = True) #show the frame that contains all the tab objects
         self.editorobj.uiobjs.tabs_current = self.index #set the current tab to this one
