@@ -8,6 +8,8 @@ import sys
 import functools
 import typing
 
+import modules.modloader
+
 class UI:
     def __init__(self, autostart = True):
         self.ready = {'tkthread': False}
@@ -70,6 +72,8 @@ class UI:
             page_frame = None
         self.pages = pages
         
+        self.mod_loader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'ui'))
+        
         if autostart:
             threading.Thread(target = self.tkthread).start() #start tkinter window in separate thread
             self.wait_for_checkin()
@@ -89,15 +93,7 @@ class UI:
         self.pages.page_frame = tk.Frame(self.root)
         self.pages.page_frame.pack(fill = tk.BOTH, expand = True)
         
-        for pages_name in os.listdir(os.path.join(sys.path[0], 'ui')):
-            if (not (pages_name.startswith('.') or pages_name.startswith('_'))) and os.path.isfile(os.path.join(sys.path[0], 'ui', pages_name)):
-                spec = util.spec_from_file_location('pagelib', os.path.join(sys.path[0], 'ui', pages_name))
-                script_module = util.module_from_spec(spec)
-                spec.loader.exec_module(script_module)
-                
-                for page_name in dir(script_module):
-                    if page_name.startswith('UI'):
-                        self.pages.uninitialised.append(getattr(script_module, page_name))
+        self.pages.uninitialised = self.mod_loader.load('UI')
         
         for cls in self.pages.uninitialised:
             cls = cls(tk.Frame(self.pages.page_frame), self)
