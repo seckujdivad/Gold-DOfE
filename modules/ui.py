@@ -90,7 +90,7 @@ class UI:
         self.pages.page_frame.pack(fill = tk.BOTH, expand = True)
         
         for pages_name in os.listdir(os.path.join(sys.path[0], 'ui')):
-            if not (pages_name.startswith('.') or pages_name.startswith('_')):
+            if (not (pages_name.startswith('.') or pages_name.startswith('_'))) and os.path.isfile(os.path.join(sys.path[0], 'ui', pages_name)):
                 spec = util.spec_from_file_location('pagelib', os.path.join(sys.path[0], 'ui', pages_name))
                 script_module = util.module_from_spec(spec)
                 spec.loader.exec_module(script_module)
