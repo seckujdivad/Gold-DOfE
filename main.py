@@ -101,8 +101,8 @@ class App:
     def map_make_new(self, map_name):
         pass
     
-    def start_editor(self, frame, pagemethods):
-        self.editor = modules.editor.Editor(frame, pagemethods)
+    def start_editor(self, page):
+        self.editor = modules.editor.Editor(page)
         self.editor.load(self.editor_mapname)
     
     def close_editor(self):

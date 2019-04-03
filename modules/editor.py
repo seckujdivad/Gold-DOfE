@@ -40,11 +40,11 @@ class Map:
             json.dump(data, file, sort_keys=True, indent='\t')
 
 class Editor:
-    def __init__(self, frame, pagemethods):
-        self.frame = frame
-        self.pagemethods = pagemethods
+    def __init__(self, page):
+        self.page = page
+        self.frame = self.page.frame
         
-        self.ui_styling = self.pagemethods.uiobject.styling
+        self.ui_styling = self.page._styling
         
         class editors:
             class _Template:
@@ -184,8 +184,8 @@ class Editor:
                         os.system('start "" "{}"'.format(os.path.join(self.editorobj.map.path, text)))
                 
                 def set_clipboard(self, text):
-                    self.editorobj.uiobjs.pagemethods.uiobject.root.clipboard_clear()
-                    self.editorobj.uiobjs.pagemethods.uiobject.root.clipboard_append(text)
+                    self.editorobj.page._ui.root.clipboard_clear()
+                    self.editorobj.page._ui.uiobject.root.clipboard_append(text)
             
             class Layout:
                 """
@@ -1490,10 +1490,9 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
             tabs = []
             tabs_current = None
             ui_styling = None
-            return_to_menu_button = tk.Button(editor_pane_frame, text = 'Back', command = functools.partial(self.pagemethods.uiobject.load, self.pagemethods.uiobject.uiobjects.editor_choose_file), **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
+            return_to_menu_button = tk.Button(editor_pane_frame, text = 'Back', command = functools.partial(self.page._load_page, 'editor choose map'), **self.ui_styling.get(font_size = 'small', object_type = tk.Button))
         self.uiobjs = uiobjs
         self.uiobjs.frame = self.frame
-        self.uiobjs.pagemethods = self.pagemethods
         self.editors.uiobjs = uiobjs
         self.uiobjs.ui_styling = self.ui_styling
         
