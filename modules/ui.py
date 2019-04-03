@@ -1,5 +1,4 @@
-from tkinter import messagebox
-from typing import Type, Union
+from importlib import util
 import tkinter as tk
 import threading
 import time
@@ -7,7 +6,7 @@ import json
 import os
 import sys
 import functools
-import shutil
+import typing
 
 class UI:
     def __init__(self, autostart = True):
@@ -18,15 +17,15 @@ class UI:
         
         class styling: #consistent styling tools
             @classmethod
-            def get(cls, font_size = 'medium', object_type: Union[Type[tk.Label],
-                                                                   Type[tk.Button],
-                                                                   Type[tk.Canvas],
-                                                                   Type[tk.Scrollbar],
-                                                                   Type[tk.Frame],
-                                                                   Type[tk.Text],
-                                                                   Type[tk.Entry],
-                                                                   Type[tk.Spinbox],
-                                                                   Type[tk.Listbox]] = tk.Label, relief = 'default', fonts = 'default') -> dict:
+            def get(cls, font_size = 'medium', object_type: typing.Union[typing.Type[tk.Label],
+                                                                         typing.Type[tk.Button],
+                                                                         typing.Type[tk.Canvas],
+                                                                         typing.Type[tk.Scrollbar],
+                                                                         typing.Type[tk.Frame],
+                                                                         typing.Type[tk.Text],
+                                                                         typing.Type[tk.Entry],
+                                                                         typing.Type[tk.Spinbox],
+                                                                         typing.Type[tk.Listbox]] = tk.Label, relief = 'default', fonts = 'default') -> dict:
                 'Get styling for a specific type of widget'
                 output = {}
                 if object_type == tk.Button:
@@ -63,7 +62,7 @@ class UI:
         class pages:
             title = ''
             current = None
-            modules = []
+            uninitialised = []
             pages = {}
             page_frame = None
         self.pages = pages
@@ -86,6 +85,22 @@ class UI:
         
         self.pages.page_frame = tk.Frame(self.root)
         self.pages.page_frame.pack(fill = tk.BOTH, expand = True)
+        
+        for pages_name in os.listdir(os.path.join(sys.path[0], 'ui')):
+            if not (pages_name.startswith('.') or pages_name.startswith('_')):
+                spec = util.spec_from_file_location('pagelib', os.path.join(sys.path[0], 'ui', pages_name))
+                script_module = util.module_from_spec(spec)
+                spec.loader.exec_module(script_module)
+                
+                for page_name in dir(script_module):
+                    if page_name.startswith('UI'):
+                        self.pages.uninitialised.append(getattr(script_module, page_name))
+        
+        for cls in self.pages.uninitialised:
+            cls = cls(tk.Frame(self.pages.page_frame), self)
+            
+            if cls.internal_name is not None:
+                self.pages.pages[cls.internal_name] = cls
         
         self.ready['tkthread'] = True
         self.root.mainloop()
@@ -195,8 +210,8 @@ class TkFlipSwitch:
 
 class UIObject:
     def __init__(self, frame, ui):
-        self.name = ''
-        self.internal_name = ''
+        self.name = None
+        self.internal_name = None
         self.frame = frame
         self._ui = ui
         
