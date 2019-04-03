@@ -227,6 +227,9 @@ class UIConnectToServer(modules.ui.UIObject):
     def __init__(self, frame, ui):
         super().__init__(frame, ui)
         
+        self.name = 'Connect to a server'
+        self.internal_name = 'server connect'
+        
         self._vars.address = tk.StringVar()
         self._vars.port = tk.StringVar()
         self._vars.name = tk.StringVar()

@@ -77,7 +77,7 @@ class App:
             
         self.client = modules.netclients.Client(server_data, self.ui)
         
-        self.ui.load(self.ui.uiobjects.game)
+        self.ui.load('game')
     
     def host_server(self, console_frame):
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
@@ -96,7 +96,7 @@ class App:
     
     def map_edit(self, map_name):
         self.editor_mapname = map_name
-        self.ui.load(self.ui.uiobjects.editor)
+        self.ui.load('editor')
     
     def map_make_new(self, map_name):
         pass

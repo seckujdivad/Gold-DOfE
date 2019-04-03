@@ -119,6 +119,9 @@ class UI:
             self.pages.current = page
             self.pages.pages[self.pages.current].on_load()
             self.set_title(self.pages.pages[self.pages.current].name)
+        
+        else:
+            print('Page {} has not been loaded'.format(page))
     
     def set_title(self, title):
         if title is None:
@@ -159,18 +162,6 @@ class UI:
                     function(*args)
         else:
             raise ValueError('Trigger "{}" hasn\'t been registered'.format(string))
-
-class PageMethods:
-    def __init__(self, uiobject, page):
-        self.uiobject = uiobject
-        self.page = page
-        
-        self.current_title = None
-    
-    def set_title(self, title = None):
-        if title is not None:
-            self.current_title = title
-        self.uiobject.root.title('{} - {}'.format(self.uiobject.uiobjects.main.title, self.current_title))
 
 class TkFlipSwitch:
     def __init__(self, container, **kwargs):
