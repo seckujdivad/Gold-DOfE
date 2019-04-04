@@ -638,20 +638,21 @@ class Model:
             time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
             
             if self.attributes.anim_controller.playing_onetime and self.attributes.animation.frames - 1 == self.attributes.animation.current_frame:
-                time_elapsed = time.time() - self.attributes.anim_controller.onetime_start
-                
                 self.attributes.anim_controller.playing_onetime = False
-                
                 self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0, wait = True)
-                
-                frames_elapsed = int(time_elapsed / self.attributes.animation.delay)
-                next_frame = (self.attributes.anim_controller.revert_frame + frames_elapsed + 1) % self.attributes.animation.frames
-                self.set(frame = next_frame)
-                
-                delay = (time.time() - self.attributes.anim_controller.onetime_start) % self.attributes.animation.delay
-                time.sleep(self.attributes.animation.delay - delay)
-                
                 self.attributes.anim_controller.revert_to = None
+                
+                prev_frame_delay = self.attributes.animation.delay
+                
+                time_elapsed = time.time() - self.attributes.anim_controller.onetime_start
+                frames_elapsed = math.ceil(time_elapsed / prev_frame_delay)
+                frame_remaining = frames_elapsed - (time_elapsed / prev_frame_delay)
+                
+                start = time.time()
+                self.set(frame = (self.attributes.anim_controller.revert_frame + frames_elapsed) % self.attributes.animation.frames)
+                
+                func_elapsed = time.time() - start
+                time.sleep(frame_remaining * self.attributes.animation.delay - func_elapsed)
             
             self.increment(frame = 1)
     
