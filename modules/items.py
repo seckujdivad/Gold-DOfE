@@ -33,6 +33,8 @@ class ItemScript:
             ticket = None
             tickrate = 0
             creator = None
+            dist_travelled = 0
+            max_dist = None
             
             class damage:
                 last = None

@@ -1,4 +1,5 @@
 import time
+import math
 
 import modules.items
 
@@ -10,6 +11,7 @@ class Generic(modules.items.ItemScript):
         self.attributes.damage.cooldown = self.cfgs.item['damage cooldown']
         self.attributes.damage.entities = self.cfgs.item['damage']
         self.attributes.display_name = self.cfgs.item['display name']
+        self.attributes.max_dist = self.cfgs.item['range']
     
     def _tick(self):
         output = {}
@@ -19,12 +21,16 @@ class Generic(modules.items.ItemScript):
             output['rotation'] = self.attributes.rotation
             output['new'] = True
         
-        elif not self.inside_map():
+        elif (not self.inside_map()) or (self.attributes.max_dist is not None and  self.attributes.dist_travelled >= self.attributes.max_dist):
             output['type'] = 'remove'
         
         elif self.attributes.velocity.x != 0 or self.attributes.velocity.y != 0:
-            self.attributes.pos.x += self.attributes.velocity.x / self.attributes.tickrate
-            self.attributes.pos.y += self.attributes.velocity.y / self.attributes.tickrate
+            vchange_x = self.attributes.velocity.x / self.attributes.tickrate
+            vchange_y = self.attributes.velocity.y / self.attributes.tickrate
+            self.attributes.pos.x += vchange_x
+            self.attributes.pos.y += vchange_y
+            
+            self.attributes.dist_travelled += math.hypot(vchange_x, vchange_y)
             
             output['type'] = 'update position'
             output['position'] = [self.attributes.pos.x, self.attributes.pos.y]
