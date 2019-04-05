@@ -76,7 +76,7 @@ class ItemScript:
             clips_y_high = self.attributes.pos.y > self.cfgs.current_map['geometry'][1] + self.attributes.hitbox.radius
             clips_y_low = self.attributes.pos.y < 0 - self.attributes.hitbox.radius
 
-            return clips_x_high or clips_x_low or clips_y_high or clips_y_low
+            return not( clips_x_high or clips_x_low or clips_y_high or clips_y_low)
         
         else:
             raise ValueError('Hitbox type "{}" not recognised'.format(self.attributes.hitbox.shape))
@@ -91,10 +91,10 @@ class ItemScript:
             else:
                 result['ticket'] = self.attributes.ticket
                 
-                if self.attributes.first_tick:
+                if result['type'] == 'add':
                     result['file name'] = self.attributes.name
         
-        return result
+            return result
 
     def _tick(self):
         return {}

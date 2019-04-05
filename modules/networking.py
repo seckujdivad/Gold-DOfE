@@ -310,10 +310,11 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             i = 0
             for item in self.serverdata.item_objects:
                 data = item.tick()
-                if data['type'] == 'remove':
-                    to_remove.append(i)
-                data_to_send.append(data)
-                
+                if data is not None:
+                    if data['type'] == 'remove':
+                        to_remove.append(i)
+                    data_to_send.append(data)
+                    
                 i += 1
 			
             to_remove.sort()
