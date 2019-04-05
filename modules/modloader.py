@@ -8,7 +8,7 @@ class ModLoader:
     def load(self, prefix):
         output = []
         for pages_name in os.listdir(self.path):
-            if (not (pages_name.startswith('.') or pages_name.startswith('_'))) and os.path.isfile(os.path.join(self.path, pages_name)):
+            if (not (pages_name.startswith('.') or pages_name.startswith('_'))) and os.path.isfile(os.path.join(self.path, pages_name)) and pages_name.endswith('.py'):
                 spec = util.spec_from_file_location('pagelib', os.path.join(self.path, pages_name))
                 script_module = util.module_from_spec(spec)
                 spec.loader.exec_module(script_module)

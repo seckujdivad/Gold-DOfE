@@ -13,6 +13,7 @@ import math
 import modules.servercmds
 import modules.logging
 import modules.netclients
+import modules.modloader
 
 class Server:
     def __init__(self, port_, frame = None):
@@ -23,7 +24,8 @@ class Server:
             map = None #map name
             mapdata = None #map attributes
             conn_data = [] #individual spaces for connections to store data to be publicly accessible
-            item_data = [] #store ongoing items
+            item_objects = [] #store ongoing items
+            item_scripts = {}
             item_ticket = 0 #allow clients to know which items are which from tick to tick
             tickrate = 10 #times to process items per second
             looptime = 1 / tickrate #time per loop
@@ -36,6 +38,7 @@ class Server:
         self.serverdata = serverdata
         
         self.clients = []
+        self.modloader = None
         
         self.frame = frame
         
@@ -254,6 +257,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items')):
             with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', name), 'r') as file:
                 self.serverdata.item_dicts[name] = json.load(file)
+        
+        self.modloader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'scripts'))
+        self.serverdata.item_scripts = self.modloader.load('ItemScript')
                 
     def kick_address(self, target_address):
         i = 0

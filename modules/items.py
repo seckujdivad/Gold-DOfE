@@ -20,10 +20,10 @@ class Item(modules.bettercanvas.Model):
 
 
 class ItemScript:
+    internal_name = ''
+    
     def __init__(self, name, server):
         self.server = server
-        
-        self.internal_name = ''
         
         class attributes:
             name = None
@@ -84,7 +84,7 @@ class ItemScript:
         self.attributes.first_tick = False
         
         if type(result) == dict:
-            if len(result) == 0P
+            if len(result) == 0:
                 result = None
             else:
                 result['ticket'] = self.attributes.ticket

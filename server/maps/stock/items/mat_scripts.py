@@ -50,10 +50,12 @@ class Generic(modules.items.ItemScript):
 class ItemScriptFireball(Generic):
     def __init__(self, name, server):
         super().__init__(name, server)
-        self.internal_name = 'fireball'
+        
+    internal_name = 'fireball'
 
 
 class ItemScriptSword(Generic):
     def __init__(self, name, server):
         super().__init__(name, server)
-        self.internal_name = 'swordswipe'
+    
+    internal_name = 'swordswipe'
