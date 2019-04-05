@@ -23,11 +23,17 @@ class ItemScript:
     def __init__(self, name, server):
         self.server = server
         
+        self.internal_name = ''
+        
         class attributes:
             name = None
             first_tick = True
             ticket = None
             tickrate = 0
+            creator = None
+            
+            class damage:
+                last = None
             
             class pos:
                 x = 0
