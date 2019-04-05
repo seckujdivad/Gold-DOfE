@@ -353,8 +353,6 @@ class ServerClient:
             
         elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
             if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
-                print(self.serverdata.item_scripts)
-                
                 obj = self.serverdata.item_scripts[self.serverdata.item_dicts[req.arguments['item']]['control script']](req.arguments['item'], self.server)
                 
                 obj.attributes.creator = self
