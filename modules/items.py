@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 
 import modules.bettercanvas
 
@@ -24,10 +25,15 @@ class ItemScript:
         
         class attributes:
             name = None
+            first_tick = True
+            ticket = None
+            tickrate = 0
             
             class pos:
                 x = 0
                 y = 0
+            
+            rotation = 0
             
             class velocity:
                 x = 0
@@ -41,10 +47,19 @@ class ItemScript:
         
         class cfgs:
             current_map = {}
+            item = {}
         self.cfgs = cfgs
+        
+        with open(os.path.join(sys.path[0], 'server', 'maps', self.server.serverdata.map, 'items', name), 'r') as file:
+            self.cfgs.item = json.load(file)
        
         self.attributes.name = name
         self.cfgs.current_map = self.server.serverdata.mapdata
+        self.attributes.tickrate = self.server.serverdata.tickrate
+        
+        if self.cfgs.item['hitbox']['type'] == 'circular':
+            self.attributes.hitbox.shape = 'circle'
+            self.attributes.hitbox.radius = self.cfgs.item['hitbox']['radius']
     
     def inside_map(self):
         if self.attributes.hitbox.shape == 'circle':
@@ -59,7 +74,19 @@ class ItemScript:
             raise ValueError('Hitbox type "{}" not recognised'.format(self.attributes.hitbox.shape))
 
     def tick(self):
-        self._tick()
+        result = self._tick()
+        self.attributes.first_tick = False
+        
+        if type(result) == dict:
+            if len(result) == 0P
+                result = None
+            else:
+                result['ticket'] = self.attributes.ticket
+                
+                if self.attributes.first_tick:
+                    result['file name'] = name
+        
+        return result
 
     def _tick(self):
         pass
