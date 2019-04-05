@@ -47,7 +47,7 @@ class Generic(modules.items.ItemScript):
                 
                 if self.attributes.damage.destroyed_after:
                     output = {'type': 'remove'}
-        
+                    
         return output
 
 

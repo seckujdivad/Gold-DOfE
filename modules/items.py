@@ -76,7 +76,7 @@ class ItemScript:
             clips_y_high = self.attributes.pos.y > self.cfgs.current_map['geometry'][1] + self.attributes.hitbox.radius
             clips_y_low = self.attributes.pos.y < 0 - self.attributes.hitbox.radius
 
-            return not( clips_x_high or clips_x_low or clips_y_high or clips_y_low)
+            return not (clips_x_high or clips_x_low or clips_y_high or clips_y_low)
         
         else:
             raise ValueError('Hitbox type "{}" not recognised'.format(self.attributes.hitbox.shape))
@@ -107,3 +107,7 @@ class ItemScript:
     
     def _dist_between(self, x0, y0, x1, y1):
         return math.hypot(x1 - x0, y1 - y0)
+    
+    def set_velocity(self, vel):
+        self.attributes.velocity.x = vel * math.cos(math.radians(self.attributes.rotation))
+        self.attributes.velocity.y = vel * math.sin(math.radians(self.attributes.rotation))

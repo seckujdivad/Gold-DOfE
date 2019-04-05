@@ -362,6 +362,7 @@ class ServerClient:
                 obj.attributes.pos.y = req.arguments['position'][1]
                 obj.attributes.rotation = req.arguments['rotation']
                 obj.attributes.ticket = self.serverdata.item_ticket
+                obj.set_velocity(self.serverdata.item_dicts[req.arguments['item']]['speed'])
                 
                 self.serverdata.item_objects.append(obj)
                 
