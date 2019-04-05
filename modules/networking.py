@@ -255,8 +255,9 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         
         self.serverdata.item_dicts = {}
         for name in os.listdir(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items')):
-            with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', name), 'r') as file:
-                self.serverdata.item_dicts[name] = json.load(file)
+            if name.endswith('.json'):
+                with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', name), 'r') as file:
+                    self.serverdata.item_dicts[name] = json.load(file)
         
         self.modloader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items'))
         scripts = self.modloader.load('ItemScript')
@@ -318,19 +319,13 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             to_remove.sort()
             to_remove.reverse()
             for i in to_remove:
-                self.serverdata.item_data.pop(i)
+                self.serverdata.item_objects.pop(i)
             
             for client in self.clients:
                 client.push_item_states(data_to_send)
                 client.push_positions()
             
             time.sleep(max([0, self.serverdata.looptime - (time.time() - start)])) #prevent server from running too quickly
-    
-    def item_touches_player(self, x, y, item):
-        if item['data']['hitbox']['type'] == 'circular':
-            if self.distance_to_point(x, y, *item['position']) <= item['data']['hitbox']['radius']:
-                return True
-        return False
     
     def distance_to_point(self, x0, y0, x1, y1):
         return math.hypot(x1 - x0, y1 - y0)
@@ -346,7 +341,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         if not type(string) == str:
             raise ValueError('Invalid string path {} - doesn\'t give a string'.format(path))
         
-        if not formats == None:
+        if formats is not None:
             string = string.format(*formats)
         
         if path[0] == 'fullscreen':

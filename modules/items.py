@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import math
 
 import modules.bettercanvas
 
@@ -27,6 +28,7 @@ class ItemScript:
         
         class attributes:
             name = None
+            display_name = None
             first_tick = True
             ticket = None
             tickrate = 0
@@ -90,9 +92,18 @@ class ItemScript:
                 result['ticket'] = self.attributes.ticket
                 
                 if self.attributes.first_tick:
-                    result['file name'] = name
+                    result['file name'] = self.attributes.name
         
         return result
 
     def _tick(self):
-        pass
+        return {}
+    
+    def touching_player(self, client):
+        if self.attributes.hitbox.shape == 'circle':
+            if self._dist_between(client.metadata.pos.x, client.metadata.pos.y, self.attributes.pos.x, self.attributes.pos.y) <= self.attributes.hitbox.radius:
+                return True
+        return False
+    
+    def _dist_between(self, x0, y0, x1, y1):
+        return math.hypot(x1 - x0, y1 - y0)

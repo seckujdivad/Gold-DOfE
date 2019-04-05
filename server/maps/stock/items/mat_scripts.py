@@ -1,3 +1,5 @@
+import time
+
 import modules.items
 
 class Generic(modules.items.ItemScript):
@@ -6,6 +8,8 @@ class Generic(modules.items.ItemScript):
         
         self.attributes.damage.destroyed_after = self.cfgs.item['destroyed after damage']
         self.attributes.damage.cooldown = self.cfgs.item['damage cooldown']
+        self.attributes.damage.entities = self.cfgs.item['damage']
+        self.attributes.display_name = self.cfgs.item['display name']
     
     def _tick(self):
         output = {}
@@ -28,7 +32,7 @@ class Generic(modules.items.ItemScript):
         for client in self.server.clients:
             damage_dealt = False
             if client.metadata.active and client.metadata.mode == 'player':
-                if self.touching_player(client.metadata.pos.x, client.metadata.pos.y):
+                if self.touching_player(client):
                     if self.attributes.damage.last is not None:
                         if (time.time() - self.attributes.damage.last) > self.attributes.damage.cooldown:
                             damage_dealt = True
@@ -36,12 +40,12 @@ class Generic(modules.items.ItemScript):
                         damage_dealt = True
             
             if damage_dealt and not self.attributes.creator == client:
-                client.increment_health(0 - item['data']['damage']['player'], item['data']['display name'], item['creator'].metadata.username)
-                item['last damage'] = time.time()
+                client.increment_health(0 - self.attributes.damage.entities['player'], self.attributes.display_name, self.attributes.creator.metadata.username)
+                self.attributes.damage.last = time.time()
                 
                 client.push_health()
                 
-                if item['data']['destroyed after damage']:
+                if self.attributes.damage.destroyed_after:
                     output = {'type': 'remove'}
         
         return output
