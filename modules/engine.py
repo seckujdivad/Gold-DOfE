@@ -12,6 +12,7 @@ import importlib.util
 import modules.netclients
 import modules.logging
 import modules.bettercanvas
+import modules.items
 
 class Game:
     def __init__(self, canvas, client):
@@ -184,7 +185,7 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        item = Item(self.canvcont, data['file name'], self.engine.current_map.path, 'items')
+                        item = modules.items.Item(self.canvcont, data['file name'], self.engine.current_map.path, 'items')
                         item.set(x = data['position'][0],
                                  y = data['position'][1],
                                  rotation = self.engine.snap_angle(data['rotation']))
@@ -938,10 +939,11 @@ class InventoryBar:
         
     def load_assets(self):
         for item in os.listdir(self.paths.items):
-            with open(os.path.join(self.paths.items, item), 'r') as file:
-                data = json.load(file)
-            self.items_data[item] = data
-            self.items_data[item]['sprite object'] = self.rendermethod(file = os.path.join(self.paths.textures, self.items_data[item]['icon']))
+            if item.endswith('.json'):
+                with open(os.path.join(self.paths.items, item), 'r') as file:
+                    data = json.load(file)
+                self.items_data[item] = data
+                self.items_data[item]['sprite object'] = self.rendermethod(file = os.path.join(self.paths.textures, self.items_data[item]['icon']))
     
     def draw_slots(self):
         coords = self.get_top_right_coords()
@@ -1378,16 +1380,3 @@ class Entity(modules.bettercanvas.Model):
                         self.attributes.pos.velocity.y = math.sin(resultant_angle) * resultant_momentum
                 
             self.set(force = True)
-
-class Item(modules.bettercanvas.Model):
-    def __init__(self, canvas_controller, item_name, map_path, layer):
-        self.item_name = item_name
-        
-        with open(os.path.join(map_path, 'items', item_name), 'r') as file:
-            item_cfg = json.load(file)
-        
-        super().__init__(canvas_controller, item_cfg['model'], map_path, layer)
-        
-        self.cfgs.item = item_cfg
-        
-        self.attributes.ticket = None
