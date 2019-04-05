@@ -15,5 +15,6 @@
 		"radius": 32
 	},
 	"model": "fireball",
-	"use cooldown": 0.5
+	"use cooldown": 0.5,
+	"control script": "fireball"
 }

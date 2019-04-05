@@ -15,5 +15,6 @@
 		"radius": 32
 	},
 	"model": "swordswipe",
-	"use cooldown": 0.2
+	"use cooldown": 0.2,
+	"control script": "swordswipe"
 }
