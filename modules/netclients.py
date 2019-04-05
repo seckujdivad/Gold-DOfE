@@ -353,14 +353,17 @@ class ServerClient:
             
         elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
             if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
-                self.serverdata.item_data.append({'ticket': self.serverdata.item_ticket,
-                                                  'data': self.serverdata.item_dicts[req.arguments['item']],
-                                                  'file name': req.arguments['item'],
-                                                  'distance travelled': 0,
-                                                  'rotation': req.arguments['rotation'],
-                                                  'position': req.arguments['position'],
-                                                  'new': True,
-                                                  'creator': self})
+                print(self.serverdata.item_scripts)
+                
+                obj = self.serverdata.item_scripts[self.serverdata.item_dicts[req.arguments['item']]['control script']](req.arguments['item'], self.server)
+                
+                obj.attributes.creator = self
+                obj.attributes.pos.x = req.arguments['position'][0]
+                obj.attributes.pos.y = req.arguments['position'][1]
+                obj.attributes.rotation = req.arguments['rotation']
+                obj.attributes.ticket = self.serverdata.item_ticket
+                
+                self.serverdata.item_objects.append(obj)
                 
                 self.serverdata.item_ticket += 1
                 self.metadata.item_use_timestamp = time.time()

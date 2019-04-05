@@ -258,8 +258,11 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             with open(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items', name), 'r') as file:
                 self.serverdata.item_dicts[name] = json.load(file)
         
-        self.modloader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'scripts'))
-        self.serverdata.item_scripts = self.modloader.load('ItemScript')
+        self.modloader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items'))
+        scripts = self.modloader.load('ItemScript')
+        self.serverdata.item_scripts = {}
+        for script in scripts:
+            self.serverdata.item_scripts[script.internal_name] = script
                 
     def kick_address(self, target_address):
         i = 0
@@ -304,72 +307,12 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             data_to_send = []
             
             i = 0
-            for item in self.serverdata.item_data:
-                to_send_loop = {}
-                
-                out_of_bounds = False
-                if item['data']['hitbox']['type'] == 'circular':
-                    if item['position'][0] > self.serverdata.mapdata['geometry'][0] + item['data']['hitbox']['radius']:
-                        out_of_bounds = True
-                    elif item['position'][0] < 0 - item['data']['hitbox']['radius']:
-                        out_of_bounds = True
-                    if item['position'][1] > self.serverdata.mapdata['geometry'][1] + item['data']['hitbox'][
-                        'radius']:
-                        out_of_bounds = True
-                    elif item['position'][1] < 0 - item['data']['hitbox']['radius']:
-                        out_of_bounds = True
-            
-                if ((item['data']['range'] is not None) and item['distance travelled'] >= item['data']['range']) or out_of_bounds:
-                    to_send_loop['type'] = 'remove'
-                    to_send_loop['ticket'] = item['ticket']
+            for item in self.serverdata.item_objects:
+                data = item.tick()
+                if data['type'] == 'remove':
                     to_remove.append(i)
-                   
-                elif item['new']:
-                    to_send_loop['type'] = 'add'
-                    
-                    to_send_loop['position'] = item['position']
-                    to_send_loop['rotation'] = item['rotation']
-                    to_send_loop['new'] = True
-                    item['new'] = False
-                    to_send_loop['file name'] = item['file name']
+                data_to_send.append(data)
                 
-                elif not item['data']['speed'] == 0:
-                    to_send_loop['type'] = 'update position'
-                    
-                    to_move = item['data']['speed'] / self.serverdata.tickrate
-                    item['distance travelled'] += to_move
-
-                    item['position'][0] +=  to_move * math.cos(math.radians(item['rotation']))
-                    item['position'][1] +=  to_move * math.sin(math.radians(item['rotation']))
-                    
-                    to_send_loop['position'] = item['position']
-                    
-                #clipping
-                for client in self.clients:
-                    damage_dealt = False
-                    if client.metadata.active and client.metadata.mode == 'player':
-                        if self.item_touches_player(client.metadata.pos.x, client.metadata.pos.y, item):
-                            if 'last damage' in item and not item['last damage'] == None:
-                                if (time.time() - item['last damage']) > item['data']['damage cooldown']:
-                                    damage_dealt = True
-                            else:
-                                damage_dealt = True
-                    
-                    if damage_dealt and not item['creator'] == client:
-                        client.increment_health(0 - item['data']['damage']['player'], item['data']['display name'], item['creator'].metadata.username)
-                        item['last damage'] = time.time()
-                        
-                        client.push_health()
-                        
-                        if item['data']['destroyed after damage']:
-                            to_send_loop['type'] = 'remove'
-                            to_send_loop['ticket'] = item['ticket']
-                            to_remove.append(i)
-                
-                if not to_send_loop == {}:
-                    to_send_loop['ticket'] = item['ticket']
-                    data_to_send.append(to_send_loop)
-                    
                 i += 1
 			
             to_remove.sort()
