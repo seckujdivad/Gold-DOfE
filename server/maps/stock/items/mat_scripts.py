@@ -23,8 +23,8 @@ class Generic(modules.items.ItemScript):
             output['type'] = 'remove'
         
         elif self.attributes.velocity.x != 0 or self.attributes.velocity.y != 0:
-            self.attributes.pos.x += self.attributes.velocity.x
-            self.attributes.pos.y += self.attributes.velocity.y
+            self.attributes.pos.x += self.attributes.velocity.x / self.attributes.tickrate
+            self.attributes.pos.y += self.attributes.velocity.y / self.attributes.tickrate
             
             output['type'] = 'update position'
             output['position'] = [self.attributes.pos.x, self.attributes.pos.y]
