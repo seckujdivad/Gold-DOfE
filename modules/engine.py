@@ -108,7 +108,13 @@ class Game:
         elif request.command == 'disconnect':
             if self.running:
                 print('Connection to server interrupted')
-                messagebox.showerror('Disconnected', 'Connection to the server was interrupted\nThis is probably because the server has been closed down\nClick OK to return to the menu')
+                
+                if 'clean' in request.arguments and not request.arguments['clean']:
+                    text ='Connection to the server was interrupted\nYou may have a connection problem, or the server might have been shut down unexpectedly'
+                else:
+                    text = 'This server has been shut down'
+                
+                messagebox.showerror('Disconnected', text + '\n\nClick OK to return to the menu')
                 self.ui.load('menu')
                 
         elif request.command == 'var update w':
