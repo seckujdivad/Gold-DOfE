@@ -16,9 +16,10 @@ import modules.bettercanvas
 import modules.items
 
 class Game:
-    def __init__(self, canvas, client):
+    def __init__(self, canvas, client, ui):
         self.canvas = canvas
         self.client = client
+        self.ui = ui
         
         class server:
             mode = 'internal' #either 'internal' or 'external'
@@ -107,7 +108,8 @@ class Game:
         elif request.command == 'disconnect':
             if self.running:
                 print('Connection to server interrupted')
-                messagebox.showerror('Disconnected', 'Connection to the server was interrupted')
+                messagebox.showerror('Disconnected', 'Connection to the server was interrupted\nThis is probably because the server has been closed down\nClick OK to return to the menu')
+                self.ui.load('menu')
                 
         elif request.command == 'var update w':
             if request.subcommand == 'map':

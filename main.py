@@ -89,7 +89,7 @@ class App:
         pass
     
     def create_game_object(self, canvas):
-        self.game = modules.engine.Game(canvas, self.client)
+        self.game = modules.engine.Game(canvas, self.client, self.ui)
         
     def close_game(self):
         self.game.close()
