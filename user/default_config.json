@@ -44,6 +44,12 @@
 		},
 		"popmsg": {
 			"colour": "#FFFFFF",
+			"divisions": [
+				2,
+				5,
+				10,
+				25
+			],
 			"duration": {
 				"game end": 1,
 				"gamemode change": 2,
@@ -51,7 +57,9 @@
 				"round end": 1,
 				"welcome": 3
 			},
-			"font": ""
+			"font": "",
+			"max size": 50,
+			"pop time": 0.2
 		},
 		"round timer": {
 			"colour": "#FFFFFF",

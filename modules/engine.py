@@ -57,6 +57,9 @@ class Game:
         self.popmsg = PopMessage(self.canvcont)
         self.popmsg.graphical_properties.font = self.settingsdict['hud']['popmsg']['font']
         self.popmsg.graphical_properties.colour = self.settingsdict['hud']['popmsg']['colour']
+        self.popmsg.graphical_properties.divisions = self.settingsdict['hud']['popmsg']['divisions'][self.settingsdict['graphics']['model quality']]
+        self.popmsg.graphical_properties.transition_time = self.settingsdict['hud']['popmsg']['pop time']
+        self.popmsg.graphical_properties.max_size = self.settingsdict['hud']['popmsg']['max size']
 
         self.scoreline_display = DynamicStringDisplay(self.canvcont, self.canvas.winfo_width() / 2, 30, 'hud')
         self.scoreline_display.set_twoitems(0, 0)
@@ -1026,6 +1029,9 @@ class PopMessage:
         class graphical_properties:
             font = ''
             colour = '#FFFFFF'
+            divisions = 0
+            transition_time = 0
+            max_size = 0
         self.graphical_properties = graphical_properties
         
         self.message_queue, queue = mp.Pipe()
@@ -1043,14 +1049,24 @@ class PopMessage:
             
             self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = (self.graphical_properties.font, 0), fill = self.graphical_properties.colour, justify = tk.CENTER, layer = 'hud')
             
-            for i in range(0, 52, 2):
-                self.canvcont.itemconfigure(self.canvobj, font = (self.graphical_properties.font, i))
-                time.sleep(0.008)
-            time.sleep(duration - 0.2)
+            delay = self.graphical_properties.transition_time / self.graphical_properties.divisions
+            size_increase = self.graphical_properties.max_size / self.graphical_properties.divisions
             
-            for i in range(50, -2, -2):
-                self.canvcont.itemconfigure(self.canvobj, font = (self.graphical_properties.font, i))
-                time.sleep(0.008)
+            i = 0
+            while i < self.graphical_properties.max_size:
+                start = time.time()
+                i += size_increase
+                self.canvcont.itemconfigure(self.canvobj, font = (self.graphical_properties.font, int(i)))
+                time.sleep(delay - min(delay, time.time() - start))
+                
+            time.sleep(duration - self.graphical_properties.transition_time)
+            
+            i = self.graphical_properties.max_size
+            while i > 0:
+                start = time.time()
+                i -= size_increase
+                self.canvcont.itemconfigure(self.canvobj, font = (self.graphical_properties.font, int(i)))
+                time.sleep(delay - min(delay, time.time() - start))
                 
             self.canvcont.delete(self.canvobj)
             self.canvobj = None
