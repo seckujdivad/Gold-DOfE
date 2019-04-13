@@ -1,3 +1,4 @@
+from tkinter import messagebox
 import tkinter as tk
 import multiprocessing as mp
 import time
@@ -106,6 +107,7 @@ class Game:
         elif request.command == 'disconnect':
             if self.running:
                 print('Connection to server interrupted')
+                messagebox.showerror('Disconnected', 'Connection to the server was interrupted')
                 
         elif request.command == 'var update w':
             if request.subcommand == 'map':
