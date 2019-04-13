@@ -504,7 +504,7 @@ class Engine:
         
         for script_name in self.current_map.materials.scripts_generic: #these have all been activated
             script = self.current_map.materials.scripts_generic[script_name]
-            if 'destroy' in script:
+            if 'destroy' in dir(script):
                 script.destroy()
         self.current_map.materials.scripts_generic = {}
         
