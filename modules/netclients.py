@@ -17,6 +17,8 @@ class Client:
         
         self.ui = ui
         
+        self._log = None
+        
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         try:
@@ -35,7 +37,11 @@ class Client:
         self.connection.send(text.encode())
     
     def send(self, data):
-        self.send_raw(data.as_json())
+        try:
+            self.send_raw(data.as_json())
+        except OSError:
+            if self._log is not None:
+                self._log.add('sending', 'Couldn\'t send request: {}'.format(req.pretty_print()))
     
     def disconnect(self):
         self.connection.close()
@@ -46,6 +52,7 @@ class NetClient:
         self.connection = connection
         
         self.listener = SocketListen(self)
+        self._log = None
         
         self.running = False
     
@@ -58,7 +65,11 @@ class NetClient:
         self.send_to(self.connection, req)
     
     def send_to(self, connection, req):
-        connection.send(req.as_json().encode())
+        try:
+            connection.send(req.as_json().encode())
+        except OSError:
+            if self._log is not None:
+                self._log.add('sending', 'Couldn\'t send request: {}'.format(req.pretty_print()))
     
     def close(self):
         self.connection.close()
