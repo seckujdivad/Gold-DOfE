@@ -26,7 +26,7 @@ class Client:
             raise ConnectionRefusedError()
         except socket.gaierror:
             messagebox.showerror('Address not found', 'The server address could not be found. Check it for misspellings and make sure that it is accessible on your network')
-            raise socket.gaierror()
+            raise socket.gaierror(0, 'Address not found')
         
         self.listener = SocketListen(self)
         self.listener.listen()
