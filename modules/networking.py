@@ -79,27 +79,33 @@ class Server:
         while self.serverdata.running:
             self.output_pipe.send('Ready for incoming connections')
             
-            conn, addr = self.connection.accept()
-            self.serverdata.connections.append([addr, conn])
+            try:
+                conn, addr = self.connection.accept()
+            except OSError:
+                addr, conn = (None, None)
+                self.serverdata.running = False
             
-            netcl = modules.netclients.NetClient(addr, conn)
-            client = modules.netclients.ServerClient(self, netcl)
-            
-            client.metadata.health = 100
-            client.metadata.username = 'guest'
-            client.metadata.team_id = self.get_team_id(self.get_team_distributions())
-            
-            client.metadata.id = current_id
-            current_id += 1
-            
-            netcl.start()
-            
-            self.clients.append(client)
-            
-            for script in self.settingsdata['scripts']['userconnect']:
-                with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
-                    text = file.read()
-                self.output_pipe.send(self.run_script(text))
+            if self.serverdata.running:
+                self.serverdata.connections.append([addr, conn])
+                
+                netcl = modules.netclients.NetClient(addr, conn)
+                client = modules.netclients.ServerClient(self, netcl)
+                
+                client.metadata.health = 100
+                client.metadata.username = 'guest'
+                client.metadata.team_id = self.get_team_id(self.get_team_distributions())
+                
+                client.metadata.id = current_id
+                current_id += 1
+                
+                netcl.start()
+                
+                self.clients.append(client)
+                
+                for script in self.settingsdata['scripts']['userconnect']:
+                    with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
+                        text = file.read()
+                    self.output_pipe.send(self.run_script(text))
     
     def handle_command(self, command, source = 'internal'):
         if command == '' or command.startswith(' '):
@@ -287,6 +293,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             client.send(data)
     
     def quit(self):
+        self.send_all(Request(command = 'disconnect', arguments = {'clean': True}))
         self.serverdata.running = False
         self.connection.close()
     
