@@ -553,10 +553,10 @@ class Engine:
         return self.origin_is_inside_hitbox(nhitbox)
     
     def origin_is_inside_hitbox(self, hitbox):
-        "Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)"
+        """Find if (0, 0) is inside a hitbox (an ngon made up of pairs of values)"""
         if self.hitdetection.accurate:
-            max_x = max(hitbox, key = lambda i: abs(i[0]))[0]
-            max_y = max(hitbox, key = lambda i: abs(i[1]))[1]
+            max_x = max(hitbox, key = lambda index: abs(index[0]))[0]
+            max_y = max(hitbox, key = lambda index: abs(index[1]))[1]
             
             m = max(max_x, max_y)
             
@@ -780,9 +780,9 @@ class colour:
         return '#{}{}{}'.format(hex(output[0])[2:], hex(output[1])[2:], hex(output[2])[2:])
 
 class KeyBind:
-    '''
+    """
     Easily bind a function to a key being pressed. It works better than the internal tkinter keybinding because the internal method will act like holding down a key in a text box (i.e. function is called once, then a slight delay, then it is called lots of times). Using this method, the function can be called every 0.1 seconds (or however long the delay is) from when the key is pressed until the key is released.
-    '''
+    """
     def __init__(self, root, delay = 0.1, verbose = False):
         self.root = root
         self.delay = delay
@@ -832,21 +832,21 @@ class KeyBind:
     def _onkeyrelease(self, event):
         self._keystates[event.keysym.lower()] = False
     
-    def bind(self, keysym, function):
-        'Keysym can be a string or a list of strings'
+    def bind(self, keysym, func):
+        """Keysym can be a string or a list of strings"""
         if type(keysym) == list:
-            [self.bind(key, function) for key in keysym]
+            [self.bind(key, func) for key in keysym]
         elif keysym in self.binds:
-            self.binds[keysym].append(function)
+            self.binds[keysym].append(func)
         else:
-            self.binds[keysym] = [function]
+            self.binds[keysym] = [func]
     
-    def unbind(self, keysym, function = None):
+    def unbind(self, keysym, func = None):
         if keysym in self.binds:
-            if function is None or len(self.binds[keysym]) == 1:
+            if func is None or len(self.binds[keysym]) == 1:
                 self.binds.pop(keysym)
             else:
-                self.binds[keysym].delete(function)
+                self.binds[keysym].delete(func)
     
     def unbind_all(self):
         self.binds = {}
@@ -877,7 +877,7 @@ class KeyBind:
             if delay > 0:
                 time.sleep(delay)
     
-    def _mouse1(self, event):
+    def _mouse1(self, event = None):
         if "mouse1" in self.binds:
             for bind in self.binds["mouse1"]:
                 bind()
