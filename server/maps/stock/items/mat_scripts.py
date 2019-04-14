@@ -21,19 +21,13 @@ class Generic(modules.items.ItemScript):
             output['rotation'] = self.attributes.rotation
             output['new'] = True
         
-        elif (not self.inside_map()) or (self.attributes.max_dist is not None and  self.attributes.dist_travelled >= self.attributes.max_dist):
+        elif (not self.inside_map()) or (self.attributes.max_dist is not None and self.attributes.dist_travelled >= self.attributes.max_dist):
             output['type'] = 'remove'
         
         elif self.attributes.velocity.x != 0 or self.attributes.velocity.y != 0:
-            vchange_x = self.attributes.velocity.x / self.attributes.tickrate
-            vchange_y = self.attributes.velocity.y / self.attributes.tickrate
-            self.attributes.pos.x += vchange_x
-            self.attributes.pos.y += vchange_y
-            
-            self.attributes.dist_travelled += math.hypot(vchange_x, vchange_y)
-            
-            output['type'] = 'update position'
-            output['position'] = [self.attributes.pos.x, self.attributes.pos.y]
+            result = self._pos_update()
+            if result is not None:
+                output = result
         
         for client in self.server.clients:
             damage_dealt = False
@@ -46,15 +40,38 @@ class Generic(modules.items.ItemScript):
                         damage_dealt = True
             
             if damage_dealt and not self.attributes.creator == client:
-                client.increment_health(0 - self.attributes.damage.entities['player'], self.attributes.display_name, self.attributes.creator.metadata.username)
-                self.attributes.damage.last = time.time()
-                
-                client.push_health()
-                
-                if self.attributes.damage.destroyed_after:
-                    output = {'type': 'remove'}
+                result = self._damage_dealt(client)
+                if result is not None:
+                    output = result
                     
         return output
+    
+    def _pos_update(self):
+        output = {}
+        if self.attributes.velocity.x != 0 or self.attributes.velocity.y != 0:
+            vchange_x = self.attributes.velocity.x / self.attributes.tickrate
+            vchange_y = self.attributes.velocity.y / self.attributes.tickrate
+            self.attributes.pos.x += vchange_x
+            self.attributes.pos.y += vchange_y
+            
+            self.attributes.dist_travelled += math.hypot(vchange_x, vchange_y)
+            
+            output['type'] = 'update position'
+            output['position'] = [self.attributes.pos.x, self.attributes.pos.y]
+            return output
+        else:
+            return None
+    
+    def _damage_dealt(self, client):
+        client.increment_health(0 - self.attributes.damage.entities['player'], self.attributes.display_name, self.attributes.creator.metadata.username)
+        self.attributes.damage.last = time.time()
+        
+        client.push_health()
+        
+        if self.attributes.damage.destroyed_after:
+            return {'type': 'remove'}
+        else:
+            return None
 
 
 class ItemScriptFireball(Generic):
