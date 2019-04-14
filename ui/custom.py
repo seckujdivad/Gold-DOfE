@@ -7,7 +7,7 @@ import threading
 import json
 import time
 
-import modules.engine
+import modules.colops
 import modules.editor
 import modules.bettercanvas
 
@@ -180,7 +180,7 @@ class EditorLayout(modules.editor.EditorSnapin):
             self.canvas.itemconfigure(current['canvobj'], fill = current['material data']['editor colour'], outline = current['material data']['editor colour'])
         
         #apply formatting to current selection
-        self.canvas.itemconfigure(item['canvobj'], fill = modules.engine.colour.increase(item['material data']['editor colour'], [20, 20, 20]), outline = '#000000')
+        self.canvas.itemconfigure(item['canvobj'], fill = modules.colops.increase(item['material data']['editor colour'], [20, 20, 20]), outline = '#000000')
         
         #update the index of the current selection to match the object selected
         self.selection = index
