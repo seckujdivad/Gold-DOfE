@@ -974,14 +974,14 @@ class InventoryBar:
     
     def select_index(self, index, force_refresh = False):
         if index != self.selection_index and not force_refresh:
-            if not self.selection_index == None:
+            if self.selection_index is not None:
                 self.canvcont.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour, outline = self.backingcolour)
             self.selection_index = index
             self.canvcont.itemconfigure(self.slot_objs[self.selection_index], fill = self.backingcolour_selected, outline = self.backingcolour_selected)
     
     def destroy(self):
-        for object in self.slot_objs:
-            self.canvcont.delete(object)
+        for obj in self.slot_objs:
+            self.canvcont.delete(obj)
     
     def get_top_right_coords(self):
         x = self.coords[0] - ((self.sprite_dimensions[0] * (self.num_slots / 2)) + (self.divider_size * (self.num_slots / 2)))
