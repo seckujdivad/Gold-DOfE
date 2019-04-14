@@ -6,7 +6,7 @@
 	"damage": {
 		"player": 10
 	},
-	"destroyed after damage": false,
+	"destroyed after damage": true,
 	"damage cooldown": 1,
 	"range": null,
 	"speed": 500,
