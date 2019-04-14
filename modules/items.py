@@ -87,14 +87,15 @@ class ItemScript:
         result = self._tick()
         self.attributes.first_tick = False
         
-        if type(result) == dict:
+        if type(result) == list:
             if len(result) == 0:
                 result = None
             else:
-                result['ticket'] = self.attributes.ticket
+                for d in result:
+                    d['ticket'] = self.attributes.ticket
                 
-                if result['type'] == 'add':
-                    result['file name'] = self.attributes.name
+                    if d['type'] == 'add':
+                        d['file name'] = self.attributes.name
         
             return result
 

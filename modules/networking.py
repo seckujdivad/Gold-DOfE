@@ -317,8 +317,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             i = 0
             for item in self.serverdata.item_objects:
                 data = item.tick()
-                if data is not None:
-                    if data['type'] == 'remove':
+                if data is not []:
+                    if 'remove' in [data[d]['type'] for d in data]:
                         to_remove.append(i)
                     data_to_send.append(data)
                     

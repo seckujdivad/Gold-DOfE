@@ -14,20 +14,20 @@ class Generic(modules.items.ItemScript):
         self.attributes.max_dist = self.cfgs.item['range']
     
     def _tick(self):
-        output = {}
+        output = []
         if self.attributes.first_tick:
-            output['type'] = 'add'
-            output['position'] = [self.attributes.pos.x, self.attributes.pos.y]
-            output['rotation'] = self.attributes.rotation
-            output['new'] = True
-        
+            output.append({'type': 'add',
+                           'position': [self.attributes.pos.x, self.attributes.pos.y],
+                           'rotation': self.attributes.rotation,
+                           'new': True})
+
         elif (not self.inside_map()) or (self.attributes.max_dist is not None and self.attributes.dist_travelled >= self.attributes.max_dist):
-            output['type'] = 'remove'
+            output.append({'type': 'remove'})
         
         elif self.attributes.velocity.x != 0 or self.attributes.velocity.y != 0:
             result = self._pos_update()
             if result is not None:
-                output = result
+                output.append(result)
         
         for client in self.server.clients:
             damage_dealt = False
@@ -42,7 +42,7 @@ class Generic(modules.items.ItemScript):
             if damage_dealt and not self.attributes.creator == client:
                 result = self._damage_dealt(client)
                 if result is not None:
-                    output = result
+                    output.append(result)
                     
         return output
     
@@ -79,6 +79,17 @@ class ItemScriptFireball(Generic):
         super().__init__(name, server)
         
     internal_name = 'fireball'
+    
+    def _damage_dealt(self, client):
+        client.increment_health(0 - self.attributes.damage.entities['player'], self.attributes.display_name, self.attributes.creator.metadata.username)
+        self.attributes.damage.last = time.time()
+        
+        client.push_health()
+        
+        if self.attributes.damage.destroyed_after:
+            return {'type': 'remove'}
+        else:
+            return None
 
 
 class ItemScriptSword(Generic):
