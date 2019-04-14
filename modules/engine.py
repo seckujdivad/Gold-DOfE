@@ -617,7 +617,8 @@ class Engine:
         model.set(transparency = 0)
         self.hud.pulse_in_progress = False
     
-    def angle(self, delta_x, delta_y):
+    @staticmethod
+    def angle(delta_x, delta_y):
         if delta_x == 0:
             if delta_y > 0:
                 return math.pi / 2
@@ -628,7 +629,8 @@ class Engine:
         else:
             return math.atan(delta_y / delta_x)
     
-    def snap_angle(self, angle):
+    @staticmethod
+    def snap_angle(angle):
         angle = angle % 360
         if 45 <= angle < 135:
             return 90
@@ -656,6 +658,9 @@ class CanvasMessages:
         self.messages = []
         self.running = True
         self.layer = 'log text'
+        self.textentry_entry = None
+        self.textentry_var = None
+        self.textentry_window = None
         
         class graphical_properties:
             updatedelay = 1
@@ -838,7 +843,7 @@ class KeyBind:
     
     def unbind(self, keysym, function = None):
         if keysym in self.binds:
-            if function == None or len(self.binds[keysym]) == 1:
+            if function is None or len(self.binds[keysym]) == 1:
                 self.binds.pop(keysym)
             else:
                 self.binds[keysym].delete(function)
@@ -991,7 +996,7 @@ class InventoryBar:
             quantity = max(quantity, 1)
         
         if quantity < 1:
-            if not self.inv_items[index]['image'] == None:
+            if not self.inv_items[index]['image'] is None:
                 self.canvcont.delete(self.inv_items[index]['image'])
                 self.canvcont.delete(self.inv_items[index]['count obj'])
             self.inv_items[index] = {'item': None, 'image': None, 'quantity': 0, 'count obj': None}
@@ -1000,7 +1005,7 @@ class InventoryBar:
             if item is not None:
                 self.inv_items[index]['item'] = item
                 
-                if self.inv_items[index]['image'] == None:
+                if self.inv_items[index]['image'] is None:
                     coords = self.get_top_right_coords()
                     self.inv_items[index]['image'] = self.canvcont.create_image(coords[0] + (self.sprite_dimensions[0] * (index + 0.5)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] / 2), image = self.items_data[item]['sprite object'], layer = self.layer)
                     self.inv_items[index]['count obj'] = self.canvcont.create_text(coords[0] + (self.sprite_dimensions[0] * (index + 0.9)) + (self.divider_size * index), coords[1] + (self.sprite_dimensions[1] * 0.9), text = str(quantity), layer = self.numbers_layer)
