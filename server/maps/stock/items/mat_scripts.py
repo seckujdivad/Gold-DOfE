@@ -27,7 +27,8 @@ class Generic(modules.items.ItemScript):
         elif self.attributes.velocity.x != 0 or self.attributes.velocity.y != 0:
             result = self._pos_update()
             if result is not None:
-                output.append(result)
+                for d in result:
+                    output.append(d)
         
         for client in self.server.clients:
             damage_dealt = False
@@ -42,12 +43,13 @@ class Generic(modules.items.ItemScript):
             if damage_dealt and not self.attributes.creator == client:
                 result = self._damage_dealt(client)
                 if result is not None:
-                    output.append(result)
+                    for d in result:
+                        output.append(d)
                     
         return output
     
     def _pos_update(self):
-        output = {}
+        output = []
         if self.attributes.velocity.x != 0 or self.attributes.velocity.y != 0:
             vchange_x = self.attributes.velocity.x / self.attributes.tickrate
             vchange_y = self.attributes.velocity.y / self.attributes.tickrate
@@ -56,8 +58,8 @@ class Generic(modules.items.ItemScript):
             
             self.attributes.dist_travelled += math.hypot(vchange_x, vchange_y)
             
-            output['type'] = 'update position'
-            output['position'] = [self.attributes.pos.x, self.attributes.pos.y]
+            output.append({'type': 'update position',
+                           'position': [self.attributes.pos.x, self.attributes.pos.y]})
             return output
         else:
             return None
@@ -69,7 +71,7 @@ class Generic(modules.items.ItemScript):
         client.push_health()
         
         if self.attributes.damage.destroyed_after:
-            return {'type': 'remove'}
+            return [{'type': 'remove'}]
         else:
             return None
 
@@ -87,7 +89,9 @@ class ItemScriptFireball(Generic):
         client.push_health()
         
         if self.attributes.damage.destroyed_after:
-            return {'type': 'remove'}
+            self.attributes.velocity.x /= 4
+            self.attributes.velocity.y /= 4
+            return [{'type': 'onetime animation', 'animation': 'explode'}, {'type': 'remove', 'delay': 0.5}]
         else:
             return None
 
