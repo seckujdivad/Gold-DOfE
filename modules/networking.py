@@ -308,6 +308,8 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         return team_quantities
     
     def handle_items(self):
+        delayed_instructions = {}
+        
         while self.serverdata.running:
             start = time.time()
             
@@ -317,6 +319,32 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             i = 0
             for item in self.serverdata.item_objects:
                 data = item.tick()
+                
+                to_append = []
+                if item.attributes.ticket in delayed_instructions:
+                    j = 0
+                    j_to_remove = []
+                    for instruction, stamp in delayed_instructions[item.attributes.ticket]:
+                        if instruction['delay'] + stamp <= time.time():
+                            instruction.pop('delay')
+                            to_append.append(instruction)
+                            j_to_remove.append(j)
+                        j += 1
+                    
+                    j_to_remove.sort()
+                    j_to_remove.reverse()
+                    for j in j_to_remove:
+                        delayed_instructions[item.attributes.ticket].pop(j)
+                
+                for instruction in data + to_append:
+                    if 'delay' in instruction:
+                        if item.attributes.ticket in delayed_instructions:
+                            delayed_instructions[item.attributes.ticket].append([instruction, time.time()])
+                        else:
+                            delayed_instructions[item.attributes.ticket] = [instruction, time.time()]
+                    else:
+                        data_to_send.append(instruction)
+                
                 if data is not []:
                     if 'remove' in [d['type'] for d in data]:
                         to_remove.append(i)
