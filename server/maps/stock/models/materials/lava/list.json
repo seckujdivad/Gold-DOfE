@@ -1,22 +1,20 @@
 {
-	"textures": {
-		"idle": ["lava.gif"]
-	},
-	"default textures": "idle",
-	"offscreen": [-64, -64],
-	"rotations": [1, 1, 1, 1],
-	"transparencies": [1, 1, 1, 1],
-	"layers": [1, 1, 1, 1],
-	"use grid": true,
-	"animation": {
-		"profiles": {
-			"idle": {
+	"default": "idle",
+	"ranks": ["idle"],
+	"profiles": {
+		"idle": {
+			"offscreen": [-32, -32],
+			"rotations": [1, 1, 1, 1],
+			"transparencies": [1, 1, 1, 1],
+			"layers": [1, 1, 1, 1],
+			"use grid": true,
+			"animation": {
 				"frames": 6,
 				"delay": 1.5,
 				"variation": 0,
 				"sync": true
-			}
-		},
-		"ranks": ["idle"]
+			},
+			"textures": ["lava.gif"]
+		}
 	}
 }

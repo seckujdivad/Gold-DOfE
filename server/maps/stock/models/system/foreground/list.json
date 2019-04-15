@@ -1,11 +1,20 @@
 {
-	"textures": {
-		"idle": "overlay.png"
-	},
-	"default textures": "idle",
-	"offscreen": [-100, -100],
-	"rotations": [1, 1, 1, 1],
-	"transparencies": [1, 1, 1, 1],
-	"layers": [1, 1, 1, 1],
-	"use grid": false
+	"default": "idle",
+	"ranks": ["idle"],
+	"profiles": {
+		"idle": {
+			"offscreen": [-500, -500],
+			"rotations": [1, 1, 1, 1],
+			"transparencies": [1, 1, 1, 1],
+			"layers": [1, 1, 1, 1],
+			"use grid": false,
+			"animation": {
+				"frames": 1,
+				"delay": 1000,
+				"variation": 0,
+				"sync": false
+			},
+			"textures": ["overlay.png"]
+		}
+	}
 }

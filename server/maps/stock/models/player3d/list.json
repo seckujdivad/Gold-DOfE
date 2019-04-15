@@ -1,11 +1,21 @@
 {
-	"textures": {
-		"idle": "stack"
-	},
-	"default textures": "idle",
-	"offsets": [0, -0.4],
-	"rotations": [8, 16, 32, 64],
-	"offscreen": [-100, -100],
-	"layers": [5, 10, 25, 50],
-	"transparencies": [1, 1, 1, 1]
+	"default": "idle",
+	"ranks": ["idle"],
+	"profiles": {
+		"idle": {
+			"offscreen": [-32, -32],
+			"offsets": [0, -0.4],
+			"rotations": [1, 1, 1, 1],
+			"transparencies": [2, 4, 8, 16],
+			"layers": [5, 10, 25, 50],
+			"use grid": true,
+			"animation": {
+				"frames": 1,
+				"delay": 1000,
+				"variation": 0,
+				"sync": false
+			},
+			"textures": "stack"
+		}
+	}
 }

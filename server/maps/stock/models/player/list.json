@@ -1,27 +1,34 @@
 {
-	"textures": {
-		"idle": [["anims/idle/1.png", "anims/idle/2.png"]],
-		"attack": [["anims/attack/1.png", "anims/attack/2.png"]]
-	},
-	"default textures": "idle",
-	"offscreen": [-100, -100],
-	"rotations": [4, 4, 4, 4],
-	"transparencies": [1, 1, 1, 1],
-	"layers": [1, 1, 1, 1],
-	"animation": {
-		"profiles": {
-			"idle": {
+	"default": "idle",
+	"ranks": ["attack", "idle"],
+	"profiles": {
+		"idle": {
+			"offscreen": [-32, -32],
+			"rotations": [4, 4, 4, 4],
+			"transparencies": [1, 1, 1, 1],
+			"layers": [1, 1, 1, 1],
+			"use grid": true,
+			"animation": {
 				"frames": 2,
 				"delay": 0.5,
-				"variation": 0
+				"variation": 0,
+				"sync": false
 			},
-			"attack": {
+			"textures": [["anims/idle/1.png", "anims/idle/2.png"]]
+		},
+		"attack": {
+			"offscreen": [-32, -32],
+			"rotations": [4, 4, 4, 4],
+			"transparencies": [1, 1, 1, 1],
+			"layers": [1, 1, 1, 1],
+			"use grid": true,
+			"animation": {
 				"frames": 2,
 				"delay": 0.5,
-				"variation": 0
-			}
-		},
-		"ranks": ["attack", "idle"]
-	},
-	"use grid": true
+				"variation": 0,
+				"sync": false
+			},
+			"textures": [["anims/attack/1.png", "anims/attack/2.png"]]
+		}
+	}
 }

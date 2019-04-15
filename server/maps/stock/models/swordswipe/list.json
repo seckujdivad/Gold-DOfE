@@ -1,21 +1,20 @@
 {
-	"textures": {
-		"inflight": [["swordswipe_inflight1.png", "swordswipe_inflight2.png", "swordswipe_inflight3.png", "swordswipe_inflight4.png"]]
-	},
-	"default textures": "inflight",
-	"offscreen": [-100, -100],
-	"rotations": [4, 4, 4, 4],
-	"transparencies": [1, 1, 1, 1],
-	"layers": [1, 1, 1, 1],
-	"use grid": true,
-	"animation": {
-		"profiles": {
-			"inflight": {
+	"default": "inflight",
+	"ranks": ["inflight"],
+	"profiles": {
+		"inflight": {
+			"offscreen": [-32, -32],
+			"rotations": [4, 4, 4, 4],
+			"transparencies": [1, 1, 1, 1],
+			"layers": [1, 1, 1, 1],
+			"use grid": true,
+			"animation": {
 				"frames": 4,
 				"delay": 0.25,
-				"variation": 0
-			}
-		},
-		"ranks": ["inflight"]
+				"variation": 0,
+				"sync": false
+			},
+			"textures": [["swordswipe_inflight1.png", "swordswipe_inflight2.png", "swordswipe_inflight3.png", "swordswipe_inflight4.png"]]
+		}
 	}
 }
