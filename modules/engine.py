@@ -226,6 +226,22 @@ class Game:
                         for item in to_update:
                             item.set(x = data['position'][0],
                                      y = data['position'][1])
+                    
+                    elif data['type'] == 'animation':
+                        current_item = None
+                        for item in self.engine.current_map.items:
+                            if item.attributes.ticket == data['ticket']:
+                                current_item = item
+                        
+                        if current_item is None:
+                            print('Item not found - instruction = {}'.format(data))
+                        
+                        else:
+                            if data['loop']:
+                                current_item.loop_anim(data['animation'])
+                            
+                            else:
+                                current_item.play_anim(data['animation'])
                         
         elif request.command == 'popmsg':
             self.popmsg.queue_message(request.arguments['text'], self.settingsdict['hud']['popmsg']['duration'][request.subcommand])
