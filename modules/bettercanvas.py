@@ -168,31 +168,18 @@ class Model:
         
         ## make data structures
         class attributes:
+            profile = None #e.g. idle
+            profiles = {}
+            
             class pos: #current coordinates
                 x = 0
                 y = 0
                 
-            class offscreen: #coordinates where the model is guaranteed to be offscreen
-                x = 0
-                y = 0
-                
             rotation = 0 #current rotation (0-359)
-            rotation_steps = 0 #number of different rotations to make
-            
             transparency = 0 #current transparency (0-255)
-            transparency_steps = 0 #number of different transparencies to make
-            
-            class offset: #amount that each layer of a stacked model is offset by
-                x = 0
-                y = 0
-            
-            baseimages = {} #images before any effects have been applied to them
-            imageobjs = {} #image objects with effects that can be used to create canvas objects
-            canvobjs = {} #references to canvas objects created from imageobjs
-            
+            interps_per_second = 0
+            render_quality = 0 #0-3 - render quality as defined in the user's config
             uses_PIL = False
-            
-            animation = None
             
             class anim_controller:
                 playing_onetime = False
@@ -202,17 +189,8 @@ class Model:
                 onetime_start = None
             
             class snap:
-                use = False
                 x = 1
                 y = 1
-                
-            interps_per_second = 0
-                
-            render_quality = 0 #0-3 - render quality as defined in the user's config
-            image_set = None #e.g. idle
-            
-            num_layers = 0 #number of image layers loaded into memory
-            num_layers_total = 0 #number of image layers that exist on the disk
             
             running = True
         self.attributes = attributes
@@ -239,7 +217,11 @@ class Model:
         with open(os.path.join(self.map_path, 'list.json'), 'r') as file:
             self.cfgs.map = json.load(file)
         
-        #translate data from cfgs into model data structures
+        ### Load profile data
+        for name in self.cfgs.model['profiles']:
+            self.attributes.profiles[name] =  MdlProfile(self.cfgs.model['profiles'][name])
+        
+        '''#translate data from cfgs into model data structures
         self.attributes.offscreen.x = self.cfgs.model['offscreen'][0]
         self.attributes.offscreen.y = self.cfgs.model['offscreen'][1]
         
@@ -399,7 +381,7 @@ class Model:
                             new_frames.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
                         new_transparencies.append(new_frames)
                     new_rotations.append(new_transparencies)
-                self.attributes.canvobjs[tex_set].append(new_rotations)
+                self.attributes.canvobjs[tex_set].append(new_rotations)'''
         
         ## start animation player if necessary
         if self.attributes.animation.run_loop and autoplay_anims:
@@ -742,3 +724,58 @@ class AnimAttr:
     
     def has(self, key):
         return key in self._profiles
+
+class MdlProfile:
+    def __init__(self, data = None):
+        class offscreen:
+            x = 0
+            y = 0
+        self.offscreen = offscreen
+        
+        class offset:
+            x = 0
+            y = 0
+        self.offset = offset
+        
+        self.rotations = [1, 1, 1, 1]
+        self.transparencies = [1, 1, 1, 1]
+        self.use_grid = False
+        self.layers = [1, 1, 1, 1]
+        
+        class animation:
+            frames = 1
+            delay = 0
+            variation = 0
+            sync = False
+        self.animation = animation
+        
+        self.imgs = []
+        self.transformed_imgs = []
+        self.canvobjs = []
+        
+        self._cfg = data
+        
+        if data is not None:
+            self.load(data)
+    
+    def load(self, profile):
+        self._cfg = profile
+        
+        self.offscreen.x = self._cfg['offscreen'][0]
+        self.offscreen.y = self._cfg['offscreen'][1]
+        
+        self.offset.x = self._cfg['offset'][0]
+        self.offset.y = self._cfg['offset'][1]
+        
+        self.rotations = self._cfg['rotations']
+        self.transparencies = self._cfg['transparencies']
+        self.use_grid = self._cfg['use grid']
+        self.layers = self._cfg['layers']
+        
+        self.animation.frames = self._cfg['animation']['frames']
+        self.animation.delay = self._cfg['animation']['delay']
+        self.animation.variation = self._cfg['animation']['variation']
+        self.animation.sync = self._cfg['animation']['sync']
+    
+    def load_obj(self):
+        pass
