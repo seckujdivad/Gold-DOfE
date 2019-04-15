@@ -22,6 +22,6 @@
 				"variation": 0
 			}
 		},
-		"ranks": ["inflight"]
+		"ranks": ["explode", "inflight"]
 	}
 }
