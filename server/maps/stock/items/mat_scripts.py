@@ -91,7 +91,7 @@ class ItemScriptFireball(Generic):
         if self.attributes.damage.destroyed_after:
             self.attributes.velocity.x /= 4
             self.attributes.velocity.y /= 4
-            return [{'type': 'animation', 'loop': True, 'animation': 'explode'},
+            return [{'type': 'animation', 'loop': False, 'animation': 'explode'},
                     {'type': 'remove', 'delay': 0.5}]
         else:
             return None
