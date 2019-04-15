@@ -15,6 +15,9 @@ class Generic(modules.items.ItemScript):
     
     def _tick(self):
         output = []
+        
+        self._on_tick()
+        
         if self.attributes.first_tick:
             output.append({'type': 'add',
                            'position': [self.attributes.pos.x, self.attributes.pos.y],
@@ -48,6 +51,9 @@ class Generic(modules.items.ItemScript):
                     
         return output
     
+    def _on_tick(self):
+        pass
+    
     def _pos_update(self):
         output = []
         if self.attributes.velocity.x != 0 or self.attributes.velocity.y != 0:
@@ -80,6 +86,8 @@ class ItemScriptFireball(Generic):
     def __init__(self, name, server):
         super().__init__(name, server)
         
+        self._item_active = True
+        
     internal_name = 'fireball'
     
     def _damage_dealt(self, client):
@@ -89,12 +97,16 @@ class ItemScriptFireball(Generic):
         client.push_health()
         
         if self.attributes.damage.destroyed_after:
-            self.attributes.velocity.x /= 4
-            self.attributes.velocity.y /= 4
+            self._item_active = False
             return [{'type': 'animation', 'loop': False, 'animation': 'explode'},
                     {'type': 'remove', 'delay': 0.5}]
         else:
             return None
+        
+    def _on_tick(self):
+        if not self._item_active:
+            self.attributes.velocity.x *= 0.7
+            self.attributes.velocity.y *= 0.7
 
 
 class ItemScriptSword(Generic):
