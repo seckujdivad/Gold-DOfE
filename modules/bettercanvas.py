@@ -170,6 +170,7 @@ class Model:
         class attributes:
             profile = None #e.g. idle
             profiles = {}
+            profile_ranks = []
             
             class pos: #current coordinates
                 x = 0
@@ -180,6 +181,7 @@ class Model:
             interps_per_second = 0
             render_quality = 0 #0-3 - render quality as defined in the user's config
             uses_PIL = False
+            force_grid = None #none means don't force, boolean will force to that value
             
             class anim_controller:
                 playing_onetime = False
@@ -219,65 +221,27 @@ class Model:
         
         ### Load profile data
         for name in self.cfgs.model['profiles']:
-            self.attributes.profiles[name] =  MdlProfile(self.cfgs.model['profiles'][name])
+            self.attributes.profiles[name] =  MdlProfile(self, self.cfgs.model['profiles'][name])
         
-        '''#translate data from cfgs into model data structures
-        self.attributes.offscreen.x = self.cfgs.model['offscreen'][0]
-        self.attributes.offscreen.y = self.cfgs.model['offscreen'][1]
-        
-        if 'offsets' in self.cfgs.model:
-            self.attributes.offset.x = self.cfgs.model['offsets'][0]
-            self.attributes.offset.y = self.cfgs.model['offsets'][1]
-        
-        self.attributes.pos.x = self.attributes.offscreen.x
-        self.attributes.pos.y = self.attributes.offscreen.y
+        self.attributes.profile_ranks = self.cfgs.model['ranks']
+        self.attributes.profile = self.cfgs.model['default']
         
         self.attributes.uses_PIL = self.cfgs.user['graphics']['PILrender']
         self.attributes.render_quality = self.cfgs.user['graphics']['model quality']
-        self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
-        self.attributes.num_layers = self.cfgs.model['layers'][self.attributes.render_quality]
-        
         self.attributes.interps_per_second = self.cfgs.user['network']['interpolations per second']
         
-        ##load grid snap values
-        if 'use grid' in self.cfgs.model:
-            self.attributes.snap.use = self.cfgs.model['use grid']
-            
-        if self.cfgs.map['grid']['force']:
-            self.attributes.snap.use = self.cfgs.map['grid']['force value']
         self.attributes.snap.x = self.cfgs.map['grid']['mult']['x']
         self.attributes.snap.y = self.cfgs.map['grid']['mult']['y']
         
-        #load animation profiles
-        self.attributes.image_set = self.cfgs.model['default textures']
+        if self.cfgs.map['grid']['force']:
+            self.attributes.force_grid = self.cfgs.map['grid']['force value']
         
-        if not 'animation' in self.cfgs.model:
-            self.cfgs.model['animation'] = {'profiles': {},
-                                            'ranks': [self.attributes.image_set]}
-        
-        if not self.attributes.image_set in self.cfgs.model['animation']['profiles']:
-            self.cfgs.model['animation']['profiles'][self.attributes.image_set] = {'frames': 1,
-                                                                                   'delay': 1000,
-                                                                                   'variation': 0,
-                                                                                   "sync": False}
-        
-        self.attributes.animation = AnimAttr(self.attributes, self.cfgs.model['animation'])
-        
-        #load steps for graphics prerenderer
-        if 'transparencies' in self.cfgs.model:
-            self.attributes.transparency_steps = self.cfgs.model['transparencies'][self.attributes.render_quality]
-        else:
-            self.attributes.transparency_steps = 1
-        
-        if 'rotations' in self.cfgs.model:
-            self.attributes.rotation_steps = self.cfgs.model['rotations'][self.attributes.render_quality]
-        else:
-            self.attributes.rotation_steps = 1
-            
-        #retrieve PIL modules
         self.pillow = self.canvas_controller.pillow
         
-        ##load textures
+        self.attributes.pos.x = self.attributes.profiles[self.attributes.profile].offscreen.x
+        self.attributes.pos.y = self.attributes.profiles[self.attributes.profile].offscreen.y
+        
+        """###load textures
         #check for no PIL textures
         if not self.attributes.uses_PIL:
             if 'no PIL textures' in self.cfgs.model:
@@ -381,7 +345,7 @@ class Model:
                             new_frames.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
                         new_transparencies.append(new_frames)
                     new_rotations.append(new_transparencies)
-                self.attributes.canvobjs[tex_set].append(new_rotations)'''
+                self.attributes.canvobjs[tex_set].append(new_rotations)"""
         
         ## start animation player if necessary
         if self.attributes.animation.run_loop and autoplay_anims:
@@ -677,56 +641,29 @@ class Model:
         if self.attributes.animation.run_loop:
             threading.Thread(target = self._anim_player, name = 'Model animation player', daemon = True).start()
     
-    setpos = set
-
-class AnimAttr:
-    """
-    Controls animation data
-    """
-    def __init__(self, attributes, profiles):
-        self._attributes = attributes
+    def compare_profiles(self, prof0, prof1):
+        """Checks if profile 0 is takes precedence over profile 1"""
         
-        self._profiles = profiles['profiles']
-        self._ranks = profiles['ranks']
-        
-        self.cont = True
-        self.current_frame = 0
-    
-    def __getattr__(self, key):
-        if key in ['frames', 'variation', 'delay']:
-            return self._profiles[self._attributes.image_set][key]
-        
-        elif key == 'run_loop':
-            return max([self._profiles[key]['frames'] for key in self._profiles]) > 1
-        
-        elif key == 'sync':
-            if 'sync' in self._profiles[self._attributes.image_set]:
-                return self._profiles[self._attributes.image_set]['sync']
-            else:
-                return False
-        
-        else:
-            raise AttributeError('Attribute "{}" does not exist'.format(key))
-    
-    def __setattr__(self, key, value):
-        if key in ['frames', 'variation', 'delay', 'sync']:
-            self._profiles[self._attributes.image_set][key] = value
-            
-        else:
-            self.__dict__[key] = value
-    
-    def is_higher(self, anim0, anim1):
-        'Checks if anim0 takes precendence over anim1'
-        if anim0 == anim1:
+        if prof0 == prof1:
             return False
-        elif anim0 in self._ranks and anim1 in self._ranks:
-            return self._ranks.index(anim0) < self._ranks.index(anim1)
+        
+        elif prof0 in self.attributes.profile_ranks and prof1 in self.attributes.profile_ranks:
+            return self.attributes.profile_ranks.index(prof0) < self.attributes.profile_ranks.index(prof1)
+        
+        elif prof0 in self.attributes.profile_ranks:
+            return True
+        
+        elif prof1 in self.attributes.profile_ranks:
+            return False
     
-    def has(self, key):
-        return key in self._profiles
+    setpos = set
+    
 
 class MdlProfile:
-    def __init__(self, data = None):
+    def __init__(self, model, data = None):
+        self.model = model
+        self._cfg = data
+        
         class offscreen:
             x = 0
             y = 0
@@ -753,14 +690,13 @@ class MdlProfile:
         self.transformed_imgs = []
         self.canvobjs = []
         
-        self._cfg = data
-        
         if data is not None:
             self.load(data)
     
     def load(self, profile):
         self._cfg = profile
         
+        #unpack data
         self.offscreen.x = self._cfg['offscreen'][0]
         self.offscreen.y = self._cfg['offscreen'][1]
         
@@ -776,6 +712,86 @@ class MdlProfile:
         self.animation.delay = self._cfg['animation']['delay']
         self.animation.variation = self._cfg['animation']['variation']
         self.animation.sync = self._cfg['animation']['sync']
+        
+        if not self.model.attributes.uses_pil and 'no PIL textures' in self._cfg:
+            self._cfg['textures'] = self._cfg['no PIL textures']
+        
+        #load textures
+        ##find the names of the textures
+        img_names = []
+        if type(self._cfg['textures']) == str:
+            img_names = [[os.path.join(frame, name) for name in os.listdir(os.path.join(self.model.map_path, 'models', self.model.mdl_name, frame)) if os.path.isfile(os.path.join(self.model.map_path, 'models', self.model.mdl_name, frame, name))] for frame in os.listdir(os.path.join(self.model.map_path, 'models', self.model.mdl_name, self._cfg['textures']))] #unpack a two-level tree of animations then layers
+        else:
+            for frame in self._cfg['textures']:
+                if type(frame) == str:
+                    if frame.endswith('.gif'):
+                        img_names.append(frame)
+                    else:
+                        img_names.append([name for name in os.listdir(os.path.join(self.model.map_path, 'models', self.model.mdl_name, frame)) if os.path.isfile(os.path.join(self.model.map_path, 'models', self.model.mdl_name, frame, name))])
+            
+                else:
+                    img_names.append(frame)
+        
+        ##load the textures into memory
+        if type(img_names[0]) == str: #list of gifs - load with flipped dimensions
+            layer_indexes = [i for i in range(len(img_names)) if float(i / math.ceil(len(img_names) / self.layers[self.model.attributes.render_quality])).is_integer()]
+            
+            self.imgs = [[] for i in range(self.animation.frames)]
+            
+            for layer in img_names:
+                if img_names.index(layer) in layer_indexes:
+                    for i in range(self.animation.frames):
+                        if self.model.attributes.uses_pil:
+                            tex = self.model.pillow.gifimage(os.path.join(self.model.map_path, 'models', self.model.mdl_name, layer))
+                            tex.seek(i)
+                            self.imgs[i].append(tex)
+                        
+                        else:
+                            self.imgs[i].append(tk.PhotoImage(file = os.path.join(self.model.map_path, 'models', self.model.mdl_name, layer), format = 'gif -index {}'.format(i)))
+            
+        else:
+            layer_indexes = [i for i in range(len(img_names[0])) if float(i / math.ceil(len(img_names[0]) / self.layers[self.model.attributes.render_quality])).is_integer()]
+            
+            for frame in img_names:
+                current_slot = []
+                for name in frame:
+                    if frame.index(name) in layer_indexes:
+                        if self.model.attributes.uses_pil:
+                            current_slot.append(self.model.pillow.image.open(os.path.join(self.model.map_path, 'models', self.model.mdl_name, name)))
+                        
+                        else:
+                            current_slot.append(tk.PhotoImage(file = os.path.join(self.model.map_path, 'models', self.model.mdl_name, name)))
+                self.imgs.append(current_slot)
+        
+        ##apply operations to textures
+        if self.model.attributes.uses_pil:
+            rotation_values = [value / (self.rotations[self.model.attributes.render_quality] / 360) - 1 for value in range(1, self.rotations[self.model.attributes.render_quality] + 1, 1)]
+            transparency_values = [value / (self.transparencies[self.model.attributes.render_quality] / 256) - 1 for value in range(1, self.transparencies[self.model.attributes.render_quality] + 1, 1)]
+        else:
+            rotation_values = [0]
+            transparency_values = [255]
+        
+        for frame in self.imgs:
+            this_frame = []
+            for layer in frame:
+                this_layer = []
+                for rotation in rotation_values:
+                    this_rotation = []
+                    for transparency in transparency_values:
+                        this_rotation.append(self.apply_to(layer, rotation, transparency))
+                    this_layer.append(this_rotation)
+                this_frame.append(this_layer)
+            self.transformed_imgs.append(this_frame)
+    
+    def apply_to(self, image, rotation, transparency):
+        if not rotation == 0:
+            image.rotate(0 - rotation)
+        
+        if not transparency == 255:
+            try:
+                return self.model.pillow.image_chops.multiply(image, self.model.pillow.image.new('RGBA', image.size, color = (255, 255, 255, int(transparency))))
+            except ValueError:
+                raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
     def load_obj(self):
         pass
