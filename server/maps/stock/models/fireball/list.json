@@ -14,7 +14,7 @@
 				"variation": 0,
 				"sync": false
 			},
-			"textures": [["fireball_inflight1.png", "fireball_inflight2.png"]]
+			"textures": [["fireball_inflight1.png"], ["fireball_inflight2.png"]]
 		},
 		"explode": {
 			"offscreen": [-64, -64],

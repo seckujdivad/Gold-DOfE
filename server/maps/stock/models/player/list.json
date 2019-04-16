@@ -14,7 +14,7 @@
 				"variation": 0,
 				"sync": false
 			},
-			"textures": [["anims/idle/1.png", "anims/idle/2.png"]]
+			"textures": [["anims/idle/1.png"], ["anims/idle/2.png"]]
 		},
 		"attack": {
 			"offscreen": [-32, -32],
@@ -28,7 +28,7 @@
 				"variation": 0,
 				"sync": false
 			},
-			"textures": [["anims/attack/1.png", "anims/attack/2.png"]]
+			"textures": [["anims/attack/1.png"], ["anims/attack/2.png"]]
 		}
 	}
 }

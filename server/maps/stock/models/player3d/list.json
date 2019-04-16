@@ -15,7 +15,7 @@
 				"variation": 0,
 				"sync": false
 			},
-			"textures": "stack"
+			"textures": ["stack"]
 		}
 	}
 }

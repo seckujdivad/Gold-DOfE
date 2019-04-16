@@ -14,7 +14,7 @@
 				"variation": 0,
 				"sync": false
 			},
-			"textures": [["swordswipe_inflight1.png", "swordswipe_inflight2.png", "swordswipe_inflight3.png", "swordswipe_inflight4.png"]]
+			"textures": [["swordswipe_inflight1.png"], ["swordswipe_inflight2.png"], ["swordswipe_inflight3.png"], ["swordswipe_inflight4.png"]]
 		}
 	}
 }
