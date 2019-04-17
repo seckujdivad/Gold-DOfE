@@ -14,8 +14,8 @@
 				"variation": 0,
 				"sync": false
 			},
-			"textures": ["texture.png"],
-			"no PIL textures": ["texture_nopil.png"]
+			"textures": [["texture.png"]],
+			"no PIL textures": [["texture_nopil.png"]]
 		}
 	}
 }

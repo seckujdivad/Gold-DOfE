@@ -14,7 +14,7 @@
 				"variation": 0,
 				"sync": true
 			},
-			"textures": ["lava.gif"]
+			"textures": [["lava.gif"]]
 		}
 	}
 }

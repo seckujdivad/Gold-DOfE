@@ -14,7 +14,7 @@
 				"variation": 0,
 				"sync": true
 			},
-			"textures": ["teleport.gif"]
+			"textures": [["teleport.gif"]]
 		},
 		"active": {
 			"offscreen": [-32, -32],
@@ -28,7 +28,7 @@
 				"variation": 0,
 				"sync": true
 			},
-			"textures": ["teleport_active.gif"]
+			"textures": [["teleport_active.gif"]]
 		}
 	}
 }

@@ -14,7 +14,7 @@
 				"variation": 0,
 				"sync": false
 			},
-			"textures": ["stone_wall.png"]
+			"textures": [["stone_wall.png"]]
 		}
 	}
 }

@@ -14,7 +14,7 @@
 				"variation": 0,
 				"sync": false
 			},
-			"textures": ["base.png"]
+			"textures": [["base.png"]]
 		}
 	}
 }
