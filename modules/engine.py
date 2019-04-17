@@ -449,7 +449,7 @@ class Engine:
                 panel_object.set(x = panel['coordinates'][0], y = panel['coordinates'][1])
                 self.current_map.statics.panels.append(panel_object)
                 
-                if panel_object.attributes.animation.run_loop:
+                if panel_object.attributes.anim_controller.run_loop:
                     anim_panels.append(panel_object)
         
             self.game.canvcont.set_time(time.time() + self.cfgs.current_map['animation']['sync window'][self.cfgs.user['graphics']['model quality']])
