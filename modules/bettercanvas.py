@@ -357,14 +357,14 @@ class Model:
             transparency += self.attributes.transparency
         
         if frame is not None:
-            frame = (frame + self.attributes.animation.current_frame) % self.attributes.animation.frames
+            frame = (frame + self.attributes.anim_controller.frame) % self.attributes.profiles[self.attributes.profile].animation.frames
         
         self._set(x, y, rotation, transparency, frame, force, image_set)
     
     def _set(self, x, y, rotation, transparency, frame, force, image_set):
-        prev_image_set = self.attributes.image_set
+        prev_image_set = self.attributes.profile
         if image_set is not None:
-            self.attributes.image_set = image_set
+            self.attributes.profile = image_set
 
         prev_x = self.attributes.pos.x
         if x is not None:
@@ -382,9 +382,9 @@ class Model:
         if transparency is not None:
             self.attributes.transparency = transparency
         
-        prev_frame = self.attributes.animation.current_frame
+        prev_frame = self.attributes.anim_controller.frame
         if frame is not None:
-            self.attributes.animation.current_frame = frame
+            self.attributes.anim_controller.frame = frame
         
         #check if the function has been called with any arguments at all
         if x is None and y is None and rotation is None and transparency is None and frame is None and not force:
@@ -396,7 +396,7 @@ class Model:
         
         else:
             fields_changed = []
-            if (prev_image_set is None and image_set is not None) or self.attributes.image_set != prev_image_set:
+            if (prev_image_set is None and image_set is not None) or self.attributes.profile != prev_image_set:
                 fields_changed.append('image set')
             
             if (prev_x is None and x is not None) or self.snap_coords(self.attributes.pos.x, 0)[0] != self.snap_coords(prev_x, 0)[0]:
@@ -405,41 +405,23 @@ class Model:
             if (prev_y is None and y is not None) or self.snap_coords(0, self.attributes.pos.y)[1] != self.snap_coords(0, prev_y)[1]:
                 fields_changed.append('y')
                 
-            if (prev_rotation is None and rotation is not None) or int((self.attributes.rotation / 360) * self.attributes.rotation_steps) != int((prev_rotation / 360) * self.attributes.rotation_steps):
+            if (prev_rotation is None and rotation is not None) or self.attributes.profiles[self.attributes.profile].squash_rotation(self.attributes.rotation) != self.attributes.profiles[self.attributes.profile].squash_rotation(prev_rotation):
                 fields_changed.append('rotation')
             
-            if (prev_transparency is None and transparency is not None) or int((self.attributes.transparency / 256) * self.attributes.transparency_steps) != int((prev_transparency / 256) * self.attributes.transparency_steps):
+            if (prev_transparency is None and transparency is not None) or self.attributes.profiles[self.attributes.profile].squash_transparency(self.attributes.transparency) != self.attributes.profiles[self.attributes.profile].squash_transparency(prev_transparency):
                 fields_changed.append('transparency')
             
-            if prev_frame is None or self.attributes.animation.current_frame != prev_frame:
+            if prev_frame is None or self.attributes.anim_controller.frame != prev_frame:
                 fields_changed.append('frame')
         
         #check if only the positions were changed
         if len(fields_changed) > 0: #make sure at least one field was changed
-            if False not in [key in ['x', 'y'] for key in fields_changed]:
-                for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
-                    xpos = self.attributes.pos.x + self.get_offsets(i)[0]
-                    ypos = self.attributes.pos.y + self.get_offsets(i)[1]
-                    
-                    if self.attributes.snap.use:
-                        xpos, ypos = self.snap_coords(xpos, ypos)
-                    
-                    self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), xpos, ypos)
-                    
-            else: #too many parameters were changed, replace all images
+            if False in [key in ['x', 'y'] for key in fields_changed]:
                 #move currently onscreen objects offscreen
-                for i in range(len(self.attributes.canvobjs[prev_image_set])):
-                    self.canvas_controller.coords(self.get_object(prev_image_set, i, prev_rotation, prev_transparency, prev_frame), self.attributes.offscreen.x, self.attributes.offscreen.y)
+                self.attributes.profiles[prev_image_set].set_offscreen(prev_frame, prev_rotation, prev_transparency)
                     
-                #move currently offscreen objects onscreen
-                for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
-                    x = self.attributes.pos.x + self.get_offsets(i)[0]
-                    y = self.attributes.pos.y + self.get_offsets(i)[1]
-                    
-                    if self.attributes.snap.use:
-                        x, y = self.snap_coords(x, y)
-                    
-                    self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.anim_controller.frame), x, y)
+            #move currently offscreen objects onscreen
+            self.attributes.profiles[self.attributes.profile].setpos(self.attributes.pos.x, self.attributes.pos.y, self.attributes.anim_controller.frame, self.attributes.rotation, self.attributes.transparency)
     
     def get_object(self, profile, frame, layer, rotation, transparency):
         return self.attributes.profiles[profile].get_obj(frame, layer, rotation, transparency)
@@ -463,7 +445,6 @@ class Model:
             time.sleep(self.attributes.profiles[self.attributes.profile].animation.delay + random.choice([0, self.attributes.profiles[self.attributes.profile].animation.variation, 0 - self.attributes.profiles[self.attributes.profile].animation.variation]))
             
             if self.attributes.anim_controller.playing_onetime and self.attributes.profiles[self.attributes.profile].animation.frames - 1 == self.attributes.anim_controller.frame:
-                time_elapsed = time.time() - self.attributes.anim_controller.onetime_start
                 old_anim_delay = self.attributes.profiles[self.attributes.profile].animation.delay
                 old_anim_length = self.attributes.profiles[self.attributes.profile].animation.frames
                 
@@ -499,7 +480,7 @@ class Model:
         return int(x), int(y)
     
     def play_anim(self, name, ignore_precedence = False):
-        'Plays an animation once through. If the animation is already playing, it will reset to the start'
+        """"Plays an animation once through. If the animation is already playing, it will reset to the start"""
         if self.compare_profiles(self.attributes.profile, name) or not ignore_precedence:
             self.attributes.anim_controller.playing_onetime = True
             self.attributes.anim_controller.onetime_start = time.time()
@@ -511,7 +492,7 @@ class Model:
             self.set(image_set = name, frame = 0)
     
     def loop_anim(self, name):
-        'Loop an animation. This will force the selected animation'
+        """Loop an animation. This will force the selected animation"""
         self.attributes.anim_controller.playing_onetime = False
         self.attributes.anim_controller.revert_to = self.attributes.profile
         self.set(image_set = name, frame = 0)
@@ -559,6 +540,7 @@ class MdlProfile:
         
         self.num_existing_layers = 0
         self.use_grid = False
+        self.uses_pil = False
         
         class animation:
             frames = 1
@@ -581,20 +563,22 @@ class MdlProfile:
         self.offscreen.x = self._cfg['offscreen'][0]
         self.offscreen.y = self._cfg['offscreen'][1]
         
-        self.offset.x = self._cfg['offset'][0]
-        self.offset.y = self._cfg['offset'][1]
+        if 'offset' in self._cfg:
+            self.offset.x = self._cfg['offset'][0]
+            self.offset.y = self._cfg['offset'][1]
         
         self.rotations = self._cfg['rotations']
         self.transparencies = self._cfg['transparencies']
         self.use_grid = self._cfg['use grid']
         self.layers = self._cfg['layers']
+        self.uses_pil = self.model.attributes.uses_PIL
         
         self.animation.frames = self._cfg['animation']['frames']
         self.animation.delay = self._cfg['animation']['delay']
         self.animation.variation = self._cfg['animation']['variation']
         self.animation.sync = self._cfg['animation']['sync']
         
-        if not self.model.attributes.uses_pil and 'no PIL textures' in self._cfg:
+        if not self.uses_pil and 'no PIL textures' in self._cfg:
             self._cfg['textures'] = self._cfg['no PIL textures']
         
         #load textures
@@ -623,7 +607,7 @@ class MdlProfile:
             for layer in img_names:
                 if img_names.index(layer) in layer_indexes:
                     for i in range(self.animation.frames):
-                        if self.model.attributes.uses_pil:
+                        if self.uses_pil:
                             tex = self.model.pillow.gifimage(os.path.join(self.model.map_path, 'models', self.model.mdl_name, layer))
                             tex.seek(i)
                             self.imgs[i].append(tex)
@@ -639,7 +623,7 @@ class MdlProfile:
                 current_slot = []
                 for name in frame:
                     if frame.index(name) in layer_indexes:
-                        if self.model.attributes.uses_pil:
+                        if self.uses_pil:
                             current_slot.append(self.model.pillow.image.open(os.path.join(self.model.map_path, 'models', self.model.mdl_name, name)))
                         
                         else:
@@ -647,7 +631,7 @@ class MdlProfile:
                 self.imgs.append(current_slot)
         
         ##apply operations to textures
-        if self.model.attributes.uses_pil:
+        if self.uses_pil:
             rotation_values = [value / (self.rotations[self.model.attributes.render_quality] / 360) - 1 for value in range(1, self.rotations[self.model.attributes.render_quality] + 1, 1)]
             transparency_values = [value / (self.transparencies[self.model.attributes.render_quality] / 256) - 1 for value in range(1, self.transparencies[self.model.attributes.render_quality] + 1, 1)]
         else:
@@ -693,8 +677,8 @@ class MdlProfile:
                 raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
     def get_obj(self, frame, layer, rotation, transparency):
-        if self.model.attributes.uses_pil:
-            return self.canvobjs[frame][layer][int(rotation / 360) * self.rotations[self.model.attributes.render_quality]][int(transparency / 360) * self.transparencies[self.model.attributes.render_quality]]
+        if self.uses_pil:
+            return self.canvobjs[frame][layer][self.squash_rotation(rotation)][self.squash_transparency(transparency)]
         else:
             return self.canvobjs[frame][layer][0][0]
     
@@ -708,3 +692,24 @@ class MdlProfile:
                 for rotation in layer:
                     for canvobj in rotation:
                         self.model.canvas_controller.delete(canvobj)
+    
+    def squash_rotation(self, rotation):
+        return int(rotation / 360) * self.rotations[self.model.attributes.render_quality]
+    
+    def squash_transparency(self, transparency):
+        return int(transparency / 360) * self.transparencies[self.model.attributes.render_quality]
+    
+    def setpos(self, x, y, frame, rotation, transparency):
+        for layer in range(len(self.canvobjs[frame])):
+            if x == self.offset.x and y == self.offset.y:
+                self.model.canvas_controller.coords(self.get_obj(frame, layer, rotation, transparency), x, y)
+            else:
+                if self.use_grid:
+                    self.model.canvas_controller.coords(self.get_obj(frame, layer, rotation, transparency), *self.model.snap_coords(x + self.get_offset(layer)[0], y + self.get_offset(layer)[1]))
+                else:
+                    self.model.canvas_controller.coords(self.get_obj(frame, layer, rotation, transparency), x + self.get_offset(layer)[0], y + self.get_offset(layer)[1])
+    
+    def set_offscreen(self, frame, rotation, transparency):
+        self.setpos(self.offscreen.x, self.offscreen.y, frame, rotation, transparency)
+        
+        
