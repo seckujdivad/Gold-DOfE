@@ -687,8 +687,6 @@ class MdlProfile:
         if self.uses_pil:
             rot = int((self.squash_rotation(rotation) / 360) * self.rotations[self.model.attributes.render_quality])
             transp = int(self.squash_transparency(transparency) / (256 / self.transparencies[self.model.attributes.render_quality]))
-            if self.model.mdl_name == 'player':
-                print(rot, rotation, self.squash_rotation(rotation))
             return self.canvobjs[frame][layer][rot][transp]
         else:
             return self.canvobjs[frame][layer][0][0]
