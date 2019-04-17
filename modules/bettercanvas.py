@@ -241,112 +241,6 @@ class Model:
         self.attributes.pos.x = self.attributes.profiles[self.attributes.profile].offscreen.x
         self.attributes.pos.y = self.attributes.profiles[self.attributes.profile].offscreen.y
         
-        """###load textures
-        #check for no PIL textures
-        if not self.attributes.uses_PIL:
-            if 'no PIL textures' in self.cfgs.model:
-                self.cfgs.model['textures'] = self.cfgs.model['no PIL textures']
-                
-        #get names of textures
-        tex_names = {}
-        for tex_set in self.cfgs.model['textures']:
-            tex_names[tex_set] = []
-            if type(self.cfgs.model['textures'][tex_set]) == str:
-                if os.path.isdir(os.path.join(self.map_path, 'models', self.mdl_name, self.cfgs.model['textures'][tex_set])):
-                    tex_names[tex_set] = [os.path.join(self.cfgs.model['textures'][tex_set], path) for path in os.listdir(os.path.join(self.map_path, 'models', self.mdl_name, self.cfgs.model['textures'][tex_set]))]
-                else:
-                    tex_names[tex_set] = [self.cfgs.model['textures'][tex_set]]
-            else:
-                tex_names[tex_set] = self.cfgs.model['textures'][tex_set]
-            
-            self.attributes.baseimages[tex_set] = []
-            self.attributes.imageobjs[tex_set] = []
-            self.attributes.canvobjs[tex_set] = []
-        
-        filtered_tex_names = {}
-        for name in tex_names:
-            self.attributes.num_layers_total = len(tex_names[name])
-            mult = self.attributes.num_layers_total / self.attributes.num_layers
-            filtered_tex_names[name] = []
-            for i in range(self.attributes.num_layers):
-                filtered_tex_names[name].append(tex_names[name][int(i * mult)])
-        
-        tex_names = filtered_tex_names
-        
-        #load textures
-        default_set = self.attributes.image_set
-        
-        for tex_set in tex_names:
-            for name in tex_names[tex_set]:
-                self.attributes.image_set = tex_set
-                if self.attributes.uses_PIL:
-                    if self.attributes.animation.frames == 1:
-                        self.attributes.baseimages[tex_set].append([self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, name))])
-                    else:
-                        if type(name) == list:
-                            self.attributes.baseimages[tex_set].append([self.pillow.image.open(os.path.join(self.map_path, 'models', self.mdl_name, subname)) for subname in name])
-                        
-                        else:
-                            frames = []
-                            for i in range(self.attributes.animation.frames):
-                                frame = self.pillow.gifimage(os.path.join(self.map_path, 'models', self.mdl_name, name))
-                                frame.seek(i)
-                                frames.append(frame)
-                            
-                            self.attributes.baseimages[tex_set].append(frames)
-                else:
-                    if self.attributes.animation.frames == 1:
-                        self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name))])
-                    else:
-                        if type(name) == list:
-                            self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, subname)) for subname in name])
-                        else:
-                            self.attributes.baseimages[tex_set].append([tk.PhotoImage(file = os.path.join(self.map_path, 'models', self.mdl_name, name), format = 'gif -index {}'.format(i)) for i in range(self.attributes.animation.frames)])
-        
-        self.attributes.image_set = default_set
-        
-        #apply transformations to textures
-        for tex_set in self.attributes.baseimages:
-            for images in self.attributes.baseimages[tex_set]:
-                if self.attributes.uses_PIL:
-                    rotations = []
-                    for rot in range(1, self.attributes.rotation_steps + 1, 1):
-                        current_rotation = rot / (self.attributes.rotation_steps / 360)
-                        
-                        images_rotated = []
-                        for image in images:
-                            images_rotated.append(self.apply_rotation(image, current_rotation))
-                        
-                        
-                        if self.attributes.transparency_steps == 1:
-                            transparencies = [[self.pillow.photoimage(image_rotated) for image_rotated in images_rotated]]
-                        else:
-                            transparencies = []
-                            
-                            for transp in range(self.attributes.transparency_steps):
-                                transparencies.append([self.pillow.photoimage(self.apply_transparency(image_rotated, transp / (self.attributes.transparency_steps / 256))) for image_rotated in images_rotated])
-                            
-                        rotations.append(transparencies)
-                        
-                    self.attributes.imageobjs[tex_set].append(rotations)
-                        
-                else:
-                    self.attributes.imageobjs[tex_set].append([[images]]) #no PIL means no transformations can be applied
-        
-        #make canvas objects
-        for tex_set in self.attributes.imageobjs:
-            for rotations in self.attributes.imageobjs[tex_set]:
-                new_rotations = []
-                for transparencies in rotations:
-                    new_transparencies = []
-                    for frames in transparencies:
-                        new_frames = []
-                        for image_ in frames:
-                            new_frames.append(self.canvas_controller.create_image(self.attributes.offscreen.x, self.attributes.offscreen.y, image = image_, layer = self.layer))
-                        new_transparencies.append(new_frames)
-                    new_rotations.append(new_transparencies)
-                self.attributes.canvobjs[tex_set].append(new_rotations)"""
-        
         ## start animation player if necessary
         if self.attributes.animation.run_loop and autoplay_anims:
             self.start_anims()
@@ -782,6 +676,19 @@ class MdlProfile:
                     this_layer.append(this_rotation)
                 this_frame.append(this_layer)
             self.transformed_imgs.append(this_frame)
+        
+        #make canvas objects
+        for frame in self.transformed_imgs:
+            new_layers = []
+            for layer in frame:
+                new_rotations = []
+                for rotation in layer:
+                    new_transparencies = []
+                    for image_ in rotation:
+                        new_transparencies.append(self.model.canvas_controller.create_image(self.offscreen.x, self.offscreen.y, image = image_, layer = self.model.layer))
+                    new_rotations.append(new_transparencies)
+                new_layers.append(new_rotations)
+            self.canvobjs.append(new_layers)
     
     def apply_to(self, image, rotation, transparency):
         if not rotation == 0:
