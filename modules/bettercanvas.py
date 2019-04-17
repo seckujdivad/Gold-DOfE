@@ -632,6 +632,10 @@ class MdlProfile:
         if self.uses_pil:
             rotation_values = [value / (self.rotations[self.model.attributes.render_quality] / 360) - 1 for value in range(1, self.rotations[self.model.attributes.render_quality] + 1, 1)]
             transparency_values = [value / (self.transparencies[self.model.attributes.render_quality] / 256) - 1 for value in range(1, self.transparencies[self.model.attributes.render_quality] + 1, 1)]
+            
+            if self.transparencies[self.model.attributes.render_quality] > 1 and 0 not in transparency_values:
+                transparency_values = [0] + [value / ((self.transparencies[self.model.attributes.render_quality] - 1) / 256) - 1 for value in range(1, self.transparencies[self.model.attributes.render_quality], 1)]
+            
         else:
             rotation_values = [0]
             transparency_values = [255]
