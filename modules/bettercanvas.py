@@ -428,8 +428,7 @@ class Model:
     
     def destroy(self):
         current_profile = self.attributes.profiles[self.attributes.profile]
-        for layer in range(len(current_profile.canvobjs)):
-            self.canvas_controller.coords(self.get_object(self.attributes.profile, self.attributes.anim_controller.frame, layer, self.attributes.rotation, self.attributes.transparency), current_profile.offscreen.x, current_profile.offscreen.y)
+        current_profile.set_offscreen(self.attributes.anim_controller.frame, self.attributes.rotation, self.attributes.transparency)
         
         for profile_name in self.attributes.profiles:
             self.attributes.profiles[profile_name].destroy()
@@ -491,6 +490,7 @@ class Model:
     
     def loop_anim(self, name):
         """Loop an animation. This will force the selected animation"""
+        self.attributes.anim_controller.onetime_start = time.time()
         self.attributes.anim_controller.playing_onetime = False
         self.attributes.anim_controller.revert_to = self.attributes.profile
         self.set(image_set = name, frame = 0)
@@ -630,11 +630,11 @@ class MdlProfile:
         
         ##apply operations to textures
         if self.uses_pil:
-            rotation_values = [value / (self.rotations[self.model.attributes.render_quality] / 360) - 1 for value in range(1, self.rotations[self.model.attributes.render_quality] + 1, 1)]
+            rotation_values = [(value / (self.rotations[self.model.attributes.render_quality] / 360)) % 360 for value in range(1, self.rotations[self.model.attributes.render_quality] + 1, 1)]
             transparency_values = [value / (self.transparencies[self.model.attributes.render_quality] / 256) - 1 for value in range(1, self.transparencies[self.model.attributes.render_quality] + 1, 1)]
             
             if self.transparencies[self.model.attributes.render_quality] > 1 and 0 not in transparency_values:
-                transparency_values = [0] + [value / ((self.transparencies[self.model.attributes.render_quality] - 1) / 256) - 1 for value in range(1, self.transparencies[self.model.attributes.render_quality], 1)]
+                transparency_values = [0] + [(value / ((self.transparencies[self.model.attributes.render_quality] - 1) / 360)) % 360 for value in range(1, self.transparencies[self.model.attributes.render_quality], 1)]
             
         else:
             rotation_values = [0]
@@ -671,7 +671,7 @@ class MdlProfile:
     def apply_to(self, image, rotation, transparency):
         if self.uses_pil:
             if not rotation == 0:
-                image.rotate(0 - rotation)
+                image = image.rotate((0 - rotation) % 360)
             
             if not transparency == 255:
                 try:
@@ -685,7 +685,11 @@ class MdlProfile:
     
     def get_obj(self, frame, layer, rotation, transparency):
         if self.uses_pil:
-            return self.canvobjs[frame][layer][self.squash_rotation(rotation)][self.squash_transparency(transparency)]
+            rot = int((self.squash_rotation(rotation) / 360) * self.rotations[self.model.attributes.render_quality])
+            transp = int(self.squash_transparency(transparency) / (256 / self.transparencies[self.model.attributes.render_quality]))
+            if self.model.mdl_name == 'player':
+                print(rot, rotation, self.squash_rotation(rotation))
+            return self.canvobjs[frame][layer][rot][transp]
         else:
             return self.canvobjs[frame][layer][0][0]
     
@@ -701,10 +705,13 @@ class MdlProfile:
                         self.model.canvas_controller.delete(canvobj)
     
     def squash_rotation(self, rotation):
-        return int((rotation % 360) / 360) * self.rotations[self.model.attributes.render_quality]
+        return self.clamp_to(rotation % 360, 360 / self.rotations[self.model.attributes.render_quality])
     
     def squash_transparency(self, transparency):
-        return int(transparency / 256) * self.transparencies[self.model.attributes.render_quality]
+        return int(transparency / self.transparencies[self.model.attributes.render_quality]) * self.transparencies[self.model.attributes.render_quality]
+
+    def clamp_to(self, value, division, func_clamp = int):
+        return func_clamp(value / division) * division
     
     def setpos(self, x, y, frame, rotation, transparency):
         for layer in range(len(self.canvobjs[frame])):
