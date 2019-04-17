@@ -246,7 +246,7 @@ class Model:
         self.attributes.pos.y = self.attributes.profiles[self.attributes.profile].offscreen.y
         
         ## start animation player if necessary
-        if self.attributes.anim_controller.run_loop and autoplay_anims:
+        if autoplay_anims:
             self.start_anims()
         
         # start interpolation thread
@@ -444,7 +444,7 @@ class Model:
         while self.attributes.anim_controller.run_loop:
             time.sleep(self.attributes.profiles[self.attributes.profile].animation.delay + random.choice([0, self.attributes.profiles[self.attributes.profile].animation.variation, 0 - self.attributes.profiles[self.attributes.profile].animation.variation]))
             
-            if self.attributes.anim_controller.playing_onetime and self.attributes.profiles[self.attributes.profile].animation.frames - 1 == self.attributes.anim_controller.frame:
+            if self.attributes.anim_controller.playing_onetime and self.attributes.profiles[self.attributes.profile].animation.frames - 1 == self.attributes.anim_controller.frame: #resynchronise animations
                 old_anim_delay = self.attributes.profiles[self.attributes.profile].animation.delay
                 old_anim_length = self.attributes.profiles[self.attributes.profile].animation.frames
                 
@@ -701,10 +701,10 @@ class MdlProfile:
                         self.model.canvas_controller.delete(canvobj)
     
     def squash_rotation(self, rotation):
-        return int(rotation / 360) * self.rotations[self.model.attributes.render_quality]
+        return int((rotation % 360) / 360) * self.rotations[self.model.attributes.render_quality]
     
     def squash_transparency(self, transparency):
-        return int(transparency / 360) * self.transparencies[self.model.attributes.render_quality]
+        return int(transparency / 256) * self.transparencies[self.model.attributes.render_quality]
     
     def setpos(self, x, y, frame, rotation, transparency):
         for layer in range(len(self.canvobjs[frame])):
