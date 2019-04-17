@@ -223,9 +223,7 @@ class Model:
         with open(os.path.join(self.map_path, 'list.json'), 'r') as file:
             self.cfgs.map = json.load(file)
         
-        ### Load profile data
-        for name in self.cfgs.model['profiles']:
-            self.attributes.profiles[name] =  MdlProfile(self, self.cfgs.model['profiles'][name])
+        self.pillow = self.canvas_controller.pillow
         
         self.attributes.profile_ranks = self.cfgs.model['ranks']
         self.attributes.profile = self.cfgs.model['default']
@@ -240,7 +238,9 @@ class Model:
         if self.cfgs.map['grid']['force']:
             self.attributes.force_grid = self.cfgs.map['grid']['force value']
         
-        self.pillow = self.canvas_controller.pillow
+        ### Load profile data
+        for name in self.cfgs.model['profiles']:
+            self.attributes.profiles[name] =  MdlProfile(self, self.cfgs.model['profiles'][name])
         
         self.attributes.pos.x = self.attributes.profiles[self.attributes.profile].offscreen.x
         self.attributes.pos.y = self.attributes.profiles[self.attributes.profile].offscreen.y
@@ -451,7 +451,6 @@ class Model:
                 self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0, wait = True)
                 
                 new_elapsed = time.time() - self.attributes.anim_controller.onetime_start
-                
                 frames_elapsed = new_elapsed / self.attributes.profiles[self.attributes.profile].animation.delay
                 
                 self.set(frame = math.ceil(frames_elapsed) % self.attributes.profiles[self.attributes.profile].animation.frames)
@@ -461,7 +460,6 @@ class Model:
                 self.attributes.anim_controller.playing_onetime = False
                 self.attributes.anim_controller.revert_to = None
                 
-            
             self.increment(frame = 1)
     
     def snap_coords(self, x, y):
@@ -667,14 +665,19 @@ class MdlProfile:
             self.canvobjs.append(new_layers)
     
     def apply_to(self, image, rotation, transparency):
-        if not rotation == 0:
-            image.rotate(0 - rotation)
-        
-        if not transparency == 255:
-            try:
-                return self.model.pillow.image_chops.multiply(image, self.model.pillow.image.new('RGBA', image.size, color = (255, 255, 255, int(transparency))))
-            except ValueError:
-                raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
+        if self.uses_pil:
+            if not rotation == 0:
+                image.rotate(0 - rotation)
+            
+            if not transparency == 255:
+                try:
+                    image = self.model.pillow.image_chops.multiply(image, self.model.pillow.image.new('RGBA', image.size, color = (255, 255, 255, int(transparency))))
+                except ValueError:
+                    raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
+                
+            return self.model.pillow.photoimage(image)
+        else:
+            return image
     
     def get_obj(self, frame, layer, rotation, transparency):
         if self.uses_pil:
@@ -701,7 +704,7 @@ class MdlProfile:
     
     def setpos(self, x, y, frame, rotation, transparency):
         for layer in range(len(self.canvobjs[frame])):
-            if x == self.offset.x and y == self.offset.y:
+            if x == self.offscreen.x and y == self.offscreen.y:
                 self.model.canvas_controller.coords(self.get_obj(frame, layer, rotation, transparency), x, y)
             else:
                 if self.use_grid:
@@ -711,5 +714,3 @@ class MdlProfile:
     
     def set_offscreen(self, frame, rotation, transparency):
         self.setpos(self.offscreen.x, self.offscreen.y, frame, rotation, transparency)
-        
-        
