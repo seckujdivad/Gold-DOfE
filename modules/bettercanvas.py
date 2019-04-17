@@ -439,7 +439,7 @@ class Model:
                     if self.attributes.snap.use:
                         x, y = self.snap_coords(x, y)
                     
-                    self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), x, y)
+                    self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.anim_controller.frame), x, y)
     
     def get_object(self, profile, frame, layer, rotation, transparency):
         return self.attributes.profiles[profile].get_obj(frame, layer, rotation, transparency)
@@ -456,26 +456,26 @@ class Model:
         self.attributes.running = False
     
     def _anim_player(self):
-        if self.attributes.animation.sync:
-            time.sleep((self.attributes.animation.delay * self.attributes.animation.frames) - ((time.time() - self.canvas_controller.global_time) % (self.attributes.animation.delay * self.attributes.animation.frames)))
+        if self.attributes.profiles[self.attributes.profile].animation.sync:
+            time.sleep((self.attributes.profiles[self.attributes.profile].animation.delay * self.attributes.profiles[self.attributes.profile].animation.frames) - ((time.time() - self.canvas_controller.global_time) % (self.attributes.profiles[self.attributes.profile].animation.delay * self.attributes.profiles[self.attributes.profile].animation.frames)))
         
         while self.attributes.anim_controller.run_loop:
-            time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
+            time.sleep(self.attributes.profiles[self.attributes.profile].animation.delay + random.choice([0, self.attributes.profiles[self.attributes.profile].animation.variation, 0 - self.attributes.profiles[self.attributes.profile].animation.variation]))
             
-            if self.attributes.anim_controller.playing_onetime and self.attributes.animation.frames - 1 == self.attributes.animation.current_frame:
+            if self.attributes.anim_controller.playing_onetime and self.attributes.profiles[self.attributes.profile].animation.frames - 1 == self.attributes.anim_controller.frame:
                 time_elapsed = time.time() - self.attributes.anim_controller.onetime_start
-                old_anim_delay = self.attributes.animation.delay
-                old_anim_length = self.attributes.animation.frames
+                old_anim_delay = self.attributes.profiles[self.attributes.profile].animation.delay
+                old_anim_length = self.attributes.profiles[self.attributes.profile].animation.frames
                 
                 self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0, wait = True)
                 
                 new_elapsed = time.time() - self.attributes.anim_controller.onetime_start
                 
-                frames_elapsed = new_elapsed / self.attributes.animation.delay
+                frames_elapsed = new_elapsed / self.attributes.profiles[self.attributes.profile].animation.delay
                 
-                self.set(frame = math.ceil(frames_elapsed) % self.attributes.animation.frames)
+                self.set(frame = math.ceil(frames_elapsed) % self.attributes.profiles[self.attributes.profile].animation.frames)
                 
-                time.sleep((self.attributes.animation.delay - (time.time() - self.attributes.anim_controller.onetime_start - (old_anim_delay * old_anim_length))) % self.attributes.animation.delay)
+                time.sleep((self.attributes.profiles[self.attributes.profile].animation.delay - (time.time() - self.attributes.anim_controller.onetime_start - (old_anim_delay * old_anim_length))) % self.attributes.profiles[self.attributes.profile].animation.delay)
                 
                 self.attributes.anim_controller.playing_onetime = False
                 self.attributes.anim_controller.revert_to = None
@@ -500,24 +500,24 @@ class Model:
     
     def play_anim(self, name, ignore_precedence = False):
         'Plays an animation once through. If the animation is already playing, it will reset to the start'
-        if self.attributes.animation.is_higher(name, self.attributes.image_set) or not ignore_precedence:
+        if self.compare_profiles(self.attributes.profile, name) or not ignore_precedence:
             self.attributes.anim_controller.playing_onetime = True
             self.attributes.anim_controller.onetime_start = time.time()
             
-            if not self.attributes.image_set == name:
-                self.attributes.anim_controller.revert_to = self.attributes.image_set
-                self.attributes.anim_controller.revert_frame = self.attributes.animation.current_frame
+            if not self.attributes.profile == name:
+                self.attributes.anim_controller.revert_to = self.attributes.profile
+                self.attributes.anim_controller.revert_frame = self.attributes.anim_controller.frame
             
             self.set(image_set = name, frame = 0)
     
     def loop_anim(self, name):
         'Loop an animation. This will force the selected animation'
         self.attributes.anim_controller.playing_onetime = False
-        self.attributes.anim_controller.revert_to = self.attributes.image_set
+        self.attributes.anim_controller.revert_to = self.attributes.profile
         self.set(image_set = name, frame = 0)
     
     def start_anims(self):
-        if self.attributes.animation.run_loop:
+        if self.attributes.anim_controller.run_loop:
             threading.Thread(target = self._anim_player, name = 'Model animation player', daemon = True).start()
     
     def compare_profiles(self, prof0, prof1):
