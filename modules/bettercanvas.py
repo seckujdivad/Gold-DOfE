@@ -178,6 +178,7 @@ class Model:
                 
             rotation = 0 #current rotation (0-359)
             transparency = 0 #current transparency (0-255)
+            
             interps_per_second = 0
             render_quality = 0 #0-3 - render quality as defined in the user's config
             uses_PIL = False
@@ -189,6 +190,9 @@ class Model:
                 sync = False
                 revert_frame = None
                 onetime_start = None
+                
+                frame = 0
+                run_loop = False
             
             class snap:
                 x = 1
@@ -242,7 +246,7 @@ class Model:
         self.attributes.pos.y = self.attributes.profiles[self.attributes.profile].offscreen.y
         
         ## start animation player if necessary
-        if self.attributes.animation.run_loop and autoplay_anims:
+        if self.attributes.anim_controller.run_loop and autoplay_anims:
             self.start_anims()
         
         # start interpolation thread
@@ -251,15 +255,6 @@ class Model:
         
         ## call set
         self.set(force = True)
-    
-    def apply_rotation(self, image_, angle):
-        return image_.rotate(0 - angle)
-    
-    def apply_transparency(self, image_, transparency):
-        try:
-            return self.pillow.image_chops.multiply(image_, self.pillow.image.new('RGBA', image_.size, color = (255, 255, 255, int(transparency))))
-        except ValueError:
-            raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
     def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, timeframe = None, wait = False):
         return self.set(x, y, rotation, transparency, frame, force, None, True, timeframe, wait)
@@ -446,35 +441,25 @@ class Model:
                     
                     self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), x, y)
     
-    def get_object(self, image_set, index, rotation, transparency, frame):
-        if not self.attributes.uses_PIL:
-            return self.attributes.canvobjs[image_set][index][0][0][frame]
-        else:
-            return self.attributes.canvobjs[image_set][index][int((rotation / 360) * self.attributes.rotation_steps)][int((transparency / 256) * self.attributes.transparency_steps)][frame]
-    
-    def get_offsets(self, i):
-        real_index = int(i * (self.attributes.num_layers_total / self.attributes.num_layers))
-        return self.attributes.offset.x * real_index, self.attributes.offset.y * real_index
+    def get_object(self, profile, frame, layer, rotation, transparency):
+        return self.attributes.profiles[profile].get_obj(frame, layer, rotation, transparency)
     
     def destroy(self):
-        for i in range(len(self.attributes.canvobjs[self.attributes.image_set])):
-            self.canvas_controller.coords(self.get_object(self.attributes.image_set, i, self.attributes.rotation, self.attributes.transparency, self.attributes.animation.current_frame), self.attributes.offscreen.x, self.attributes.offscreen.y)
+        current_profile = self.attributes.profiles[self.attributes.profile]
+        for layer in range(len(current_profile.canvobjs)):
+            self.canvas_controller.coords(self.get_object(self.attributes.profile, self.attributes.anim_controller.frame, layer, self.attributes.rotation, self.attributes.transparency), current_profile.offscreen.x, current_profile.offscreen.y)
         
-        for image_set in self.attributes.canvobjs:
-            for layers in self.attributes.canvobjs[image_set]:
-                for rotations in layers:
-                    for transparencies in rotations:
-                        for obj in transparencies:
-                            self.canvas_controller.delete(obj)
+        for profile_name in self.attributes.profiles:
+            self.attributes.profiles[profile_name].destroy()
         
-        self.attributes.animation.cont = False
+        self.attributes.anim_controller.run_loop = False
         self.attributes.running = False
     
     def _anim_player(self):
         if self.attributes.animation.sync:
             time.sleep((self.attributes.animation.delay * self.attributes.animation.frames) - ((time.time() - self.canvas_controller.global_time) % (self.attributes.animation.delay * self.attributes.animation.frames)))
         
-        while self.attributes.animation.cont:
+        while self.attributes.anim_controller.run_loop:
             time.sleep(self.attributes.animation.delay + random.choice([0, self.attributes.animation.variation, 0 - self.attributes.animation.variation]))
             
             if self.attributes.anim_controller.playing_onetime and self.attributes.animation.frames - 1 == self.attributes.animation.current_frame:
@@ -570,8 +555,10 @@ class MdlProfile:
         
         self.rotations = [1, 1, 1, 1]
         self.transparencies = [1, 1, 1, 1]
-        self.use_grid = False
         self.layers = [1, 1, 1, 1]
+        
+        self.num_existing_layers = 0
+        self.use_grid = False
         
         class animation:
             frames = 1
@@ -629,6 +616,7 @@ class MdlProfile:
         ##load the textures into memory
         if type(img_names[0]) == str: #list of gifs - load with flipped dimensions
             layer_indexes = [i for i in range(len(img_names)) if float(i / math.ceil(len(img_names) / self.layers[self.model.attributes.render_quality])).is_integer()]
+            self.num_existing_layers = len(img_names)
             
             self.imgs = [[] for i in range(self.animation.frames)]
             
@@ -645,6 +633,7 @@ class MdlProfile:
             
         else:
             layer_indexes = [i for i in range(len(img_names[0])) if float(i / math.ceil(len(img_names[0]) / self.layers[self.model.attributes.render_quality])).is_integer()]
+            self.num_existing_layers = len(img_names[0])
             
             for frame in img_names:
                 current_slot = []
@@ -676,6 +665,9 @@ class MdlProfile:
                     this_layer.append(this_rotation)
                 this_frame.append(this_layer)
             self.transformed_imgs.append(this_frame)
+            
+            if len(this_frame) > 1:
+                self.model.attributes.anim_controller.run_loop = True
         
         #make canvas objects
         for frame in self.transformed_imgs:
@@ -700,5 +692,19 @@ class MdlProfile:
             except ValueError:
                 raise ValueError('Model texture doesn\'t have an alpha channel - make sure it uses 32 bit colour')
     
-    def load_obj(self):
-        pass
+    def get_obj(self, frame, layer, rotation, transparency):
+        if self.model.attributes.uses_pil:
+            return self.canvobjs[frame][layer][int(rotation / 360) * self.rotations[self.model.attributes.render_quality]][int(transparency / 360) * self.transparencies[self.model.attributes.render_quality]]
+        else:
+            return self.canvobjs[frame][layer][0][0]
+    
+    def get_offset(self, layer):
+        real_index = int(layer * (self.num_existing_layers / len(self.canvobjs[0])))
+        return self.offset.x * real_index, self.offset.y * real_index
+    
+    def destroy(self):
+        for frame in self.canvobjs:
+            for layer in frame:
+                for rotation in layer:
+                    for canvobj in rotation:
+                        self.model.canvas_controller.delete(canvobj)
