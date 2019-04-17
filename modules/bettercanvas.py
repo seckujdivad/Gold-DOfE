@@ -708,7 +708,7 @@ class MdlProfile:
         return self.clamp_to(rotation % 360, 360 / self.rotations[self.model.attributes.render_quality])
     
     def squash_transparency(self, transparency):
-        return int(transparency / self.transparencies[self.model.attributes.render_quality]) * self.transparencies[self.model.attributes.render_quality]
+        return self.clamp_to(transparency, 256 / self.transparencies[self.model.attributes.render_quality])
 
     def clamp_to(self, value, division, func_clamp = int):
         return func_clamp(value / division) * division
