@@ -500,7 +500,7 @@ class Model:
             threading.Thread(target = self._anim_player, name = 'Model animation player', daemon = True).start()
     
     def compare_profiles(self, prof0, prof1):
-        """Checks if profile 0 is takes precedence over profile 1"""
+        """Checks if profile 0 takes precedence over profile 1"""
         
         if prof0 == prof1:
             return False
@@ -651,9 +651,6 @@ class MdlProfile:
                     this_layer.append(this_rotation)
                 this_frame.append(this_layer)
             self.transformed_imgs.append(this_frame)
-            
-            if len(this_frame) > 1:
-                self.model.attributes.anim_controller.run_loop = True
         
         #make canvas objects
         for frame in self.transformed_imgs:
@@ -667,6 +664,9 @@ class MdlProfile:
                     new_rotations.append(new_transparencies)
                 new_layers.append(new_rotations)
             self.canvobjs.append(new_layers)
+        
+        if len(self.canvobjs) > 1:
+            self.model.attributes.anim_controller.run_loop = True
     
     def apply_to(self, image, rotation, transparency):
         if self.uses_pil:
