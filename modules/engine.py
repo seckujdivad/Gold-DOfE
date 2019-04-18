@@ -1149,7 +1149,7 @@ class DynamicStringDisplay:
         self.refresh()
 
 class Panel(modules.bettercanvas.Model):
-    def __init__(self, canvas_controller, mat_name, map_path, layer, autoplay_anims = False):
+    def __init__(self, canvas_controller, mat_name, map_path, layer, autoplay_anims = True):
         self.mat_name = mat_name
         
         with open(os.path.join(map_path, 'materials', mat_name), 'r') as file:

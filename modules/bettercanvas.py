@@ -501,7 +501,6 @@ class Model:
     
     def compare_profiles(self, prof0, prof1):
         """Checks if profile 0 takes precedence over profile 1"""
-        
         if prof0 == prof1:
             return False
         
