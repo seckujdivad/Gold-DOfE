@@ -41,7 +41,7 @@ class Client:
             self.send_raw(data.as_json())
         except OSError:
             if self._log is not None:
-                self._log.add('sending', 'Couldn\'t send request: {}'.format(req.pretty_print()))
+                self._log.add('sending', 'Couldn\'t send request: {}'.format(data.pretty_print()))
     
     def disconnect(self):
         self.connection.close()
