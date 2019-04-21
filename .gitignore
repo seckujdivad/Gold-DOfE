@@ -138,6 +138,12 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+#pycharm
+.idea/*
+
+#vscode
+.vscode
+
 # Project
 server/logs/*
 !server/logs/_placeholder
@@ -146,8 +152,6 @@ server/database.db
 server/database.db
 *.db
 *.db
-
-.idea/*
 
 user/config.json
 user/debug.json
