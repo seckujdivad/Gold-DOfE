@@ -3,6 +3,14 @@ import sqlite3 as sql
 import threading
 import time
 
+
+class DBAccess:
+    def __init__(self, path, log = None):
+        
+        pipe, self.pipe = mp.Pipe()
+        
+        threading.Thread(target = self.databasecontrollerd, name = 'Server database controller daemon', args = [pipe]).start()
+
 class ServerDatabase:
     def __init__(self, path, log = None):
         self.path = path
