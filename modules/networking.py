@@ -480,6 +480,16 @@ db_reset: resets the database'''
         
     def round_ended(self, winner = None):
         self.serverdata.round_in_progress = False
+        
+        for client in self.clients:
+            if client.metadata.active:
+                self.database.add_user(client.metadata.username) #make sure the user is in the database first
+                
+                if winner is None or not client.metadata.team_id == winner:
+                    self.database.increment_user(client.metadata.username, losses = 1)
+                else:
+                    self.database.increment_user(client.metadata.username, wins = 1)
+        
         if self.serverdata.gamemode == 0:
             self.xvx_round_ended(winner = winner)
         
