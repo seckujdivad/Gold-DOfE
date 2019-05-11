@@ -130,6 +130,7 @@ close_window: close the console
 say: send a message to all players
 say_pop: send a fullscreen message to all players
 
+mp_:
 mp_gamemode: set the gamemode
 mp_respawn_all: respawn all players
 mp_scoreline_team1: set the scoreline of team 1
@@ -139,7 +140,11 @@ sv_:
 sv_conns: list of connections to the server
 sv_kick_addr: kick a player by address
 sv_quit: destroy the server
-sv_hitbox: choose whether or not to use accurate hitboxes'''
+sv_hitbox: choose whether or not to use accurate hitboxes
+
+db_:
+db_commit: push all database changes to the disk
+db_reset: resets the database'''
         elif name == 'map':
             if source == 'internal':
                 try:
@@ -150,6 +155,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     output = 'Error while loading map \'{}\'\nERROR: {}\n{}'.format(argstring, type, value)
             else:
                 output = 'No permissions'
+                
         elif name.startswith('say'):
             if name == 'say':
                 self.send_all(Request(command = 'say', arguments = {'text': argstring}))
@@ -157,6 +163,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
             elif name == 'say_pop':
                 self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': argstring}))
                 output = 'Said \'{}\' to all users with a fullscreen message'.format(argstring)
+                
         elif name.startswith('sv_'):
             if name == 'sv_kick_addr':
                 if source == 'internal':
@@ -167,12 +174,14 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                         output = 'Error while kicking \'{}\''.format(argstring)
                 else:
                     output = 'No permissions'
+                    
             elif name == 'sv_quit':
                 if source == 'internal':
                     self.quit()
                     output = 'Server is now offline'
                 else:
                     output = 'No permissions'
+                    
             elif name == 'sv_hitbox':
                 if source == 'internal':
                     try:
@@ -183,6 +192,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                     output = 'No permissions'
             else:
                 output = 'Command not found, try \'help\''
+                
         elif name.startswith('mp_'):
             if name == 'mp_gamemode':
                 if source == 'internal':
@@ -196,12 +206,14 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                         output = ['Gamemode not supported by this map', 'Gamemode changed successfully', 'This is already the gamemode - no action taken'][self.set_gamemode(int(argstring))]
                 else:
                     output = 'No permissions'
+                    
             elif name == 'mp_respawn_all':
                 if source == 'internal':
                     self.respawn_all()
                     output = 'Done!'
                 else:
                     output = 'No permissions'
+                    
             elif name.startswith('mp_scoreline_'):
                 if name == 'mp_scoreline_team1':
                     if argstring == '':
@@ -210,6 +222,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                         self.set_scoreline(score0 = int(argstring))
                     else:
                         output = 'No permissions'
+                        
                 elif name == 'mp_scoreline_team2':
                     if argstring == '':
                         output = 'Score for team 2: {}'.format(self.serverdata.scoreline[1])
@@ -217,16 +230,45 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
                         self.set_scoreline(score1 = int(argstring))
                     else:
                         output = 'No permissions'
+                        
+                else:
+                    output = 'Command not found, try \'help\''
+                    
+            else:
+                output = 'Command not found, try \'help\''
+        
+        elif name.startswith('db_'):
+            if name == 'db_commit':
+                if source == 'internal':
+                    self.database.commit()
+                    output = 'Temporary database changes committed'
+                else:
+                    output = 'No permissions'
+            
+            elif name == 'db_reset':
+                if source == 'internal':
+                    self.database.reset()
+                    output = 'Database reset'
+                else:
+                    output = 'No permissions'
+                    
+            else:
+                output = 'Command not found, try \'help\''
+                        
         elif name == 'exec':
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(argstring)), 'r') as file:
                 text = file.read()
             output = self.run_script(text)
+            
         elif name == 'echo':
             output = argstring
+            
         elif name == 'clear':
             output = '$$clear$$'
+            
         elif name == 'close_window':
             output = '$$close_window$$'
+            
         else:
             output = 'Command not found, try \'help\''
             
@@ -295,6 +337,7 @@ sv_hitbox: choose whether or not to use accurate hitboxes'''
         self.send_all(Request(command = 'disconnect', arguments = {'clean': True}))
         self.serverdata.running = False
         self.connection.close()
+        self.database.close()
     
     def get_team_id(self, team_quantities):
         return team_quantities.index(min(team_quantities))
