@@ -198,7 +198,7 @@ class ServerClient:
             self.client_display_text(['chat', 'new mode', 'player'], [self.metadata.username])
             self.output_console('{} is now playing'.format(self.metadata.username))
             
-            for client in self.serverdata.conn_data:
+            for client in self.server.clients:
                 if client.metadata.active:
                     self.push_positions()
     
