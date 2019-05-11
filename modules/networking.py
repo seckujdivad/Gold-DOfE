@@ -20,20 +20,24 @@ class Server:
             host = '' #hostname of server
             port = port_ #port server is operating on
             connections = [] #open or closed connections with clients
+            
+            running = True #whether or not server is running
+            
+            tickrate = 10 #times to process items per second
+            looptime = 1 / tickrate #time per loop
+            
             map = None #map name
             mapdata = None #map attributes
-            conn_data = [] #individual spaces for connections to store data to be publicly accessible
+            
+            item_dicts = {} #store attributes of the map's possible items
             item_objects = [] #store ongoing items
             item_scripts = {}
             item_ticket = 0 #allow clients to know which items are which from tick to tick
-            tickrate = 10 #times to process items per second
-            looptime = 1 / tickrate #time per loop
+            
             gamemode = None #current gamemode int
             scoreline = [0, 0] #current game scoreline
             round_start_time = None #timestamp for start of round
             round_in_progress = False #whether or not a round is in progress
-            running = True #whether or not server is running
-            item_dicts = {} #store attributes of the map's possible items
         self.serverdata = serverdata
         
         self.clients = []
