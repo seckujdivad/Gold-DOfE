@@ -185,7 +185,8 @@ db_reset: resets the database'''
             elif name == 'sv_hitbox':
                 if source == 'internal':
                     try:
-                        self.set_hitboxes(argstring)
+                        for client in self.clients:
+                            client.set_hitboxes(argstring)
                     except ValueError:
                         output = 'Error while setting hitboxes to \'{}\''.format(argstring)
                 else:
