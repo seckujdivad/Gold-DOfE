@@ -76,9 +76,10 @@ class ServerDatabase(DBAccess):
         
         self._funcs['add_user'] = self._daemonfuncs_add_user
         self._funcs['user_connected'] = self._daemonfuncs_user_connected
-        self._funcs['match_concluded'] = self._daemonfuncs_match_concluded
+        self._funcs['match_concluded'] = print
         self._funcs['make'] = self._daemonfuncs_make
         self._funcs['get_user_data'] = self._daemonfuncs_get_user_data
+        self._funcs['increment_user'] = self._daemonfuncs_increment_user
         
         if self.is_new:
             self.make()
@@ -90,8 +91,7 @@ class ServerDatabase(DBAccess):
             self._log_wrapper('Added user {}'.format(username))
             
         else:
-            self._log_wrapper('Couldn\'t add user {}'.format(username))
-            raise ValueError('Username "{}" is already in use'.format(username))
+            self._log_wrapper('Couldn\'t add user {} - already exists'.format(username))
     
     def _daemonfuncs_user_connected(self, username):
         'Add a user if they don\'t already exist. Update their last connection time if they do'
@@ -99,17 +99,6 @@ class ServerDatabase(DBAccess):
             self._daemonfuncs_add_user(username)
         self._db_connection.execute("UPDATE users SET lastconn = (?) WHERE username = (?)", (time.time(), username))
         self._log_wrapper('User {} connected'.format(username))
-    
-    def _daemonfuncs_match_concluded(self, winner_name, loser_name):
-        'Update win/loss records for two users'
-        if (self._daemonfuncs_get_user_data(winner_name) is not None) and (self._daemonfuncs_get_user_data(winner_name) is not None):
-            self._db_connection.execute('UPDATE users SET wins = wins + 1 WHERE username = (?)', (winner_name,))
-            self._db_connection.execute('UPDATE users SET losses = losses + 1 WHERE username = (?)', (loser_name,))
-            self._log_wrapper('{} beat {}, stored in database'.format(winner_name, loser_name))
-            
-        else:
-            self._log_wrapper('Couldn\'t find either {} or {}'.format(winner_name, loser_name))
-            raise ValueError('Either {} or {} do not exist'.format(winner_name, loser_name))
     
     def _daemonfuncs_get_user_data(self, username):
         'Return all information on a user'
@@ -134,3 +123,10 @@ class ServerDatabase(DBAccess):
 	`losses`	INTEGER,
 	`metadata`	TEXT
 )""")
+    
+    def _daemonfuncs_increment_user(self, username, elo = 0, wins = 0, losses = 0):
+        if self._daemonfuncs_get_user_data(username) is None:
+            self._log_wrapper('Couldn\'t find player "{}" in database'.format(username))
+        
+        else:
+            self._db_connection.execute('UPDATE users SET elo = elo + (?), wins = wins + (?), losses = losses + (?) WHERE username = (?)', (elo, wins, losses, username))
