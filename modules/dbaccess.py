@@ -11,11 +11,11 @@ class DBAccess:
     """
     def __init__(self, path, log = None):
         self.path = path
-        self._log = _log
+        self._log = log
         
         self._db_connection = None
         self._running = True
-        self._funcs = {'close', self._daemonfuncs_close}
+        self._funcs = {'close': self._daemonfuncs_close}
         
         self.is_new = not os.path.isfile(self.path)
         
