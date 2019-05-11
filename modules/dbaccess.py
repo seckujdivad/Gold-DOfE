@@ -15,7 +15,8 @@ class DBAccess:
         
         self._db_connection = None
         self._running = True
-        self._funcs = {'close': self._daemonfuncs_close}
+        self._funcs = {'close': self._daemonfuncs_close,
+                       'commit': self._daemonfuncs_commit}
         
         self.is_new = not os.path.isfile(self.path)
         
@@ -64,6 +65,9 @@ class DBAccess:
     
     def _daemonfuncs_close(self):
         self._running = False
+    
+    def _daemonfuncs_commit(self):
+        self._db_connection.commit()
 
 
 class ServerDatabase(DBAccess):
