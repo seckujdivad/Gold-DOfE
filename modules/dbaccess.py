@@ -2,14 +2,64 @@ import multiprocessing as mp
 import sqlite3 as sql
 import threading
 import time
+import os
 
 
 class DBAccess:
+    """
+    Flexible SQL database slave
+    """
     def __init__(self, path, log = None):
+        self.path = path
+        self.log = log
         
-        pipe, self.pipe = mp.Pipe()
+        self._db_connection = None
+        self._running = True
+        self._funcs = {'close', self._daemonfuncs_close}
         
-        threading.Thread(target = self.databasecontrollerd, name = 'Server database controller daemon', args = [pipe]).start()
+        self.is_new = not os.path.isfile(self.path)
+        
+        pipe, self._pipe = mp.Pipe()
+        
+        threading.Thread(target = self._databased, name = 'Database daemon', args = [pipe], daemon = True).start()
+    
+    def __getattr__(self, item):
+        if item in self._funcs:
+            return lambda *args, **kwargs: self._generic_func(item, *args, **kwargs)
+        else:
+            raise AttributeError(item)
+    
+    def _generic_func(self, func_name, *args, **kwargs):
+        master, slave = mp.Pipe()
+        
+        self._pipe.send([slave, func_name, args, kwargs])
+        
+        code, result = master.recv()
+        
+        if code == 0:
+            return result
+        elif code == 1:
+            raise AttributeError(result)
+    
+    def _databased(self, pipe):
+        self._db_connection = sql.connect(self.path)
+        
+        while self._running:
+            master_pipe, func_name, args, kwargs = pipe.recv()
+            
+            if func_name in self._funcs:
+                master_pipe.send((0, self._funcs[func_name](*args, **kwargs)))
+            else:
+                master_pipe.send((1, 'Function "{}" not found'.format(func_name)))
+            
+            self._db_connection.commit()
+        self._db_connection.close()
+    
+    ###in-thread functions - should only be called by daemon
+    
+    def _daemonfuncs_close(self):
+        self._running = False
+        
 
 class ServerDatabase:
     def __init__(self, path, log = None):
