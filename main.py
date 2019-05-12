@@ -58,6 +58,8 @@ class App:
         self.ui.set_trigger('quit', self.close)
         self.ui.set_trigger('host server', self.host_server)
         self.ui.set_trigger('close server', self.close_server)
+
+        self.ui.set_trigger('request client', self.get_network_client)
     
     def connect_to_server(self, server_data):
         with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
@@ -77,7 +79,7 @@ class App:
             
         self.client = modules.netclients.Client(server_data, self.ui)
         
-        self.ui.load('game')
+        self.ui.load('server connected')
     
     def host_server(self, console_frame):
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
@@ -116,6 +118,9 @@ class App:
             os._exit(0)
         else:
             sys.exit(0)
+    
+    def get_network_client(self):
+        return self.client
     
     def close(self):
         self.ui.root.destroy()

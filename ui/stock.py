@@ -42,7 +42,7 @@ class UIMenu(modules.ui.UIObject):
             
         pilrender_msg = settingsdict['graphics']['PILrender']
         if not pilrender_msg:
-            pilrender_msg = 'False (WARNING! - disables sprite rotation)'
+            pilrender_msg = 'False (WARNING! - disables sprite rotation and transparency)'
             
         text_ = 'Name: {}, PIL rendering: {} \nGo to settings to make sure all packages have been installed'.format(settingsdict['user']['name'], pilrender_msg)
         self._elements.label_userdata.config(text = text_)
@@ -686,3 +686,33 @@ class EditorTree(modules.editor.EditorSnapin):
     def set_clipboard(self, text):
         self.editorobj.page._ui.root.clipboard_clear()
         self.editorobj.page._ui.uiobject.root.clipboard_append(text)
+
+class UIClientConnected(modules.ui.UIObject):
+    def __init__(self, frame, ui):
+        super().__init__(frame, ui)
+
+        self.name = 'Connected'
+        self.internal_name = 'server connected'
+
+        self.client = None
+
+        #ui elements
+        self._elements.button_join = tk.Button(frame, text = 'Join game', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+
+        ##leaderboard
+        self._elements.leaderboard_label = tk.Label(frame, text = 'Server leaderboard', **self._styling.get(font_size = 'medium', object_type = tk.Label))
+
+        self._elements.leaderboard_frame = tk.Frame(frame)
+
+        #display itmes
+        self._elements.leaderboard_label.grid(row = 0, column = 0, sticky = 'NESW')
+        self._elements.leaderboard_frame.grid(row = 1, column = 0, sticky = 'NESW')
+        self._elements.button_join.grid(row = 2, column = 0, sticky = 'NESW')
+
+        self._styling.set_weight(frame, 1, 3)
+    
+    def _on_load(self):
+        self.client = self._call_trigger('request client')
+    
+    def _load_game(self):
+        self._load_page('game')

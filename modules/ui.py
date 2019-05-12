@@ -153,11 +153,14 @@ class UI:
         if string in self.triggers:
             for function in self.triggers[string]:
                 if args is None:
-                    function()
+                    return function()
+
                 else:
-                    function(*args)
+                    return function(*args)
+                    
         else:
             raise ValueError('Trigger "{}" hasn\'t been registered'.format(string))
+
 
 class TkFlipSwitch:
     def __init__(self, container, **kwargs):
@@ -204,6 +207,7 @@ class TkFlipSwitch:
         if run_binds and 'command' in self.internal_args['options'][index] and (not self.internal_args['options'][index]['command'] is None):
             self.internal_args['options'][index]['command']()
 
+
 class UIObject:
     def __init__(self, frame, ui):
         self.name = None
@@ -212,6 +216,9 @@ class UIObject:
         self._ui = ui
         
         self._call_trigger = self._ui.call_trigger
+        self._set_trigger = self._ui.set_trigger
+        self._clear_triggers = self._ui.clear_triggers
+
         self._styling = self._ui.styling
         self._load_page = self._ui.load
         
