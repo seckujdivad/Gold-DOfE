@@ -43,6 +43,39 @@ class Client:
             if self._log is not None:
                 self._log.add('sending', 'Couldn\'t send request: {}'.format(data.pretty_print()))
     
+    def read_var(self, category):
+        self.var_update('read', category, None)
+    
+    def write_var(self, category, to_write):
+        self.var_update('write', category, to_write)
+    
+    def var_update(self, mode, category, to_write):
+        if type(to_write) is not dict:
+            to_write = {'value': to_write}
+        
+        if mode.lower().startswith('r'):
+            self.send(Request(command = 'var update r',
+                              subcommand = category))
+                              
+        elif mode.lower().startswith('w'):
+            self.send(Request(command = 'var update w',
+                              subcommand = category,
+                              arguments = to_write))
+    
+    def say(self, text):
+        self.send(Request(command = 'say', arguments = {'text': text}))
+    
+    def use_item(self, item, rotation, position, slot):
+        self.game.client.send(Request(command = 'use',
+                                      subcommand = 'client item',
+                                      arguments = {'item': item,
+                                                   'rotation': rotation,
+                                                   'position': position,
+                                                   'slot': slot}))
+    
+    def notify_map_load_finished(self):
+        self.send(Request(command = 'map loaded'))
+    
     def disconnect(self):
         self.connection.close()
 
