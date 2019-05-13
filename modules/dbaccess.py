@@ -80,7 +80,7 @@ class ServerDatabase(DBAccess):
         self._funcs['make'] = self._daemonfuncs_make
         self._funcs['get_user_data'] = self._daemonfuncs_get_user_data
         self._funcs['increment_user'] = self._daemonfuncs_increment_user
-        
+        self._funcs['get_leaderboard'] = self._daemonfuncs_get_leaderboard
         if self.is_new:
             self.make()
         
@@ -130,3 +130,17 @@ class ServerDatabase(DBAccess):
         
         else:
             self._db_connection.execute('UPDATE users SET elo = elo + (?), wins = wins + (?), losses = losses + (?) WHERE username = (?)', (elo, wins, losses, username))
+    
+    def _daemonfuncs_get_leaderboard(self, num):
+        cursor = self._db_connection.execute('SELECT username, elo, wins, losses FROM users ORDER BY elo DESC')
+
+        i = 0
+        last_result = ''
+        output = []
+        while i < num and last_result is not None:
+            last_result = cursor.fetchone()
+            if last_result is not None:
+                output.append(last_result)
+            i += 1
+
+        return output
