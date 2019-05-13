@@ -76,6 +76,15 @@ class Client:
     def notify_map_load_finished(self):
         self.send(Request(command = 'map loaded'))
     
+    def read_db(self, read_from, arguments = {}):
+        self.send(Request(command = 'db read', subcommand = read_from, arguments = arguments))
+    
+    def write_db(self, write_to, data):
+        if type(data) is not dict:
+            data = {'data': data}
+
+        self.send(Request(command = 'db write', subcommand = write_to, arguments = data))
+    
     def disconnect(self):
         self.connection.close()
 
@@ -417,6 +426,13 @@ class ServerClient:
         
         elif req.command == 'say':
             self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}))
+        
+        elif req.command == 'db read':
+            if req.subcommand == 'leaderboard':
+                self.send(Request(command = 'db read response', subcommand = 'leaderboard', arguments = {'data': self.server.database.get_leaderboard(req.arguments['num'])}))
+        
+        elif req.command == 'db write':
+            pass
     
     def close(self):
         self.metadata.active = False
