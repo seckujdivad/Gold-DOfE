@@ -698,21 +698,37 @@ class UIClientConnected(modules.ui.UIObject):
 
         #ui elements
         self._elements.button_join = tk.Button(frame, text = 'Join game', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.button_disconnect = tk.Button(frame, text = 'Disconnect', command = self.return_to_parent, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         ##leaderboard
         self._elements.leaderboard_label = tk.Label(frame, text = 'Server leaderboard', **self._styling.get(font_size = 'medium', object_type = tk.Label))
 
         self._elements.leaderboard_frame = tk.Frame(frame)
+        self._elements.leaderboard_listbox = tk.Listbox(self._elements.leaderboard_frame, height = 10, width = 10, **self._styling.get(font_size = 'small', object_type = tk.Listbox))
+        self._elements.leaderboard_scrollbar = tk.Scrollbar(self._elements.leaderboard_frame, command = self._elements.leaderboard_listbox.yview, **self._styling.get(font_size = 'small', object_type = tk.Scrollbar))
+        self._elements.leaderboard_listbox.config(yscrollcommand = self._elements.leaderboard_scrollbar.set)
 
-        #display itmes
-        self._elements.leaderboard_label.grid(row = 0, column = 0, sticky = 'NESW')
-        self._elements.leaderboard_frame.grid(row = 1, column = 0, sticky = 'NESW')
-        self._elements.button_join.grid(row = 2, column = 0, sticky = 'NESW')
+        self._elements.leaderboard_scrollbar.pack(side = tk.RIGHT, fill = tk.Y, expand = False)
+        self._elements.leaderboard_listbox.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
 
-        self._styling.set_weight(frame, 1, 3)
+        #display items
+        self._elements.leaderboard_label.grid(row = 0, column = 1, sticky = 'NESW')
+        self._elements.leaderboard_frame.grid(row = 1, column = 1, sticky = 'NESW')
+        self._elements.button_join.grid(row = 2, column = 1, sticky = 'NESW')
+        self._elements.button_disconnect.grid(row = 2, column = 0, sticky = 'NESW')
+
+        self._styling.set_weight(frame, 2, 3)
     
     def _on_load(self):
         self.client = self._call_trigger('request client')
     
     def _load_game(self):
         self._load_page('game')
+    
+    def _recv_handler(self, request):
+        if self._active:
+            pass #handle
+    
+    def return_to_parent(self):
+        self.client.disconnect()
+        self._load_page('server connect')
