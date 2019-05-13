@@ -81,6 +81,7 @@ class ServerDatabase(DBAccess):
         self._funcs['get_user_data'] = self._daemonfuncs_get_user_data
         self._funcs['increment_user'] = self._daemonfuncs_increment_user
         self._funcs['get_leaderboard'] = self._daemonfuncs_get_leaderboard
+        
         if self.is_new:
             self.make()
         
