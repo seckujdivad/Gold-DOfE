@@ -721,13 +721,22 @@ class UIClientConnected(modules.ui.UIObject):
     
     def _on_load(self):
         self.client = self._call_trigger('request client')
+        self.client.listener.binds.append(self._recv_handler)
+
+        #request data to populate ui
+        self.client.read_db('leaderboard', {'num': 5})
     
     def _load_game(self):
         self._load_page('game')
     
     def _recv_handler(self, request):
         if self._active:
-            pass #handle
+            if request.command == 'db read response':
+                if request.subcommand == 'leaderboard':
+                    self._elements.leaderboard_listbox.delete(0, tk.END)
+
+                    for item in request.arguments['data']:
+                        self._elements.leaderboard_listbox.insert(tk.END, '{elo} - {username} ({wins}:{losses})'.format(username = item[0], elo = item[1], wins = item[2], losses = item[3]))
     
     def return_to_parent(self):
         self.client.disconnect()
