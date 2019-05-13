@@ -724,7 +724,7 @@ class UIClientConnected(modules.ui.UIObject):
         self.client.listener.binds.append(self._recv_handler)
 
         #request data to populate ui
-        self.client.read_db('leaderboard', {'num': 5})
+        self.client.read_db('leaderboard', {'num': -1})
     
     def _load_game(self):
         self._load_page('game')

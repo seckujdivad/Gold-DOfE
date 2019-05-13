@@ -81,7 +81,7 @@ class ServerDatabase(DBAccess):
         self._funcs['get_user_data'] = self._daemonfuncs_get_user_data
         self._funcs['increment_user'] = self._daemonfuncs_increment_user
         self._funcs['get_leaderboard'] = self._daemonfuncs_get_leaderboard
-        
+
         if self.is_new:
             self.make()
         
@@ -135,13 +135,17 @@ class ServerDatabase(DBAccess):
     def _daemonfuncs_get_leaderboard(self, num):
         cursor = self._db_connection.execute('SELECT username, elo, wins, losses FROM users ORDER BY elo DESC')
 
-        i = 0
-        last_result = ''
-        output = []
-        while i < num and last_result is not None:
-            last_result = cursor.fetchone()
-            if last_result is not None:
-                output.append(last_result)
-            i += 1
+        if num == -1:
+            return cursor.fetchall()
+        
+        else:
+            i = 0
+            last_result = ''
+            output = []
+            while i < num and last_result is not None:
+                last_result = cursor.fetchone()
+                if last_result is not None:
+                    output.append(last_result)
+                i += 1
 
-        return output
+            return output
