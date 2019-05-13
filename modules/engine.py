@@ -76,7 +76,7 @@ class Game:
         self.message_pipe.send(['info', 'Connected to {}:{}'.format(self.client.serverdata.host, self.client.serverdata.port)])
         
         self.client.listener.binds.append(self.recv_handler)
-        self.client.send(modules.netclients.Request(command = 'var update r', subcommand = 'map'))
+        self.client.read_var('map')
         
         self.running = True
         threading.Thread(target = self.main, daemon = True).start()
@@ -89,11 +89,11 @@ class Game:
         while self.running:
             time.sleep(0.05)
             if self.engine.current_map.player is not None:
-                self.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'position', arguments = {'x': self.engine.current_map.player.attributes.pos.x, 'y': self.engine.current_map.player.attributes.pos.y, 'rotation': self.engine.current_map.player.attributes.rotation}))
+                self.client.write_var('position', {'x': self.engine.current_map.player.attributes.pos.x, 'y': self.engine.current_map.player.attributes.pos.y, 'rotation': self.engine.current_map.player.attributes.rotation})
     
     def close(self):
+        self.client.listener.binds.remove(self.recv_handler)
         self.running = False
-        self.client.disconnect()
         self.engine.keybindhandler.kill()
         self.engine.unload_current_map()
     
@@ -192,7 +192,7 @@ class Game:
                 
         elif request.command == 'var update r':
             if request.subcommand == 'username':
-                self.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'username', arguments = {'value': self.settingsdict['user']['name']}))
+                self.client.write_var('username', self.settingsdict['user']['name'])
         
         elif request.command == 'update items':
             if request.subcommand == 'server tick':
@@ -498,7 +498,7 @@ class Engine:
             self.hud.invdisp.select_index(0)
             
             #tell the server that the player has loaded in
-            self.game.client.send(modules.netclients.Request(command = 'map loaded'))
+            self.game.client.notify_map_load()
             self.log.add('map', 'Finished loading map "{}"'.format(self.current_map.name))
             
             #centre scoreline display
@@ -597,12 +597,7 @@ class Engine:
             angle = self.angle(self.game.canvas.winfo_pointerx() - self.game.canvas.winfo_rootx() - self.current_map.player.attributes.pos.x, self.game.canvas.winfo_pointery() - self.game.canvas.winfo_rooty() - self.current_map.player.attributes.pos.y)
             angle = math.degrees(angle)
             
-            self.game.client.send(modules.netclients.Request(command = 'use',
-                                                             subcommand = 'client item',
-                                                             arguments = {'item': self.hud.invdisp.get_slot_info(self.hud.invdisp.selection_index)['file name'],
-                                                                          'rotation': angle,
-                                                                          'position': [self.current_map.player.attributes.pos.x, self.current_map.player.attributes.pos.y],
-                                                                          'slot': self.hud.invdisp.selection_index}))
+            self.game.client.use_item(self.hud.invdisp.get_slot_info(self.hud.invdisp.selection_index)['file name'], angle, [self.current_map.player.attributes.pos.x, self.current_map.player.attributes.pos.y], self.hud.invdisp.selection_index)
             
             self.current_map.player.play_anim('attack')
     
@@ -772,11 +767,9 @@ class CanvasMessages:
     
     def send_message(self, event = None):
         text = self.textentry_var.get()
-        
-        self.canvcont.game.client.send(modules.netclients.Request(command = 'say', arguments = {'text': text}))
+        self.canvcont.game.client.say(text)
         
         self.textentry_var.set('')
-        
         self.canvcont.canvas.focus_set()
         
     def stop(self):
@@ -1216,7 +1209,7 @@ class Entity(modules.bettercanvas.Model):
             if self.engine.hud.healthbar is not None:
                 self.engine.hud.healthbar.set_value(self.attributes.health)
             
-            self.engine.game.client.send(modules.netclients.Request(command = 'var update w', subcommand = 'health', arguments = {'value': self.attributes.health}))
+            self.engine.game.client.write_var('health', self.attributes.health)
     
     def increment_health(self, inc):
         if inc is not None and self.attributes.health is not None:
