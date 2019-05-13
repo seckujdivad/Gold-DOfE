@@ -126,7 +126,7 @@ class SocketListen:
                 for json_data in output:
                     reqs.append(Request(json_data))
                     
-            except ConnectionResetError or ConnectionAbortedError:
+            except (ConnectionResetError, ConnectionAbortedError):
                 reqs.append(Request(command = 'disconnect', arguments = {'clean': False})) #argument 'clean' shows whether or not a message was sent to close the connection or the conenction was forcibly closed
                 self.running = False
             
