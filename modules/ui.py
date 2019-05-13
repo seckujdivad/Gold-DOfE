@@ -210,10 +210,12 @@ class TkFlipSwitch:
 
 class UIObject:
     def __init__(self, frame, ui):
-        self.name = None
-        self.internal_name = None
         self.frame = frame
         self._ui = ui
+
+        self.name = None
+        self.internal_name = None
+        self._active = False
         
         self._call_trigger = self._ui.call_trigger
         self._set_trigger = self._ui.set_trigger
@@ -231,10 +233,12 @@ class UIObject:
         self._vars = _vars
         
     def on_load(self):
+        self._active = True
         self.frame.pack(fill = tk.BOTH, expand = True)
         self._on_load()
     
     def on_close(self):
+        self._active = False
         self._on_close()
         self.frame.pack_forget()
     
