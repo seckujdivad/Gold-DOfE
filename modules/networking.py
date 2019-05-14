@@ -715,11 +715,28 @@ db_reset: resets the database''')
             
             except ValueError:
                 type, value, traceback = sys.exc_info()
-                output = 'Error while loading map \'{}\'\nERROR: {}\n{}'.format(argument, type, value)
+                output.append('Error while loading map \'{}\'\nERROR: {}\n{}'.format(argument, type, value))
+        
+        elif operation == 'exec':
+            with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(argument)), 'r') as file:
+                self.run_script(file.read())
+        
+        elif operation == 'echo':
+            output.append(argument)
+        
+        elif operation == 'clear':
+            output.append('$$clear$$')
+        
+        elif operation == 'close_window':
+            output.append('$$close_window$$')
         
         elif operation == 'say':
-            for client in self.clients:
-                self.send_all(Request(command = 'say', arguments = {'text': argument}))
+            self.send_all(Request(command = 'say', arguments = {'text': argument}))
+            output.append('Said \'{}\' to all users'.format(argument))
+        
+        elif operation == 'say_pop':
+            self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': argument}))
+            output.append('Said \'{}\' to all users with a fullscreen message'.format(argument))
     
     #properties
     def _set_tickrate(self, value):
