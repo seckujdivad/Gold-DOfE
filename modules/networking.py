@@ -738,6 +738,9 @@ db_reset: resets the database''')
             self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': argument}))
             output.append('Said \'{}\' to all users with a fullscreen message'.format(argument))
     
+    def load_map(self, map_name):
+        self.map.name = map_name
+    
     #properties
     def _set_tickrate(self, value):
         if value <= 0:
