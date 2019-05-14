@@ -598,6 +598,65 @@ db_reset: resets the database'''
             else:
                 time.sleep(0.1)
 
+
+class Lobby:
+    def __init__(self, server, log):
+        self.server = server
+        self.log = log
+
+        class items:
+            objects = []
+            dicts = {}
+            scripts = {}
+            ticket = 0
+        self.items = items
+
+        class current_round:
+            start_time = None
+            in_progress = False
+        self.current_round = current_round
+
+        class map:
+            name = None
+            data = None
+        self.map = map
+
+        self.clients = []
+
+        self.gamemode = None
+        self.scoreline = []
+
+        self._tickrate = 10
+        self._looptime = 1 / self._tickrate
+        self.tickrate = property(self._set_tickrate, self._get_tickrate)
+        self.looptime = property(self._set_looptime, self._get_looptime)
+
+        self.running = True
+    
+    #properties
+    def _set_tickrate(self, value):
+        if value <= 0:
+            raise ValueError('Tickrate must be a positive float')
+        
+        else:
+            self._tickrate = value
+            self._looptime = 1 / value
+    
+    def _get_tickrate(self):
+        return self._tickrate
+    
+    def _set_looptime(self, value):
+        if value <= 0:
+            raise ValueError('Looptime must be a positive float')
+        
+        else:
+            self._looptime = value
+            self._tickrate = 1 / value
+    
+    def _get_looptime(self):
+        return self._looptime
+        
+
 class Request:
     def __init__(self, data = None, **args):
         self.command = None
