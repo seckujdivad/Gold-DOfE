@@ -697,7 +697,7 @@ class UIClientConnected(modules.ui.UIObject):
         self.client = None
 
         #ui elements
-        self._elements.button_join = tk.Button(frame, text = 'Join game', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.button_join = tk.Button(frame, text = 'Join game', command = self._load_game, **self._styling.get(font_size = 'medium', object_type = tk.Button))
         self._elements.button_disconnect = tk.Button(frame, text = 'Disconnect', command = self.return_to_parent, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         ##leaderboard
