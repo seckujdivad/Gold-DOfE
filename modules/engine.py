@@ -498,7 +498,7 @@ class Engine:
             self.hud.invdisp.select_index(0)
             
             #tell the server that the player has loaded in
-            self.game.client.notify_map_load()
+            self.game.client.notify_map_load_finished()
             self.log.add('map', 'Finished loading map "{}"'.format(self.current_map.name))
             
             #centre scoreline display
