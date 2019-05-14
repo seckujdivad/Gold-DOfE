@@ -604,6 +604,10 @@ class Lobby:
         self.server = server
         self.log = log
 
+        class cfgs:
+            server = {}
+        self.cfgs = cfgs
+
         class items:
             objects = []
             dicts = {}
@@ -623,6 +627,8 @@ class Lobby:
 
         self.clients = []
 
+        self.teams = [0, 0]
+
         self.gamemode = None
         self.scoreline = []
 
@@ -631,7 +637,89 @@ class Lobby:
         self.tickrate = property(self._set_tickrate, self._get_tickrate)
         self.looptime = property(self._set_looptime, self._get_looptime)
 
+        #load configs
+        with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
+            self.cfgs.server = json.load(file)
+
         self.running = True
+    
+    def new_client(self, client):
+        self.clients.append(client)
+
+        client.metadata.heatlth = 100
+        client.metadata.username = 'guest'
+        client.metadata.team_id = self._generate_team_id()
+
+        for script in self.cfgs.server['scripts']['userconnect']:
+            with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
+                self.run_script(file.read())
+
+        client.interface.start()
+    
+    def _generate_team_id(self):
+        if self.teams[0] > self.teams[1]:
+            team_id = 1
+        else:
+            team_id = 0
+
+        self.teams[team_id] += 1
+
+        return team_id
+    
+    def send_all(self, req):
+        for client in self.clients:
+            client.send(req)
+    
+    def run_script(self, text, show_output = True):
+        for line in text.split('\n'):
+            output = self.handle_command(line)
+    
+    def handle_command(self, command):
+        operation = command.split(' ')[0]
+        argument = command[len(operation) + 1:]
+
+        self.log.add('command input', command)
+        
+        output = []
+        if operation == 'help':
+            output.append('''Commands:
+map: load a map by name
+exec: execute a script by name stored in the server/scripts directory
+echo: output the text given to the console
+clear: clear the console
+close_window: close the console
+
+say: send a message to all players
+say_pop: send a fullscreen message to all players
+
+mp_:
+mp_gamemode: set the gamemode
+mp_respawn_all: respawn all players
+mp_scoreline_team1: set the scoreline of team 1
+mp_scoreline_team2: set the scoreline of team 2
+
+sv_:
+sv_conns: list of connections to the server
+sv_kick_addr: kick a player by address
+sv_quit: destroy the server
+sv_hitbox: choose whether or not to use accurate hitboxes
+
+db_:
+db_commit: push all database changes to the disk
+db_reset: resets the database''')
+        
+        elif operation == 'map':
+            try:
+                self.load_map(argument)
+                output.append('Loading map \'{}\'...'.format(argument))
+            
+            except ValueError:
+                type, value, traceback = sys.exc_info()
+                output = 'Error while loading map \'{}\'\nERROR: {}\n{}'.format(argument, type, value)
+        
+        elif operation == 'say':
+            for client in self.clients:
+                self.send_all(Request(command = 'say', arguments = {'text': argument}))
     
     #properties
     def _set_tickrate(self, value):
