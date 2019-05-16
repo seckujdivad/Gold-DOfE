@@ -926,6 +926,80 @@ db_reset: resets the database''')
 
             time.sleep(max([0, self.looptime - time.time() + loop_start])) #make sure the loop is running at a constant speed
     
+    def send_text(self, path, formats = None, target = None, category = 'general'):
+        string = self.cfgs.server['messages']
+        for item in path:
+            string = string[item]
+        
+        if type(string) == list:
+            string = random.choice(list)
+        
+        if not type(string) == str:
+            raise ValueError('Invalid string path {} - doesn\'t give a string'.format(path))
+        
+        if formats is not None:
+            string = string.format(*formats)
+        
+        if path[0] == 'fullscreen':
+            req = Request(command = 'popmsg', subcommand = 'welcome', arguments = {'text': string})
+        elif path[0] == 'chat':
+            req = Request(command = 'say', subcommand = category, arguments = {'text': string, 'category': category})
+        else:
+            raise ValueError('Invalid text mode "{}"'.format(path[0]))
+        
+        if target is None:
+            self.send_all(req)
+        else:
+            target.send(req)
+    
+    def set_gamemode(self, gamemode, force = False):
+        if gamemode in self.map.data['gamemode']['supported']:
+            if self.gamemode == gamemode and not force:
+                return 2
+            
+            self.gamemode = gamemode
+
+            self.respawn_all()
+            self.set_scoreline(score0 = 0, score1 = 0)
+
+            self.send_text(['fullscreen', 'gamemode change'], formats = [['PvP arena',
+                                                                          'deathmatch',
+                                                                          'team deathmatch',
+                                                                          'PvE survival'][self.gamemode]],
+                           category = 'gamemode change')
+        else:
+            return 0
+        return 1
+    
+    def respawn_all(self):
+        for client in self.clients:
+            if client.metadata.active:
+                client.respawn()
+
+        self.round.in_progress = True
+        self.round.start_time = time.time()
+    
+    def set_scoreline(self, score0 = None, score1 = None):
+        if score0 is None:
+            score0 = self.scoreline[0]
+        
+        if score1 is None:
+            score1 = self.scoreline[1]
+        
+        self.scoreline = [score0, score1]
+
+        self.send_all(Request(command = 'var update w', subcommand = 'scoreline', arguments = {'scores': self.scoreline}))
+        self.console_output('Scoreline is now {} - {}'.format(score0, score1))
+    
+    def increment_scoreline(self, score0 = None, score1 = None):
+        if score0 is not None:
+            score0 += self.scoreline[0]
+        
+        if score1 is not None:
+            score1 += self.scoreline[1]
+        
+        self.set_scoreline(score0, score1)
+    
     def close(self):
         self.running = False
     
