@@ -627,10 +627,10 @@ class Lobby:
 
         self.clients = []
 
-        self.teams = [0, 0]
+        self.team_sizes = [0, 0]
 
         self.gamemode = None
-        self.scoreline = []
+        self.scoreline = [0, 0]
 
         self._tickrate = 10
         self._looptime = 1 / self._tickrate
@@ -657,12 +657,12 @@ class Lobby:
         client.interface.start()
     
     def _generate_team_id(self):
-        if self.teams[0] > self.teams[1]:
+        if self.team_sizes[0] > self.team_sizes[1]:
             team_id = 1
         else:
             team_id = 0
 
-        self.teams[team_id] += 1
+        self.team_sizes[team_id] += 1
 
         return team_id
     
@@ -673,6 +673,10 @@ class Lobby:
     def run_script(self, text, show_output = True):
         for line in text.split('\n'):
             output = self.handle_command(line)
+            
+            if show_output:
+                for s in output:
+                    self.console_output(s)
     
     def handle_command(self, command):
         operation = command.split(' ')[0]
@@ -737,9 +741,80 @@ db_reset: resets the database''')
         elif operation == 'say_pop':
             self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': argument}))
             output.append('Said \'{}\' to all users with a fullscreen message'.format(argument))
+        
+        elif operation == 'mp_gamemode':
+            if argument == '':
+                output.append('''Options:
+0: xvx arena
+1: deathmatch
+2: team deathmatch
+3: pve survival''')
+
+            elif not argument.isdigit():
+                output.append('Must be an integer between 0 and 3')
+            
+            else:
+                output.append('Gamemode not supported by this map', 'Gamemode changed successfully', 'This is already the gamemode - no action taken'][self.set_gamemode(int(argument))])
+        
+        elif operation == 'mp_respawn_all':
+            self.respawn_all()
+        
+        elif operation == 'mp_scoreline_team1':
+            if argument == '':
+                output.append('SCoreline for team 1: {}'.format(self.scoreline[0])
+            
+            elif not argument.isdigit():
+                output.append('Must be a non-zero integer')
+            
+            elif int(argument) < 0:
+                output.append('Must be a non-zero integer')
+            
+            else:
+                self.set_scoreline(score0 = int(argument))
+        
+        elif operation == 'mp_scoreline_team2':
+            if argument == '':
+                output.append('SCoreline for team 2: {}'.format(self.scoreline[0])
+            
+            elif not argument.isdigit():
+                output.append('Must be a non-zero integer')
+            
+            elif int(argument) < 0:
+                output.append('Must be a non-zero integer')
+            
+            else:
+                self.set_scoreline(score1 = int(argument))
+        
+        elif operation == 'sv_kick_addr':
+            try:
+                self.server.kick_address(argument)
+                output.append('Kicked connections via {}'.format(argument))
+            
+            except ValueError:
+                output.append('Error while kicking all connections via {}'.format(argument))
+        
+        elif operation == 'sv_quit':
+            self.quit()
+        
+        elif operation == 'sv_hitbox':
+            try:
+                for client in self.server.clients:
+                    client.set_hitboxes(argument)
+            except ValueError:
+                output = 'Error while setting hitboxes to \'{}\''.format(argstring)
+
+        elif operation == 'db_commit': #underlying process should happen anyway
+            self.server.database.commit()
+            output.append('Changes to database committed')
+        
+        elif operation == 'db_reset':
+            self.server.database.reset()
     
     def load_map(self, map_name):
         self.map.name = map_name
+    
+    def console_output(self, s):
+        pass
     
     #properties
     def _set_tickrate(self, value):
