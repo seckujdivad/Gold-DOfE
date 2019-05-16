@@ -600,10 +600,11 @@ db_reset: resets the database'''
 
 
 class Lobby:
-    def __init__(self, server, log):
+    def __init__(self, server, log, frame = None):
         self.server = server
         self.log = log
 
+        #define attribute structure
         class cfgs:
             server = {}
         self.cfgs = cfgs
@@ -623,6 +624,7 @@ class Lobby:
         class map:
             name = None
             data = None
+            script_loader = None
         self.map = map
 
         self.clients = []
@@ -640,6 +642,26 @@ class Lobby:
         #load configs
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
             self.cfgs.server = json.load(file)
+
+        #load components
+        self.cmdline_pipe, pipe = mp.Pipe()
+        self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, frame)
+
+        #run autoexec
+        for script_name in self.cfgs.server['scripts']['autoexec']:
+            with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script_name)), 'r') as file:
+                self.run_script(file.read(), show_output = True)
+        
+        #wait for a map to be loaded
+        while self.map.data is None:
+            time.sleep(0.01)
+        
+        self.round.start_time = time.time()
+        self.round.in_progress = True
+
+        #start threads
+        threading.Thread(target = self._roundtimerd, name = 'Round timer daemon', daemon = True).start()
+        threading.Thread(target = self._itemhandlerd, name = 'Item handler daemon', daemon = True).start()
 
         self.running = True
     
@@ -812,9 +834,40 @@ db_reset: resets the database''')
     
     def load_map(self, map_name):
         self.map.name = map_name
+
+        with open(os,path.join(sys.path[0], 'server', 'maps', self.map.name, 'list.json'), 'r') as file:
+            self.map.data = json.load(file)
+        
+        self.set_gamemode(self.map.data['gamemode']['default'])
+
+        for client in self.clients:
+            if client.metadata.active:
+                client.write_var('map', {'map': self.map.name})
+                client.write_var('team', client.metadata.team_id)
+                client.give(self.serverdata.mapdata['player']['starting items'][client.metadata.team_id])
+                client.metadata.model = random.choice(self.map.data['entity models']['player'])
+
+        self.items.dicts = {}
+        for item_name in os.listdir(os.path.join(sys.path[0], 'server', 'maps', self.map.name, 'items')):
+            if item_name.endswith('.json'):
+                with open(os.path.join(sys.path[0], 'server', 'maps', self.map.name, 'items', item_name), 'r') as file:
+                    self.items.dicts[item_name] = json.load(file)
+        
+        self.map.script_loader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items'))
+
+        scripts = self.modloader.load('ItemScript')
+        self.items.scripts = {}
+        for script_obj in scripts:
+            self.items.scripts[script_obj.internal_name] = script_obj
     
     def console_output(self, s):
+        self.cmdline_pipe.send(s)
+    
+    def _itemhandlerd(self):
         pass
+    
+    def close(self):
+        self.running = False
     
     #properties
     def _set_tickrate(self, value):
