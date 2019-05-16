@@ -375,11 +375,10 @@ class UIGame(modules.ui.UIObject):
             keybinds_data['window']['return to menu'] = [keybinds_data['window']['return to menu']]
             
         for key in keybinds_data['window']['return to menu']:
-            self._elements.canvas.bind('<{}>'.format(key), lambda event: self._load_page('menu'))
+            self._elements.canvas.bind('<{}>'.format(key), lambda event: self._load_page('server connected'))
     
     def _on_close(self):
         self._call_trigger('close game')
-        self._call_trigger('close server')
 
 
 class UIEditorChooseFile(modules.ui.UIObject):
@@ -740,4 +739,5 @@ class UIClientConnected(modules.ui.UIObject):
     
     def return_to_parent(self):
         self.client.disconnect()
+        self._call_trigger('close server')
         self._load_page('server connect')
