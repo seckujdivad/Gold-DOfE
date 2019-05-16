@@ -114,3 +114,10 @@ class ItemScript:
     def set_velocity(self, vel):
         self.attributes.velocity.x = vel * math.cos(math.radians(self.attributes.rotation))
         self.attributes.velocity.y = vel * math.sin(math.radians(self.attributes.rotation))
+    
+    def destroy(self):
+        self._destroy()
+    
+    def _destroy(self):
+        #method to be overwritten by inheriting object
+        pass

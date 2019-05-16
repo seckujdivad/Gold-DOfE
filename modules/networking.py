@@ -864,7 +864,67 @@ db_reset: resets the database''')
         self.cmdline_pipe.send(s)
     
     def _itemhandlerd(self):
-        pass
+        delayed_handles = {}
+        
+        while self.running:
+            loop_start = time.time()
+
+            ####
+            items_to_remove = [] #can't change length during iteration, have to use this ugly workaround
+            item_states = []
+            i = 0
+
+            for item in self.items.objects:
+                item_handle = item.tick()
+
+                #look for instructions that have been delayed
+                if item.attributes.ticket in delayed_handles:
+                    instructions_to_remove = [] #can't change length during iteration, have to use this ugly workaround
+                    j = 0
+                    for instruction, stamp in delayed_handles[item.attributes.ticket]:
+                        if instruction['delay'] + stamp <= time.time():
+                            instruction.pop('delay')
+                            item_handle.append(instruction)
+                            instructions_to_remove.append(j)
+                        j += 1
+                    
+                    instructions_to_remove.sort()
+                    instructions_to_remove.reverse()
+                    for j in instructions_to_remove:
+                        delayed_handles[item.attributes.ticket].pop(j)
+                
+                #look for instructions from this item relevant to this thread
+                for instruction in item_handle:
+                    if 'delay' in instruction:
+                        if item.attributes.ticket in delayed_handles:
+                            delayed_handles[item.attributes.ticket].append([instruction, time.time()])
+                        
+                        else:
+                            delayed_handles[item.attributes.ticket] = [[instruction, time.time()]]
+                    
+                    else:
+                        item_states.append(instruction)
+
+                        if i not in items_to_remove and instruction['type'] == 'remove':
+                            items_to_remove.append(i)
+                
+                i += 1
+            
+            #remove deleted items
+            items_to_remove.sort()
+            items_to_remove.reverse()
+            for i in items_to_remove:
+                self.items.objects[i].destroy()
+                self.items.objects.pop(i)
+            
+            #push new item states to clients
+            for client in self.clients:
+                client.push_item_states(item_states)
+                client.push_positions()
+
+            ####
+
+            time.sleep(max([0, self.looptime - time.time() + loop_start])) #make sure the loop is running at a constant speed
     
     def close(self):
         self.running = False
