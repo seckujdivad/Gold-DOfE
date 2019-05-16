@@ -632,6 +632,7 @@ class Lobby:
         self.team_sizes = [0, 0]
 
         self.gamemode = None
+        self.gamemode_text = property(self._set_gamemode_text, self._get_gamemode_text)
         self.scoreline = [0, 0]
 
         self._tickrate = 10
@@ -863,69 +864,6 @@ db_reset: resets the database''')
     def console_output(self, s):
         self.cmdline_pipe.send(s)
     
-    def _itemhandlerd(self):
-        delayed_handles = {}
-        
-        while self.running:
-            loop_start = time.time()
-
-            ####
-            items_to_remove = [] #can't change length during iteration, have to use this ugly workaround
-            item_states = []
-            i = 0
-
-            for item in self.items.objects:
-                item_handle = item.tick()
-
-                #look for instructions that have been delayed
-                if item.attributes.ticket in delayed_handles:
-                    instructions_to_remove = [] #can't change length during iteration, have to use this ugly workaround
-                    j = 0
-                    for instruction, stamp in delayed_handles[item.attributes.ticket]:
-                        if instruction['delay'] + stamp <= time.time():
-                            instruction.pop('delay')
-                            item_handle.append(instruction)
-                            instructions_to_remove.append(j)
-                        j += 1
-                    
-                    instructions_to_remove.sort()
-                    instructions_to_remove.reverse()
-                    for j in instructions_to_remove:
-                        delayed_handles[item.attributes.ticket].pop(j)
-                
-                #look for instructions from this item relevant to this thread
-                for instruction in item_handle:
-                    if 'delay' in instruction:
-                        if item.attributes.ticket in delayed_handles:
-                            delayed_handles[item.attributes.ticket].append([instruction, time.time()])
-                        
-                        else:
-                            delayed_handles[item.attributes.ticket] = [[instruction, time.time()]]
-                    
-                    else:
-                        item_states.append(instruction)
-
-                        if i not in items_to_remove and instruction['type'] == 'remove':
-                            items_to_remove.append(i)
-                
-                i += 1
-            
-            #remove deleted items
-            items_to_remove.sort()
-            items_to_remove.reverse()
-            for i in items_to_remove:
-                self.items.objects[i].destroy()
-                self.items.objects.pop(i)
-            
-            #push new item states to clients
-            for client in self.clients:
-                client.push_item_states(item_states)
-                client.push_positions()
-
-            ####
-
-            time.sleep(max([0, self.looptime - time.time() + loop_start])) #make sure the loop is running at a constant speed
-    
     def send_text(self, path, formats = None, target = None, category = 'general'):
         string = self.cfgs.server['messages']
         for item in path:
@@ -1000,8 +938,197 @@ db_reset: resets the database''')
         
         self.set_scoreline(score0, score1)
     
+    def round_ended(self, winner = None):
+        self.round.in_progress = False
+        
+        for client in self.clients:
+            if client.metadata.active:
+                self.server.database.add_user(client.metadata.username)
+
+                if winner is None or not client.metadata.team_id == winner:
+                    self.server.database.increment_user(client.metadata.username, losses = 1)
+                else:
+                    self.server.database.increment_user(client.metadata.username, wins = 1)
+        
+        if self.gamemode == 0:
+            self.xvx_round_ended(winner = winner)
+        
+        elif self.gamemode == 1:
+            time.sleep(self.cfgs.server['player']['gamemodes']['deathmatch']['after game time'])
+            self.respawn_all()
+        
+        elif self.gamemode == 2:
+            time.sleep(self.cfgs.server['player']['gamemodes']['team deathmatch']['after game time'])
+            self.respawn_all()
+        
+        elif self.gamemode == 3:
+            time.sleep(self.cfgs.server['player']['gamemodes']['pve survival']['after game time'])
+            self.respawn_all()
+    
+    def count_num_alive(self):
+        count = [0, 0]
+
+        for client in self.clients:
+            if client.metadata.active and client.metadata.mode == 'player' and client.metadata.health > 0:
+                count[client.metadata.team_id] += 1
+
+        return count
+
+    def xvx_round_ended(self, winner):
+        threading.Thread(target = self._xvx_round_ended, name = 'XvX round end handler', args = [winner]).start()
+    
+    def _xvx_round_ended(self, winner):
+        self.round.in_progress = False
+        
+        if winner == 0 and self.scoreline[0] + 1 == self.cfgs.server['player']['gamemodes']['xvx']['min rounds']:
+            self.xvx_game_won(0)
+            
+        elif winner == 1 and self.scoreline[1] + 1 == self.cfgs.server['player']['gamemodes']['xvx']['min rounds']:
+            self.xvx_game_won(1)
+            
+        else:
+            if winner == 0:
+                self.increment_scoreline(score0 = 1)
+                self.console_output('Team 1 won the round')
+                self.send_text(['fullscreen', 'xvx', 'round won'], ["1"], category = 'round end')
+                
+            elif winner == 1:
+                self.increment_scoreline(score1 = 1)
+                self.console_output('Team 2 won the round')
+                self.send_text(['fullscreen', 'xvx', 'round won'], ["2"], category = 'round end')
+            
+            elif winner is None:
+                self.console_output('Both teams ran out of time')
+                self.send_text(['fullscreen', 'xvx', 'round draw'], category = 'round end')
+        
+            time.sleep(self.cfgs.server['player']['gamemodes']['xvx']['after round time'])
+            self.respawn_all()
+    
+    def get_all_positions(self, omit):
+        output = []
+        for client in self.clients:
+            if client.metadata.active and client.metadata.mode == 'player' and (client not in omit):
+                d = {'x': client.metadata.pos.x,
+                     'y': client.metadata.pos.y,
+                     'rotation': client.metadata.pos.rotation,
+                     'id': client.metadata.id}
+                output.append(d)
+
+        return output
+    
+    def xvx_game_won(self, winner):
+        self.send_text(['fullscreen', 'xvx', 'game won'], formats = [winner + 1], category = 'game end')
+        
+        self.console_output('Team {} won the game'.format(winner + 1))
+        
+        threading.Thread(target = self._xvx_game_won, name = 'XvX game won handler', daemon = True).start()
+    
+    def _xvx_game_won(self):
+        time.sleep(self.cfgs.server['player']['gamemodes']['xvx']['after game time'])
+        self.set_gamemode(0, force = True)
+    
+    def get_timeleft(self):
+        if self.round.in_progress:
+            gamemode_data = self.cfgs.server['player']['gamemodes'][self.gamemode_text()]
+            if 'round time' in gamemode_data:
+                return gamemode_data['round time'] + self.round.start_time - time.time()
+            else:
+                return None
+        else:
+            return None
+    
     def close(self):
         self.running = False
+    
+    #daemons
+    def _itemhandlerd(self):
+        delayed_handles = {}
+        
+        while self.running:
+            loop_start = time.time()
+
+            ####
+            items_to_remove = [] #can't change length during iteration, have to use this ugly workaround
+            item_states = []
+            i = 0
+
+            for item in self.items.objects:
+                item_handle = item.tick()
+
+                #look for instructions that have been delayed
+                if item.attributes.ticket in delayed_handles:
+                    instructions_to_remove = [] #can't change length during iteration, have to use this ugly workaround
+                    j = 0
+                    for instruction, stamp in delayed_handles[item.attributes.ticket]:
+                        if instruction['delay'] + stamp <= time.time():
+                            instruction.pop('delay')
+                            item_handle.append(instruction)
+                            instructions_to_remove.append(j)
+                        j += 1
+                    
+                    instructions_to_remove.sort()
+                    instructions_to_remove.reverse()
+                    for j in instructions_to_remove:
+                        delayed_handles[item.attributes.ticket].pop(j)
+                
+                #look for instructions from this item relevant to this thread
+                for instruction in item_handle:
+                    if 'delay' in instruction:
+                        if item.attributes.ticket in delayed_handles:
+                            delayed_handles[item.attributes.ticket].append([instruction, time.time()])
+                        
+                        else:
+                            delayed_handles[item.attributes.ticket] = [[instruction, time.time()]]
+                    
+                    else:
+                        item_states.append(instruction)
+
+                        if i not in items_to_remove and instruction['type'] == 'remove':
+                            items_to_remove.append(i)
+                
+                i += 1
+            
+            #remove deleted items
+            items_to_remove.sort()
+            items_to_remove.reverse()
+            for i in items_to_remove:
+                self.items.objects[i].destroy()
+                self.items.objects.pop(i)
+            
+            #push new item states to clients
+            for client in self.clients:
+                client.push_item_states(item_states)
+                client.push_positions()
+
+            ####
+
+            time.sleep(max([0, self.looptime - time.time() + loop_start])) #make sure the loop is running at a constant speed
+    
+    def _roundtimerd(self):
+        while self.running:
+            if self.round.in_progress:
+                tleft = self.get_timeleft()
+                
+                self.send_all(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': tleft}))
+                
+                if tleft is None:
+                    time.sleep(0.1)
+
+                elif tleft <= 0:
+                    self.send_all(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': None}))
+                    self.round_ended()
+
+                else:
+                    delay = tleft - math.floor(tleft)
+                    
+                    if delay <= 0:
+                        time.sleep(0.5)
+
+                    else:
+                        time.sleep(delay)
+
+            else:
+                time.sleep(0.1)
     
     #properties
     def _set_tickrate(self, value):
@@ -1025,6 +1152,27 @@ db_reset: resets the database''')
     
     def _get_looptime(self):
         return self._looptime
+    
+    def _set_gamemode_text(self, text):
+        text = text.lower()
+
+        if text == 'xvx':
+            self.gamemode = 0
+        
+        elif text == 'deathmatch':
+            self.gamemode = 1
+        
+        elif text == 'team deathmatch':
+            self.gamemode = 2
+        
+        elif text == 'pve survival':
+            self.gamemode = 3
+        
+        else:
+            raise ValueError('Invalid gamemode name \'{}\''.format(text))
+    
+    def _get_gamemode_text(self):
+        return ['xvx', 'deathmatch', 'team deathmatch', 'pve survival'][self.serverdata.gamemode]
         
 
 class Request:
