@@ -182,9 +182,10 @@ class SocketListen:
         self.parent.connection.close()
 
 class ServerClient:
-    def __init__(self, server, interface):
+    def __init__(self, server, interface, lobby):
         self.server = server
         self.interface = interface
+        self.lobby = lobby
         
         self.interface.listener.binds.append(self.handle)
         
@@ -197,6 +198,7 @@ class ServerClient:
                 x = 0
                 y = 0
                 rotation = 0
+
             health = 0
             item_use_timestamp = None
             username = None
@@ -356,7 +358,7 @@ class ServerClient:
         if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
             self.output_console('User {} disconnected'.format(self.interface.address[0]))
             if 'clean' in req.arguments and not req.arguments['clean']:
-                self.output_console('Disconnect was not clean'.format(self.interface.address[0]))
+                self.output_console('Disconnect was not clean')
                 
         elif req.command == 'var update r': #client wants the server to send it a value
             if req.subcommand == 'map': #client wants the server to send the name of the current map
