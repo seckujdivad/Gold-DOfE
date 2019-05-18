@@ -210,7 +210,6 @@ class ServerClient:
         
         self.send = self.interface.send
         self.send_to = self.interface.send_to
-        self.client_display_text = self.server.send_text
     
     def output_console(self, string):
         'Send a string to the server console'
@@ -360,6 +359,13 @@ class ServerClient:
         else:
             self.server.send_all(req)
     
+    def client_display_text(self, path, formats = None, target = None, category = 'general'):
+        if self.lobby is None:
+            raise Exception('Client is not in a lobby; can\'t send formatted text')
+        
+        else:
+            self.lobby.send_text(path, formats, target, category)
+    
     def handle(self, req):
         if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
             self.output_console('User {} disconnected'.format(self.interface.address[0]))
@@ -368,7 +374,7 @@ class ServerClient:
         
         if self.lobby is None: #player is in the menu, not a lobby
             if req.command == 'say':
-            self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}), only_lobby = False)
+                self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}), only_lobby = False)
         
             elif req.command == 'db read':
                 if req.subcommand == 'leaderboard':
