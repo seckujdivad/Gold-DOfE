@@ -239,6 +239,8 @@ class Lobby:
         self.tickrate = property(self._get_tickrate, self._set_tickrate)
         self.looptime = property(self._get_looptime, self._set_looptime)
 
+        self.running = True
+
         #load configs
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
             self.cfgs.server = json.load(file)
@@ -262,8 +264,6 @@ class Lobby:
         #start threads
         threading.Thread(target = self._roundtimerd, name = 'Round timer daemon', daemon = True).start()
         threading.Thread(target = self._itemhandlerd, name = 'Item handler daemon', daemon = True).start()
-
-        self.running = True
     
     def new_client(self, client):
         self.clients.append(client)
@@ -630,7 +630,7 @@ db_reset: resets the database''')
     
     def get_timeleft(self):
         if self.current_round.in_progress:
-            gamemode_data = self.cfgs.server['player']['gamemodes'][self.gamemode_text()]
+            gamemode_data = self.cfgs.server['player']['gamemodes'][self.gamemode_text]
             if 'round time' in gamemode_data:
                 return gamemode_data['round time'] + self.current_round.start_time - time.time()
             else:
@@ -773,6 +773,7 @@ db_reset: resets the database''')
             raise ValueError('Invalid gamemode name \'{}\''.format(text))
     
     def _get_gamemode_text(self):
+        print(self.gamemode)
         return ['xvx', 'deathmatch', 'team deathmatch', 'pve survival'][self.gamemode]
     
     def _get_num_players(self):
