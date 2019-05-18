@@ -208,7 +208,6 @@ class ServerClient:
         
         self.serverdata = self.server.serverdata
         
-        self.send_all = self.server.send_all
         self.send = self.interface.send
         self.send_to = self.interface.send_to
         self.client_display_text = self.server.send_text
@@ -354,87 +353,99 @@ class ServerClient:
     def push_health(self):
         self.write_var('health', self.metadata.health)
     
+    def send_all(self, req, only_lobby = True):
+        if only_lobby:
+            self.lobby.send_all(req)
+        
+        else:
+            self.server.send_all(req)
+    
     def handle(self, req):
         if req.command == 'disconnect': #client wants to cleanly end it's connection with the server
             self.output_console('User {} disconnected'.format(self.interface.address[0]))
             if 'clean' in req.arguments and not req.arguments['clean']:
                 self.output_console('Disconnect was not clean')
-                
-        elif req.command == 'var update r': #client wants the server to send it a value
-            if req.subcommand == 'map': #client wants the server to send the name of the current map
-                self.write_var('map', {'map name': self.serverdata.map})
-                
-            elif req.subcommand == 'player model': #client wants to know it's own player model
-                if self.serverdata.map is not None:
-                    self.write_var('player model', self.metadata.model)
-            
-            elif req.subcommand == 'health':
-                self.write_var('health', self.metadata.health)
-                
-            elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
-                self.push_positions()
-            
-            elif req.subcommand == 'round time':
-                self.write_var('round time', self.server.get_timeleft())
-                
-        elif req.command == 'var update w': #client wants to update a variable on the server
-            if req.subcommand == 'position': #client wants to update it's own position
-                self.metadata.pos.x = req.arguments['x']
-                self.metadata.pos.y = req.arguments['y']
-                self.metadata.pos.rotation = req.arguments['rotation']
-                
-            elif req.subcommand == 'health': #client wants to update it's own health
-                self.update_health(req.arguments['value'], weapon = 'environment', killer = 'world')
-            
-            elif req.subcommand == 'username':
-                self.output_console('{} changed name to {}'.format(self.metadata.username, req.arguments['value']))
-                self.metadata.username = req.arguments['value']
-                self.server.database.user_connected(self.metadata.username)
-                self.client_display_text(['chat', 'client changed name'], [self.metadata.username])
-                
-        elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
-            self.give(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
-            print(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
-            self.write_var('team', self.metadata.team_id)
-            self.read_var('username')
-            self.set_mode('player')
-            
-            spawnpoint = self.generate_spawn()
-            self.setpos(spawnpoint[0], spawnpoint[1], 0)
-            
-            self.tell_use_accurate_hitscan(self.server.settingsdata['network']['accurate hit detection'])
-            
-            self.client_display_text(['fullscreen', 'welcome'], None, category = 'welcome')
-            
-        elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
-            if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
-                obj = self.serverdata.item_scripts[self.serverdata.item_dicts[req.arguments['item']]['control script']](req.arguments['item'], self.server)
-                
-                obj.attributes.creator = self
-                obj.attributes.pos.x = req.arguments['position'][0]
-                obj.attributes.pos.y = req.arguments['position'][1]
-                obj.attributes.rotation = req.arguments['rotation']
-                obj.attributes.ticket = self.serverdata.item_ticket
-                obj.set_velocity(self.serverdata.item_dicts[req.arguments['item']]['speed'])
-                
-                self.serverdata.item_objects.append(obj)
-                
-                self.serverdata.item_ticket += 1
-                self.metadata.item_use_timestamp = time.time()
-                
-                self.send(Request(command = 'increment inventory slot',
-                                  arguments = {'index': req.arguments['slot'],
-                                               'increment': -1}))
         
-        elif req.command == 'say':
-            self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}))
+        if self.lobby is None: #player is in the menu, not a lobby
+            if req.command == 'say':
+            self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}), only_lobby = False)
         
-        elif req.command == 'db read':
-            if req.subcommand == 'leaderboard':
-                self.send(Request(command = 'db read response', subcommand = 'leaderboard', arguments = {'data': self.server.database.get_leaderboard(req.arguments['num'])}))
+            elif req.command == 'db read':
+                if req.subcommand == 'leaderboard':
+                    self.send(Request(command = 'db read response', subcommand = 'leaderboard', arguments = {'data': self.server.database.get_leaderboard(req.arguments['num'])}))
+            
+            elif req.command == 'db write':
+                pass
         
-        elif req.command == 'db write':
-            pass
+        else: #player is in a lobby
+            if req.command == 'var update r': #client wants the server to send it a value
+                if req.subcommand == 'map': #client wants the server to send the name of the current map
+                    self.write_var('map', {'map name': self.serverdata.map})
+                    
+                elif req.subcommand == 'player model': #client wants to know it's own player model
+                    if self.serverdata.map is not None:
+                        self.write_var('player model', self.metadata.model)
+                
+                elif req.subcommand == 'health':
+                    self.write_var('health', self.metadata.health)
+                    
+                elif req.subcommand == 'all player positions': #client wants to see all player positions (players marked as "active")
+                    self.push_positions()
+                
+                elif req.subcommand == 'round time':
+                    self.write_var('round time', self.server.get_timeleft())
+                    
+            elif req.command == 'var update w': #client wants to update a variable on the server
+                if req.subcommand == 'position': #client wants to update it's own position
+                    self.metadata.pos.x = req.arguments['x']
+                    self.metadata.pos.y = req.arguments['y']
+                    self.metadata.pos.rotation = req.arguments['rotation']
+                    
+                elif req.subcommand == 'health': #client wants to update it's own health
+                    self.update_health(req.arguments['value'], weapon = 'environment', killer = 'world')
+                
+                elif req.subcommand == 'username':
+                    self.output_console('{} changed name to {}'.format(self.metadata.username, req.arguments['value']))
+                    self.metadata.username = req.arguments['value']
+                    self.server.database.user_connected(self.metadata.username)
+                    self.client_display_text(['chat', 'client changed name'], [self.metadata.username])
+                    
+            elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
+                self.give(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
+                print(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
+                self.write_var('team', self.metadata.team_id)
+                self.read_var('username')
+                self.set_mode('player')
+                
+                spawnpoint = self.generate_spawn()
+                self.setpos(spawnpoint[0], spawnpoint[1], 0)
+                
+                self.tell_use_accurate_hitscan(self.server.settingsdata['network']['accurate hit detection'])
+                
+                self.client_display_text(['fullscreen', 'welcome'], None, category = 'welcome')
+                
+            elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
+                if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
+                    obj = self.serverdata.item_scripts[self.serverdata.item_dicts[req.arguments['item']]['control script']](req.arguments['item'], self.server)
+                    
+                    obj.attributes.creator = self
+                    obj.attributes.pos.x = req.arguments['position'][0]
+                    obj.attributes.pos.y = req.arguments['position'][1]
+                    obj.attributes.rotation = req.arguments['rotation']
+                    obj.attributes.ticket = self.serverdata.item_ticket
+                    obj.set_velocity(self.serverdata.item_dicts[req.arguments['item']]['speed'])
+                    
+                    self.serverdata.item_objects.append(obj)
+                    
+                    self.serverdata.item_ticket += 1
+                    self.metadata.item_use_timestamp = time.time()
+                    
+                    self.send(Request(command = 'increment inventory slot',
+                                    arguments = {'index': req.arguments['slot'],
+                                                'increment': -1}))
+            
+            elif req.command == 'say':
+                self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}))
     
     def close(self):
         self.metadata.active = False
