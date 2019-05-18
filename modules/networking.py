@@ -24,8 +24,8 @@ class Server:
             running = True #whether or not server is running
         self.serverdata = serverdata
         
+        self.lobbies = []
         self.clients = []
-        self.modloader = None
         
         self.frame = frame
         
@@ -60,23 +60,12 @@ class Server:
                 self.serverdata.connections.append([addr, conn])
                 
                 netcl = modules.netclients.NetClient(addr, conn)
-                client = modules.netclients.ServerClient(self, netcl)
-                
-                client.metadata.health = 100
-                client.metadata.username = 'guest'
-                client.metadata.team_id = self.get_team_id(self.get_team_distributions())
-                
+                client = modules.netclients.ServerClient(self, netcl, None)
                 client.metadata.id = current_id
                 current_id += 1
-                
                 netcl.start()
-                
+
                 self.clients.append(client)
-                
-                for script in self.settingsdata['scripts']['userconnect']:
-                    with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
-                        text = file.read()
-                    self.output_pipe.send(self.run_script(text))
                 
     def kick_address(self, target_address):
         i = 0
@@ -94,6 +83,100 @@ class Server:
     def send_all(self, data):
         for client in self.clients:
             client.send(data)
+    
+    def make_new_lobby(self):
+        self.lobbies.append(Lobby(self, self.log))
+    
+    def handle_command(self, command):
+        operation = command.split(' ')[0]
+        argument = command[len(operation) + 1:]
+
+        self.log.add('command input', command)
+        
+        output = []
+        if operation == 'help':
+            output.append('''Commands:
+exec: execute a script by name stored in the server/scripts directory
+echo: output the text given to the console
+clear: clear the console
+close_window: close the console
+
+say: send a message to all players
+say_pop: send a fullscreen message to all players
+
+sv_:
+sv_conns: list of connections to the server
+sv_kick_addr: kick a player by address
+sv_quit: destroy the server
+
+lby_:
+lby_create: make a new lobby
+lby_list: list all lobbies
+
+db_:
+db_commit: push all database changes to the disk
+db_reset: resets the database''')
+        
+        elif operation == 'exec':
+            with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(argument)), 'r') as file:
+                self.run_script(file.read())
+        
+        elif operation == 'echo':
+            output.append(argument)
+        
+        elif operation == 'clear':
+            output.append('$$clear$$')
+        
+        elif operation == 'close_window':
+            output.append('$$close_window$$')
+        
+        elif operation == 'say':
+            self.send_all(Request(command = 'say', arguments = {'text': argument}))
+            output.append('Said \'{}\' to all users'.format(argument))
+        
+        elif operation == 'say_pop':
+            self.send_all(Request(command = 'popmsg', subcommand = 'general', arguments = {'text': argument}))
+            output.append('Said \'{}\' to all users with a fullscreen message'.format(argument))
+        
+        elif operation == 'sv_conns':
+            if len(self.serverdata.connections) == 0:
+                output.append('No connections')
+            
+            else:
+                output.append('Connections:')
+                
+                for addr, conn in self.serverdata.connections:
+                    output.append(addr)
+        
+        elif operation == 'sv_kick_addr':
+            self.kick_address(argument)
+        
+        elif operation == 'sv_quit':
+            self.quit()
+        
+        elif operation == 'lby_create':
+            self.make_new_lobby()
+        
+        elif operation == 'lby_list':
+            if len(self.lobbies) == '0':
+                output.append('No lobbies')
+            
+            else:
+                output.append('Lobbies:')
+                for lobby in self.lobbies:
+                    if lobby.running:
+                        output.append('{} - {} player(s)'.format(lobby.map.name, lobby.num_players))
+                    
+                    else:
+                        output.append('Inactive, was hosting {}'.format(lobby.map.name))
+        
+        elif operation == 'db_commit':
+            self.database.commit()
+        
+        elif operation == 'db_reset':
+            self.database.reset()
+        
+        return output
     
     def quit(self):
         self.send_all(Request(command = 'disconnect', arguments = {'clean': True}))
