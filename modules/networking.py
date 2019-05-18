@@ -178,6 +178,18 @@ db_reset: resets the database''')
         
         return output
     
+    def run_script(self, text):
+        for line in text.split('\n'):
+            self.output_pipe.send(self.handle_command(line))
+    
+    def console_output(self, data):
+        if type(data) == list:
+            for line in data:
+                self.console_output(line)
+        
+        else:
+            self.output_pipe.send(data)
+    
     def quit(self):
         self.send_all(Request(command = 'disconnect', arguments = {'clean': True}))
         self.serverdata.running = False
