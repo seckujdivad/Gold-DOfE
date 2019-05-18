@@ -160,8 +160,8 @@ class Lobby:
         while self.map.data is None:
             time.sleep(0.01)
         
-        self.round.start_time = time.time()
-        self.round.in_progress = True
+        self.current_round.start_time = time.time()
+        self.current_round.in_progress = True
 
         #start threads
         threading.Thread(target = self._roundtimerd, name = 'Round timer daemon', daemon = True).start()
@@ -219,8 +219,8 @@ echo: output the text given to the console
 clear: clear the console
 close_window: close the console
 
-say: send a message to all players
-say_pop: send a fullscreen message to all players
+say: send a message to all players in the lobby
+say_pop: send a fullscreen message to all players in the lobby
 
 mp_:
 mp_gamemode: set the gamemode
@@ -229,10 +229,10 @@ mp_scoreline_team1: set the scoreline of team 1
 mp_scoreline_team2: set the scoreline of team 2
 
 sv_:
-sv_conns: list of connections to the server
 sv_kick_addr: kick a player by address
-sv_quit: destroy the server
-sv_hitbox: choose whether or not to use accurate hitboxes
+
+lby_hitbox: choose whether or not to use accurate hitboxes
+lby_quit: close the lobby
 
 db_:
 db_commit: push all database changes to the disk
@@ -319,10 +319,10 @@ db_reset: resets the database''')
             except ValueError:
                 output.append('Error while kicking all connections via {}'.format(argument))
         
-        elif operation == 'sv_quit':
+        elif operation == 'lby_quit':
             self.close()
         
-        elif operation == 'sv_hitbox':
+        elif operation == 'lby_hitbox':
             try:
                 for client in self.server.clients:
                     client.set_hitboxes(argument)
