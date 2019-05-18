@@ -312,14 +312,14 @@ db_reset: resets the database''')
                 output.append('Must be an integer between 0 and 3')
             
             else:
-                output.append('Gamemode not supported by this map', 'Gamemode changed successfully', 'This is already the gamemode - no action taken'][self.set_gamemode(int(argument))])
+                output.append(['Gamemode not supported by this map', 'Gamemode changed successfully', 'This is already the gamemode - no action taken'][self.set_gamemode(int(argument))])
         
         elif operation == 'mp_respawn_all':
             self.respawn_all()
         
         elif operation == 'mp_scoreline_team1':
             if argument == '':
-                output.append('SCoreline for team 1: {}'.format(self.scoreline[0])
+                output.append('Scoreline for team 1: {}'.format(self.scoreline[0]))
             
             elif not argument.isdigit():
                 output.append('Must be a non-zero integer')
@@ -332,7 +332,7 @@ db_reset: resets the database''')
         
         elif operation == 'mp_scoreline_team2':
             if argument == '':
-                output.append('SCoreline for team 2: {}'.format(self.scoreline[0])
+                output.append('Scoreline for team 2: {}'.format(self.scoreline[0]))
             
             elif not argument.isdigit():
                 output.append('Must be a non-zero integer')
