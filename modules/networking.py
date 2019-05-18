@@ -22,22 +22,6 @@ class Server:
             connections = [] #open or closed connections with clients
             
             running = True #whether or not server is running
-            
-            tickrate = 10 #times to process items per second
-            looptime = 1 / tickrate #time per loop
-            
-            map = None #map name
-            mapdata = None #map attributes
-            
-            item_dicts = {} #store attributes of the map's possible items
-            item_objects = [] #store ongoing items
-            item_scripts = {}
-            item_ticket = 0 #allow clients to know which items are which from tick to tick
-            
-            gamemode = None #current gamemode int
-            scoreline = [0, 0] #current game scoreline
-            round_start_time = None #timestamp for start of round
-            round_in_progress = False #whether or not a round is in progress
         self.serverdata = serverdata
         
         self.clients = []
@@ -48,34 +32,18 @@ class Server:
         self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
         
         self.database = modules.dbaccess.ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'), modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'dblog.txt')))
-        
+
         self.output_pipe, pipe = mp.Pipe()
+        self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, self.frame)
         
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.bind((self.serverdata.host, self.serverdata.port))
         self.connection.listen(5)
         
-        self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, self.frame)
-        
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
             self.settingsdata = json.load(file)
-        for script in self.settingsdata['scripts']['autoexec']:
-            with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
-                text = file.read()
-            self.output_pipe.send(self.run_script(text))
-        
-        self.serverdata.tickrate = self.settingsdata['network']['tickrate']
-        self.serverdata.looptime = 1 / self.serverdata.tickrate
-        
-        while self.serverdata.mapdata is None:
-            time.sleep(0.01) #refuse to come online until a map is loaded
-        
-        self.serverdata.round_start_time = time.time()
-        self.serverdata.round_in_progress = True
 
         threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
-        threading.Thread(target = self.handle_items, name = 'Item handler', daemon = True).start()
-        threading.Thread(target = self.push_timeleftd, name = 'Round timer daemon', daemon = True).start()
         
     def acceptance_thread(self):
         current_id = 0
