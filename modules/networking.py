@@ -158,7 +158,7 @@ class Lobby:
 
         class map:
             name = None
-            data = None
+            data = {}
             script_loader = None
         self.map = map
 
@@ -352,14 +352,14 @@ db_reset: resets the database''')
                 output.append('Error while kicking all connections via {}'.format(argument))
         
         elif operation == 'sv_quit':
-            self.quit()
+            self.close()
         
         elif operation == 'sv_hitbox':
             try:
                 for client in self.server.clients:
                     client.set_hitboxes(argument)
             except ValueError:
-                output = 'Error while setting hitboxes to \'{}\''.format(argstring)
+                output = 'Error while setting hitboxes to \'{}\''.format(argument)
 
         elif operation == 'db_commit': #underlying process should happen anyway
             self.server.database.commit()
@@ -367,11 +367,13 @@ db_reset: resets the database''')
         
         elif operation == 'db_reset':
             self.server.database.reset()
+        
+        return output
     
     def load_map(self, map_name):
         self.map.name = map_name
 
-        with open(os,path.join(sys.path[0], 'server', 'maps', self.map.name, 'list.json'), 'r') as file:
+        with open(os.path.join(sys.path[0], 'server', 'maps', self.map.name, 'list.json'), 'r') as file:
             self.map.data = json.load(file)
         
         self.set_gamemode(self.map.data['gamemode']['default'])
@@ -380,7 +382,7 @@ db_reset: resets the database''')
             if client.metadata.active:
                 client.write_var('map', {'map': self.map.name})
                 client.write_var('team', client.metadata.team_id)
-                client.give(self.serverdata.mapdata['player']['starting items'][client.metadata.team_id])
+                client.give(self.map.data['player']['starting items'][client.metadata.team_id])
                 client.metadata.model = random.choice(self.map.data['entity models']['player'])
 
         self.items.dicts = {}
@@ -389,9 +391,9 @@ db_reset: resets the database''')
                 with open(os.path.join(sys.path[0], 'server', 'maps', self.map.name, 'items', item_name), 'r') as file:
                     self.items.dicts[item_name] = json.load(file)
         
-        self.map.script_loader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'server', 'maps', self.serverdata.map, 'items'))
+        self.map.script_loader = modules.modloader.ModLoader(os.path.join(sys.path[0], 'server', 'maps', self.map.name, 'items'))
 
-        scripts = self.modloader.load('ItemScript')
+        scripts = self.map.script_loader.load('ItemScript')
         self.items.scripts = {}
         for script_obj in scripts:
             self.items.scripts[script_obj.internal_name] = script_obj
@@ -449,8 +451,8 @@ db_reset: resets the database''')
             if client.metadata.active:
                 client.respawn()
 
-        self.round.in_progress = True
-        self.round.start_time = time.time()
+        self.current_round.in_progress = True
+        self.current_round.start_time = time.time()
     
     def set_scoreline(self, score0 = None, score1 = None):
         if score0 is None:
@@ -474,7 +476,7 @@ db_reset: resets the database''')
         self.set_scoreline(score0, score1)
     
     def round_ended(self, winner = None):
-        self.round.in_progress = False
+        self.current_round.in_progress = False
         
         for client in self.clients:
             if client.metadata.active:
@@ -513,7 +515,7 @@ db_reset: resets the database''')
         threading.Thread(target = self._xvx_round_ended, name = 'XvX round end handler', args = [winner]).start()
     
     def _xvx_round_ended(self, winner):
-        self.round.in_progress = False
+        self.current_round.in_progress = False
         
         if winner == 0 and self.scoreline[0] + 1 == self.cfgs.server['player']['gamemodes']['xvx']['min rounds']:
             self.xvx_game_won(0)
@@ -563,10 +565,10 @@ db_reset: resets the database''')
         self.set_gamemode(0, force = True)
     
     def get_timeleft(self):
-        if self.round.in_progress:
+        if self.current_round.in_progress:
             gamemode_data = self.cfgs.server['player']['gamemodes'][self.gamemode_text()]
             if 'round time' in gamemode_data:
-                return gamemode_data['round time'] + self.round.start_time - time.time()
+                return gamemode_data['round time'] + self.current_round.start_time - time.time()
             else:
                 return None
         else:
@@ -641,7 +643,7 @@ db_reset: resets the database''')
     
     def _roundtimerd(self):
         while self.running:
-            if self.round.in_progress:
+            if self.current_round.in_progress:
                 tleft = self.get_timeleft()
                 
                 self.send_all(Request(command = 'var update w', subcommand = 'round time', arguments = {'value': tleft}))
@@ -707,7 +709,7 @@ db_reset: resets the database''')
             raise ValueError('Invalid gamemode name \'{}\''.format(text))
     
     def _get_gamemode_text(self):
-        return ['xvx', 'deathmatch', 'team deathmatch', 'pve survival'][self.serverdata.gamemode]
+        return ['xvx', 'deathmatch', 'team deathmatch', 'pve survival'][self.gamemode]
         
 
 class Request:
