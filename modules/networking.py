@@ -216,15 +216,16 @@ class Lobby:
         self.clients = []
 
         self.team_sizes = [0, 0]
+        self.num_players = property(self._get_num_players)
 
         self.gamemode = None
-        self.gamemode_text = property(self._set_gamemode_text, self._get_gamemode_text)
+        self.gamemode_text = property(self._get_gamemode_text, self._set_gamemode_text)
         self.scoreline = [0, 0]
 
         self._tickrate = 10
         self._looptime = 1 / self._tickrate
-        self.tickrate = property(self._set_tickrate, self._get_tickrate)
-        self.looptime = property(self._set_looptime, self._get_looptime)
+        self.tickrate = property(self._get_tickrate, self._set_tickrate)
+        self.looptime = property(self._get_looptime, self._set_looptime)
 
         #load configs
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
@@ -761,6 +762,14 @@ db_reset: resets the database''')
     
     def _get_gamemode_text(self):
         return ['xvx', 'deathmatch', 'team deathmatch', 'pve survival'][self.gamemode]
+    
+    def _get_num_players(self):
+        total = 0
+        for client in self.clients:
+            if client.metadata.active:
+                total += 1
+        
+        return total
         
 
 class Request:
