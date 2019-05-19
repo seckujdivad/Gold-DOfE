@@ -85,6 +85,9 @@ class Client:
 
         self.send(Request(command = 'db write', subcommand = write_to, arguments = data))
     
+    def list_lobbies(self):
+        self.send(Request(command = 'lobby', subcommand = 'list'))
+    
     def disconnect(self):
         self.connection.close()
 
@@ -372,8 +375,12 @@ class ServerClient:
             if 'clean' in req.arguments and not req.arguments['clean']:
                 self.output_console('Disconnect was not clean')
         
-        elif req.command == 'join lobby':
-            self.server.join_lobby(self, req.arguments['index'])
+        elif req.command == 'lobby':
+            if req.subcommand = 'join':
+                self.server.join_lobby(self, req.arguments['index'])
+            
+            elif req.subcommand = 'list':
+                self.send(Request('lobby response', subcommand = 'list', argumemts = {'lobbies': self.server.list_lobbies(show_inactive = False)}))
         
         if self.lobby is None: #player is in the menu, not a lobby
             if req.command == 'say':

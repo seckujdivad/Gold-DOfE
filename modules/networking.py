@@ -200,6 +200,20 @@ db_reset: resets the database''')
     def join_lobby(self, client, lobby_index):
         self.lobbies[lobby_index].new_client(client)
 
+    def list_lobbies(self, show_inactive = False):
+        output = []
+        i = 0
+        for lobby in self.lobbies:
+            if lobby.running or show_inactive:
+                output.append({'index': i,
+                               'scoreline': lobby.scoreline,
+                               'players': lobby.num_players,
+                               'map': lobby.map.name,
+                               'team sizes': lobby.team_sizes})
+
+            i += 1
+        return output
+
 
 class Lobby:
     def __init__(self, server, log, frame = None):
