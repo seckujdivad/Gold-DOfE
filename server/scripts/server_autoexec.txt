@@ -1,0 +1,5 @@
+echo Loading autoexec...
+
+lby_create
+
+echo Autoexec done!

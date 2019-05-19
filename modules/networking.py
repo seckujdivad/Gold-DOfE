@@ -35,13 +35,17 @@ class Server:
 
         self.output_pipe, pipe = mp.Pipe()
         self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, self.frame)
+
+        with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
+            self.settingsdata = json.load(file)
         
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.bind((self.serverdata.host, self.serverdata.port))
         self.connection.listen(5)
-        
-        with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
-            self.settingsdata = json.load(file)
+
+        for script_name in self.settingsdata['scripts']['server']['autoexec']:
+            with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script_name)), 'r') as file:
+                self.run_script(file.read())
 
         threading.Thread(target = self.acceptance_thread, name = 'Acceptance thread', daemon = True).start()
         
@@ -66,6 +70,10 @@ class Server:
                 netcl.start()
 
                 self.clients.append(client)
+
+                for script_name in self.settingsdata['scripts']['server']['userconnect']:
+                    with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script_name)), 'r') as file:
+                        self.run_script(file.read())
                 
     def kick_address(self, target_address):
         i = 0
@@ -255,7 +263,8 @@ class Lobby:
         self._tickrate = 10
         self._looptime = 1 / self._tickrate
         self.tickrate = property(self._get_tickrate, self._set_tickrate)
-        self.looptime = property(self._get_looptime, self._set_looptime)
+        #self.looptime = property(self._get_looptime, self._set_looptime)
+        self.looptime = property(self._set_looptime, self._get_looptime)
 
         self.running = True
 
@@ -268,7 +277,7 @@ class Lobby:
         self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, frame)
 
         #run autoexec
-        for script_name in self.cfgs.server['scripts']['autoexec']:
+        for script_name in self.cfgs.server['scripts']['lobby']['autoexec']:
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script_name)), 'r') as file:
                 self.run_script(file.read(), show_output = True)
         
@@ -291,7 +300,7 @@ class Lobby:
         client.metadata.username = 'guest'
         client.metadata.team_id = self._generate_team_id()
 
-        for script in self.cfgs.server['scripts']['userconnect']:
+        for script in self.cfgs.server['scripts']['lobby']['userconnect']:
             with open(os.path.join(sys.path[0], 'server', 'scripts', '{}.txt'.format(script)), 'r') as file:
                 self.run_script(file.read())
 
