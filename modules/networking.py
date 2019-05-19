@@ -258,19 +258,25 @@ class Lobby:
 
         self.gamemode = None
         self.gamemode_text = property(self._get_gamemode_text, self._set_gamemode_text)
+        self.gamemode_text = 'xvx'
         self.scoreline = [0, 0]
 
-        self._tickrate = 10
+        self._tickrate = 15
         self._looptime = 1 / self._tickrate
         self.tickrate = property(self._get_tickrate, self._set_tickrate)
-        #self.looptime = property(self._get_looptime, self._set_looptime)
-        self.looptime = property(self._set_looptime, self._get_looptime)
+        self.looptime = property(self._get_looptime, self._set_looptime)
+
+        self.tickrate = 15
+        self.looptime = 1 / self.tickrate
 
         self.running = True
 
         #load configs
         with open(os.path.join(sys.path[0], 'server', 'config.json'), 'r') as file:
             self.cfgs.server = json.load(file)
+        
+        #put config into data structure
+        self.tickrate = self.cfgs.server['network']['tickrate']
 
         #load components
         self.cmdline_pipe, pipe = mp.Pipe()
@@ -801,7 +807,6 @@ db_reset: resets the database''')
             raise ValueError('Invalid gamemode name \'{}\''.format(text))
     
     def _get_gamemode_text(self):
-        print(self.gamemode)
         return ['xvx', 'deathmatch', 'team deathmatch', 'pve survival'][self.gamemode]
     
     def _get_num_players(self):
