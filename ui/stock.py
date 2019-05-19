@@ -702,7 +702,7 @@ class UIClientConnected(modules.ui.UIObject):
         ##leaderboard
         self._elements.leaderboard_label = tk.Label(frame, text = 'Server leaderboard', **self._styling.get(font_size = 'medium', object_type = tk.Label))
 
-        self._elements.leaderboard_frame = tk.Frame(frame)
+        self._elements.leaderboard_frame = tk.Frame(frame, **self._styling.get(font_size = 'medium', object_type = tk.Frame))
         self._elements.leaderboard_listbox = tk.Listbox(self._elements.leaderboard_frame, height = 10, width = 10, **self._styling.get(font_size = 'small', object_type = tk.Listbox))
         self._elements.leaderboard_scrollbar = tk.Scrollbar(self._elements.leaderboard_frame, command = self._elements.leaderboard_listbox.yview, **self._styling.get(font_size = 'small', object_type = tk.Scrollbar))
         self._elements.leaderboard_listbox.config(yscrollcommand = self._elements.leaderboard_scrollbar.set)
@@ -710,13 +710,34 @@ class UIClientConnected(modules.ui.UIObject):
         self._elements.leaderboard_scrollbar.pack(side = tk.RIGHT, fill = tk.Y, expand = False)
         self._elements.leaderboard_listbox.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
 
+        #lobby list
+        self._elements.lobbies_label = tk.Label(frame, text = 'Current lobbies', **self._styling.get(font_size = 'medium', object_type = tk.Label))
+        self._elements.lobbies_refresh = tk.Button(frame, text = 'Refresh', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+
+        self._elements.lobbies_frame = tk.Frame(frame, **self._styling.get(font_size = 'medium', object_type = tk.Frame))
+        self._elements.lobbies_listbox = tk.Listbox(self._elements.lobbies_frame, height = 10, width = 10, **self._styling.get(font_size = 'small', object_type = tk.Listbox))
+        self._elements.lobbies_scrollbar = tk.Scrollbar(self._elements.lobbies_frame, command = self._elements.lobbies_listbox.yview, **self._styling.get(font_size = 'small', object_type = tk.Scrollbar))
+        self._elements.lobbies_listbox.config(yscrollcommand = self._elements.lobbies_scrollbar.set)
+
+        self._elements.lobbies_scrollbar.pack(side = tk.RIGHT, fill = tk.Y, expand = False)
+        self._elements.lobbies_listbox.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
+
         #display items
         self._elements.leaderboard_label.grid(row = 0, column = 1, sticky = 'NESW')
-        self._elements.leaderboard_frame.grid(row = 1, column = 1, sticky = 'NESW')
-        self._elements.button_join.grid(row = 2, column = 1, sticky = 'NESW')
-        self._elements.button_disconnect.grid(row = 2, column = 0, sticky = 'NESW')
+        self._elements.leaderboard_frame.grid(row = 1, rowspan = 2, column = 1, sticky = 'NESW')
 
-        self._styling.set_weight(frame, 2, 3)
+        self._elements.lobbies_label.grid(row = 0, column = 0, sticky = 'NESW')
+        self._elements.lobbies_frame.grid(row = 1, column = 0, sticky = 'NESW')
+        self._elements.lobbies_refresh.grid(row = 2, column = 0, sticky = 'NESW')
+
+        self._elements.button_join.grid(row = 3, column = 1, sticky = 'NESW')
+        self._elements.button_disconnect.grid(row = 3, column = 0, sticky = 'NESW')
+
+        #self._styling.set_weight(frame, 2, 3)
+        frame.rowconfigure(1, weight = 1)
+
+        frame.columnconfigure(0, weight = 1)
+        frame.columnconfigure(1, weight = 1)
     
     def _on_load(self):
         self.client = self._call_trigger('request client')
