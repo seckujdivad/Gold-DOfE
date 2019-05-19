@@ -35,7 +35,7 @@ class UI:
                 
                 output['relief'] = cls.reliefs[relief]['relief']
             
-                if not object_type in [tk.Canvas, tk.Scrollbar]:
+                if not object_type in [tk.Canvas, tk.Scrollbar, tk.Frame]:
                     output['font'] = cls.fonts[fonts][font_size]
                 
                 return output
