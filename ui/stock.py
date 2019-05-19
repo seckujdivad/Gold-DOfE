@@ -695,6 +695,8 @@ class UIClientConnected(modules.ui.UIObject):
 
         self.client = None
 
+        self._lobby_list = []
+
         #ui elements
         self._elements.button_join = tk.Button(frame, text = 'Join game', command = self._load_game, **self._styling.get(font_size = 'medium', object_type = tk.Button))
         self._elements.button_disconnect = tk.Button(frame, text = 'Disconnect', command = self.return_to_parent, **self._styling.get(font_size = 'medium', object_type = tk.Button))
@@ -743,8 +745,12 @@ class UIClientConnected(modules.ui.UIObject):
         self.client = self._call_trigger('request client')
         self.client.listener.binds.append(self._recv_handler)
 
+        #set ui binds
+        self._elements.lobbies_refresh.config(command = self.client.list_lobbies)
+
         #request data to populate ui
         self.client.read_db('leaderboard', {'num': -1})
+        self.client.list_lobbies()
     
     def _load_game(self):
         self._load_page('game')
@@ -757,6 +763,16 @@ class UIClientConnected(modules.ui.UIObject):
 
                     for item in request.arguments['data']:
                         self._elements.leaderboard_listbox.insert(tk.END, '{elo} - {username} ({wins}:{losses})'.format(username = item[0], elo = item[1], wins = item[2], losses = item[3]))
+            
+            elif request.command == 'lobby response':
+                if request.subcommand == 'list':
+                    self._lobby_list = request.arguments['lobbies']
+
+                    format_string = '{map}: {players} player(s)'
+
+                    self._elements.lobbies_listbox.delete(0, tk.END)
+                    for lobby in self._lobby_list:
+                        self._elements.lobbies_listbox.insert(tk.END, format_string.format(**lobby))
     
     def return_to_parent(self):
         self.client.disconnect()
