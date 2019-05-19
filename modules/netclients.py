@@ -380,7 +380,7 @@ class ServerClient:
                 self.server.join_lobby(self, req.arguments['index'])
             
             elif req.subcommand == 'list':
-                self.send(Request(command = 'lobby response', subcommand = 'list', argumemts = {'lobbies': self.server.list_lobbies(show_inactive = False)}))
+                self.send(Request(command = 'lobby response', subcommand = 'list', arguments = {'lobbies': self.server.list_lobbies(show_inactive = False)}))
         
         if self.lobby is None: #player is in the menu, not a lobby
             if req.command == 'say':
