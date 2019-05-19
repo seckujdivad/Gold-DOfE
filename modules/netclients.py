@@ -372,6 +372,9 @@ class ServerClient:
             if 'clean' in req.arguments and not req.arguments['clean']:
                 self.output_console('Disconnect was not clean')
         
+        elif req.command == 'join lobby':
+            self.server.join_lobby(self, req.arguments['index'])
+        
         if self.lobby is None: #player is in the menu, not a lobby
             if req.command == 'say':
                 self.send_all(Request(command = 'say', arguments = {'text': '{}: {}'.format(self.metadata.username, req.arguments['text'])}), only_lobby = False)

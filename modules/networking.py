@@ -84,9 +84,6 @@ class Server:
         for client in self.clients:
             client.send(data)
     
-    def make_new_lobby(self):
-        self.lobbies.append(Lobby(self, self.log))
-    
     def handle_command(self, command):
         operation = command.split(' ')[0]
         argument = command[len(operation) + 1:]
@@ -196,6 +193,13 @@ db_reset: resets the database''')
         self.connection.close()
         self.database.close()
 
+    #lobby methods
+    def make_new_lobby(self):
+        self.lobbies.append(Lobby(self, self.log))
+    
+    def join_lobby(self, client, lobby_index):
+        self.lobbies[lobby_index].new_client(client)
+
 
 class Lobby:
     def __init__(self, server, log, frame = None):
@@ -268,6 +272,7 @@ class Lobby:
     def new_client(self, client):
         self.clients.append(client)
 
+        client.lobby = self
         client.metadata.heatlth = 100
         client.metadata.username = 'guest'
         client.metadata.team_id = self._generate_team_id()
