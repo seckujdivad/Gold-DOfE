@@ -255,6 +255,7 @@ class Lobby:
 
         self.team_sizes = [0, 0]
         self.num_players = property(self._get_num_players)
+        self.num_players = 0
 
         self.gamemode = None
         self.gamemode_text = property(self._get_gamemode_text, self._set_gamemode_text)
