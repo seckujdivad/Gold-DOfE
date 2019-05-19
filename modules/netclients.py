@@ -376,11 +376,11 @@ class ServerClient:
                 self.output_console('Disconnect was not clean')
         
         elif req.command == 'lobby':
-            if req.subcommand = 'join':
+            if req.subcommand == 'join':
                 self.server.join_lobby(self, req.arguments['index'])
             
-            elif req.subcommand = 'list':
-                self.send(Request('lobby response', subcommand = 'list', argumemts = {'lobbies': self.server.list_lobbies(show_inactive = False)}))
+            elif req.subcommand == 'list':
+                self.send(Request(command = 'lobby response', subcommand = 'list', argumemts = {'lobbies': self.server.list_lobbies(show_inactive = False)}))
         
         if self.lobby is None: #player is in the menu, not a lobby
             if req.command == 'say':
