@@ -740,6 +740,9 @@ class UIClientConnected(modules.ui.UIObject):
 
         frame.columnconfigure(0, weight = 1)
         frame.columnconfigure(1, weight = 1)
+
+        frame.bind('<Return>', self._load_game)
+        self._elements.lobbies_listbox.bind('<Return>', self._load_game)
     
     def _on_load(self):
         self.client = self._call_trigger('request client')
@@ -752,7 +755,7 @@ class UIClientConnected(modules.ui.UIObject):
         self.client.read_db('leaderboard', {'num': -1})
         self.client.list_lobbies()
     
-    def _load_game(self):
+    def _load_game(self, event = None):
         selection = self._elements.lobbies_listbox.curselection()
         
         if selection == ():
@@ -760,7 +763,7 @@ class UIClientConnected(modules.ui.UIObject):
         
         else:
             self.client.join_lobby(self._lobby_list[selection[0]]['index'])
-            
+
             self._load_page('game')
     
     def _recv_handler(self, request):
