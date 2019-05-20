@@ -685,6 +685,7 @@ db_reset: resets the database''')
             return None
     
     def close(self):
+        self.console_output('Lobby closed')
         self.running = False
     
     #daemons
