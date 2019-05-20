@@ -412,7 +412,7 @@ class ServerClient:
                     self.push_positions()
                 
                 elif req.subcommand == 'round time':
-                    self.write_var('round time', self.server.get_timeleft())
+                    self.write_var('round time', self.lobby.get_timeleft())
                     
             elif req.command == 'var update w': #client wants to update a variable on the server
                 if req.subcommand == 'position': #client wants to update it's own position
@@ -430,8 +430,8 @@ class ServerClient:
                     self.client_display_text(['chat', 'client changed name'], [self.metadata.username])
                     
             elif req.command == 'map loaded': #client has loaded the map and wants to be given the starting items and other information
-                self.give(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
-                print(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
+                self.give(self.lobby.map.data['player']['starting items'][self.metadata.team_id])
+                print(self.lobby.map.data['player']['starting items'][self.metadata.team_id])
                 self.write_var('team', self.metadata.team_id)
                 self.read_var('username')
                 self.set_mode('player')
@@ -443,20 +443,20 @@ class ServerClient:
                 
                 self.client_display_text(['fullscreen', 'welcome'], None, category = 'welcome')
                 
-            elif req.command == 'use' and req.arguments['item'] in self.serverdata.item_dicts:
-                if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.serverdata.item_dicts[req.arguments['item']]['use cooldown']:
-                    obj = self.serverdata.item_scripts[self.serverdata.item_dicts[req.arguments['item']]['control script']](req.arguments['item'], self.server)
+            elif req.command == 'use' and req.arguments['item'] in self.lobby.item_dicts:
+                if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.lobby.item_dicts[req.arguments['item']]['use cooldown']:
+                    obj = self.lobby.item_scripts[self.lobby.item_dicts[req.arguments['item']]['control script']](req.arguments['item'], self.server)
                     
                     obj.attributes.creator = self
                     obj.attributes.pos.x = req.arguments['position'][0]
                     obj.attributes.pos.y = req.arguments['position'][1]
                     obj.attributes.rotation = req.arguments['rotation']
-                    obj.attributes.ticket = self.serverdata.item_ticket
-                    obj.set_velocity(self.serverdata.item_dicts[req.arguments['item']]['speed'])
+                    obj.attributes.ticket = self.lobby.item_ticket
+                    obj.set_velocity(self.lobby.item_dicts[req.arguments['item']]['speed'])
                     
-                    self.serverdata.item_objects.append(obj)
+                    self.lobby.item_objects.append(obj)
                     
-                    self.serverdata.item_ticket += 1
+                    self.lobby.item_ticket += 1
                     self.metadata.item_use_timestamp = time.time()
                     
                     self.send(Request(command = 'increment inventory slot',
