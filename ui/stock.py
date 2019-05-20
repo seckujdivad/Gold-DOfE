@@ -753,6 +753,11 @@ class UIClientConnected(modules.ui.UIObject):
         self.client.list_lobbies()
     
     def _load_game(self):
+        selection = self._elements.lobbies_listbox.curselection()
+        
+        if selection == ():
+            self._show_error('You must choose a lobby', 'Choose a lobby from the right hand pane before clicking \'Join game\'\nIf there are none shown, the server operator must start one using lby_create')
+
         self._load_page('game')
     
     def _recv_handler(self, request):
@@ -778,3 +783,9 @@ class UIClientConnected(modules.ui.UIObject):
         self.client.disconnect()
         self._call_trigger('close server')
         self._load_page('server connect')
+    
+    def _show_error(self, title, message):
+        threading.Thread(target = self._show_error_threaded, args = [title, message], name = 'Error box thread', daemon = True).start()
+    
+    def _show_error_threaded(self, title, message):
+        messagebox.showerror(title, message)
