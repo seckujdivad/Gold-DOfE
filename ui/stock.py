@@ -785,7 +785,4 @@ class UIClientConnected(modules.ui.UIObject):
         self._load_page('server connect')
     
     def _show_error(self, title, message):
-        threading.Thread(target = self._show_error_threaded, args = [title, message], name = 'Error box thread', daemon = True).start()
-    
-    def _show_error_threaded(self, title, message):
-        messagebox.showerror(title, message)
+        threading.Thread(target = messagebox.showerror, args = [title, message], name = 'Error box thread', daemon = True).start()
