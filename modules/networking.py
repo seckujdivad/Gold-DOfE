@@ -172,6 +172,16 @@ db_reset: resets the database''')
                 for lobby_data in self.list_lobbies():
                     output.append('{}: {} - {} player(s)'.format(lobby_data['index'], lobby_data['map'], lobby_data['players']))
         
+        elif operation == 'lby_quit':
+            if argument == '':
+                output.append('You must specify the lobby index')
+            
+            elif argument.isdigit():
+                self.terminate_lobby(int(argument))
+            
+            else:
+                output.append('Must be an integer')
+        
         elif operation == 'db_commit':
             self.database.commit()
         
@@ -218,6 +228,9 @@ db_reset: resets the database''')
 
             i += 1
         return output
+    
+    def terminate_lobby(self, lobby_index):
+        self.lobbies[lobby_index].close()
 
 
 class Lobby:
