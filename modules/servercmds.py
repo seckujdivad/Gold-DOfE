@@ -17,7 +17,7 @@ class ServerCommandLineUI:
         threading.Thread(target = self._receiver, name = 'Server UI comm receiver').start()
         threading.Thread(target = self._server_receiver, name = 'Server UI server receiver').start()
         
-        self.process_interface.send(['set title', 'Server command line'])
+        self.set_title('Server Command Line')
     
     def _server_receiver(self):
         while not self.quit:
@@ -34,6 +34,9 @@ class ServerCommandLineUI:
             if command == 'cmdout':
                 self.process_interface.send(['push', self.command_handler(args[0])])
         self.quit = True
+    
+    def set_title(self, title):
+        self.process_interface.send(['set title', title])
 
 class _UI:
     def __init__(self, process_interface, frame):

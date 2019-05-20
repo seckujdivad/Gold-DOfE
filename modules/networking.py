@@ -292,6 +292,7 @@ class Lobby:
         #load components
         self.cmdline_pipe, pipe = mp.Pipe()
         self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, frame)
+        self.cmdline.set_title('Lobby Command Line')
 
         #run autoexec
         for script_name in self.cfgs.server['scripts']['lobby']['autoexec']:
