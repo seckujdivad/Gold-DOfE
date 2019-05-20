@@ -212,8 +212,6 @@ class ServerClient:
             id = None
         self.metadata = metadata
         
-        self.serverdata = self.server.serverdata
-        
         self.send = self.interface.send
         self.send_to = self.interface.send_to
     
@@ -261,26 +259,26 @@ class ServerClient:
         
         self.set_mode('spectator')
         
-        if self.serverdata.gamemode == 0:
-            alive = self.server.num_alive()
+        if self.lobby.gamemode == 0:
+            alive = self.lobby.num_alive()
             
             if alive[0] == 0:
-                self.server.round_ended(winner = 1)
+                self.lobby.round_ended(winner = 1)
             elif alive[1] == 0:
-                self.server.round_ended(winner = 0)
+                self.lobby.round_ended(winner = 0)
                 
-        elif self.serverdata.gamemode == 1:
+        elif self.lobby.gamemode == 1:
             self.respawn_after(self.server.settingsdata['player']['gamemodes']['deathmatch']['respawn time'])
             
-        elif self.serverdata.gamemode == 2:
+        elif self.lobby.gamemode == 2:
             if self.metadata.team_id == 0:
-                self.server.increment_scoreline(score0 = 1)
+                self.lobby.increment_scoreline(score0 = 1)
             elif self.metadata.team_id == 1:
-                self.server.increment_scoreline(score1 = 1)
+                self.lobby.increment_scoreline(score1 = 1)
                 
             self.respawn_after(self.server.settingsdata['player']['gamemodes']['team deathmatch']['respawn time'])
             
-        elif self.serverdata.gamemode == 3:
+        elif self.lobby.gamemode == 3:
             self.respawn_after(self.server.settingsdata['player']['gamemodes']['pve surival']['respawn time'])
             
     def setpos(self, x = None, y = None, rotation = None):
@@ -301,7 +299,7 @@ class ServerClient:
         self.setpos(spawnpoint[0], spawnpoint[1], 0)
         self.update_health(100)
         self.clear_inventory()
-        self.give(self.serverdata.mapdata['player']['starting items'][self.metadata.team_id])
+        self.give(self.lobby.map.data['player']['starting items'][self.metadata.team_id])
     
     def respawn_after(self, delay):
         threading.Thread(target = self._respawn_after, args = [delay], name = 'Scheduled respawn', daemon = True).start()
@@ -311,13 +309,15 @@ class ServerClient:
         self.respawn()
     
     def generate_spawn(self):
-        if self.serverdata.gamemode == 0:
-            return random.choice(self.serverdata.mapdata['player']['spawnpoints'][0][self.metadata.team_id])
-        elif self.serverdata.gamemode == 1:
-            cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][1]
+        if self.lobby.gamemode == 0:
+            return random.choice(self.lobby.map.data['player']['spawnpoints'][0][self.metadata.team_id])
+
+        elif self.lobby.gamemode == 1:
+            cmin, cmax = self.lobby.map.data['player']['spawnpoints'][1]
             return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
-        elif self.serverdata.gamemode == 2:
-            cmin, cmax = self.serverdata.mapdata['player']['spawnpoints'][2][self.metadata.team_id]
+
+        elif self.lobby.gamemode == 2:
+            cmin, cmax = self.lobby.map.data['player']['spawnpoints'][2][self.metadata.team_id]
             return [random.randrange(cmin[0], cmax[0]), random.randrange(cmin[1], cmax[1])]
     
     def read_var(self, category):
@@ -399,10 +399,10 @@ class ServerClient:
         else: #player is in a lobby
             if req.command == 'var update r': #client wants the server to send it a value
                 if req.subcommand == 'map': #client wants the server to send the name of the current map
-                    self.write_var('map', {'map name': self.serverdata.map})
+                    self.write_var('map', {'map name': self.lobby.map.name})
                     
                 elif req.subcommand == 'player model': #client wants to know it's own player model
-                    if self.serverdata.map is not None:
+                    if self.lobby.map.name is not None:
                         self.write_var('player model', self.metadata.model)
                 
                 elif req.subcommand == 'health':
