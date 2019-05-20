@@ -757,8 +757,11 @@ class UIClientConnected(modules.ui.UIObject):
         
         if selection == ():
             self._show_error('You must choose a lobby', 'Choose a lobby from the right hand pane before clicking \'Join game\'\nIf there are none shown, the server operator must start one using lby_create')
+        
+        else:
+            self._load_page('game')
 
-        self._load_page('game')
+            self.client.join_lobby(self._lobby_list[selection[0]]['index'])
     
     def _recv_handler(self, request):
         if self._active:

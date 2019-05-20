@@ -88,6 +88,9 @@ class Client:
     def list_lobbies(self):
         self.send(Request(command = 'lobby', subcommand = 'list'))
     
+    def join_lobby(self, index):
+        self.send(Request(command = 'lobby', subcommand = 'join', arguments = {'index': index}))
+    
     def disconnect(self):
         self.connection.close()
 
