@@ -117,6 +117,7 @@ sv_quit: destroy the server
 lby_:
 lby_create: make a new lobby
 lby_list: list all lobbies
+lby_quit: Quit a lobby given its index
 
 db_:
 db_commit: push all database changes to the disk
@@ -168,12 +169,8 @@ db_reset: resets the database''')
             
             else:
                 output.append('Lobbies:')
-                for lobby in self.lobbies:
-                    if lobby.running:
-                        output.append('{} - {} player(s)'.format(lobby.map.name, lobby.num_players))
-                    
-                    else:
-                        output.append('Inactive, was hosting {}'.format(lobby.map.name))
+                for lobby_data in self.list_lobbies():
+                    output.append('{}: {} - {} player(s)'.format(lobby_data['index'], lobby_data['map'], lobby_data['players']))
         
         elif operation == 'db_commit':
             self.database.commit()
