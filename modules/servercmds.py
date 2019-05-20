@@ -95,14 +95,19 @@ class _UI:
             elif command == 'quit':
                 self.on_quit()
             elif command == 'push':
-                for line in args[0].split('\n'):
-                    if line.startswith('$$') and line.endswith('$$') and len(line) > 4: #console output operation
-                        if line[2:len(line) - 2] == 'clear':
-                            self.output_listbox.delete(0, tk.END)
-                        elif line[2:len(line) - 2] == 'close_window':
-                            self.on_quit()
-                    else:
-                        self.output_listbox.insert(tk.END, line)
+                if type(args[0]) == str:
+                    args[0] = args[0].split('\n')
+
+                for line in args[0]:
+                    for line0 in line.split('\n'):
+                        if line0.startswith('$$') and line0.endswith('$$') and len(line0) > 4: #console output operation
+                            if line0[2:len(line0) - 2] == 'clear':
+                                self.output_listbox.delete(0, tk.END)
+                                
+                            elif line0[2:len(line0) - 2] == 'close_window':
+                                self.on_quit()
+                        else:
+                            self.output_listbox.insert(tk.END, line0)
                 self.output_listbox.see(tk.END)
 
     def on_quit(self):
