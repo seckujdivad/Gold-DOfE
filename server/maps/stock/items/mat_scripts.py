@@ -4,8 +4,8 @@ import math
 import modules.items
 
 class Generic(modules.items.ItemScript):
-    def __init__(self, name, server):
-        super().__init__(name, server)
+    def __init__(self, name, lobby):
+        super().__init__(name, lobby)
         
         self.attributes.damage.destroyed_after = self.cfgs.item['destroyed after damage']
         self.attributes.damage.cooldown = self.cfgs.item['damage cooldown']
@@ -33,7 +33,7 @@ class Generic(modules.items.ItemScript):
                 for d in result:
                     output.append(d)
         
-        for client in self.server.clients:
+        for client in self.lobby.clients:
             damage_dealt = False
             if client.metadata.active and client.metadata.mode == 'player':
                 if self.touching_player(client):
@@ -83,8 +83,8 @@ class Generic(modules.items.ItemScript):
 
 
 class ItemScriptFireball(Generic):
-    def __init__(self, name, server):
-        super().__init__(name, server)
+    def __init__(self, name, lobby):
+        super().__init__(name, lobby)
         
         self._item_active = True
         
@@ -110,7 +110,7 @@ class ItemScriptFireball(Generic):
 
 
 class ItemScriptSword(Generic):
-    def __init__(self, name, server):
-        super().__init__(name, server)
+    def __init__(self, name, lobby):
+        super().__init__(name, lobby)
     
     internal_name = 'swordswipe'
