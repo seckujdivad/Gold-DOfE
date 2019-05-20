@@ -23,8 +23,9 @@ class Item(modules.bettercanvas.Model):
 class ItemScript:
     internal_name = ''
     
-    def __init__(self, name, server):
-        self.server = server
+    def __init__(self, name, lobby):
+        self.lobby = lobby
+        self.server = self.lobby.server
         
         class attributes:
             name = None
@@ -60,12 +61,12 @@ class ItemScript:
             item = {}
         self.cfgs = cfgs
         
-        with open(os.path.join(sys.path[0], 'server', 'maps', self.server.serverdata.map, 'items', name), 'r') as file:
+        with open(os.path.join(sys.path[0], 'server', 'maps', self.lobby.map.name, 'items', name), 'r') as file:
             self.cfgs.item = json.load(file)
        
         self.attributes.name = name
-        self.cfgs.current_map = self.server.serverdata.mapdata
-        self.attributes.tickrate = self.server.serverdata.tickrate
+        self.cfgs.current_map = self.lobby.map.data
+        self.attributes.tickrate = self.lobby.tickrate
         
         if self.cfgs.item['hitbox']['type'] == 'circular':
             self.attributes.hitbox.shape = 'circle'

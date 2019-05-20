@@ -443,20 +443,20 @@ class ServerClient:
                 
                 self.client_display_text(['fullscreen', 'welcome'], None, category = 'welcome')
                 
-            elif req.command == 'use' and req.arguments['item'] in self.lobby.item_dicts:
-                if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.lobby.item_dicts[req.arguments['item']]['use cooldown']:
-                    obj = self.lobby.item_scripts[self.lobby.item_dicts[req.arguments['item']]['control script']](req.arguments['item'], self.server)
+            elif req.command == 'use' and req.arguments['item'] in self.lobby.items.dicts:
+                if self.metadata.item_use_timestamp is None or (time.time() - self.metadata.item_use_timestamp) > self.lobby.items.dicts[req.arguments['item']]['use cooldown']:
+                    obj = self.lobby.items.scripts[self.lobby.items.dicts[req.arguments['item']]['control script']](req.arguments['item'], self.lobby)
                     
                     obj.attributes.creator = self
                     obj.attributes.pos.x = req.arguments['position'][0]
                     obj.attributes.pos.y = req.arguments['position'][1]
                     obj.attributes.rotation = req.arguments['rotation']
-                    obj.attributes.ticket = self.lobby.item_ticket
-                    obj.set_velocity(self.lobby.item_dicts[req.arguments['item']]['speed'])
+                    obj.attributes.ticket = self.lobby.items.ticket
+                    obj.set_velocity(self.lobby.items.dicts[req.arguments['item']]['speed'])
                     
-                    self.lobby.item_objects.append(obj)
+                    self.lobby.items.objects.append(obj)
                     
-                    self.lobby.item_ticket += 1
+                    self.lobby.items.ticket += 1
                     self.metadata.item_use_timestamp = time.time()
                     
                     self.send(Request(command = 'increment inventory slot',
