@@ -6,7 +6,10 @@
 				"player": "{0} is now playing",
 				"spectator": "{0} is now spectating"
 			},
-			"player died": "{0} died"
+			"player died": "{0} died",
+			"lobby": {
+				"stopped": "This lobby has been closed\nPress [Esc] to choose another"
+			}
 		},
 		"fullscreen": {
 			"welcome": "Welcome!",
@@ -15,6 +18,9 @@
 				"round won": "Team {0} won the round",
 				"game won": "Team {0} won the game",
 				"round draw": "Draw\nRound will be replayed"
+			},
+			"lobby": {
+				"stopped": "Lobby closed"
 			}
 		},
 		"killfeed": [

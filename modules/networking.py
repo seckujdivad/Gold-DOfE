@@ -686,6 +686,10 @@ db_reset: resets the database''')
     
     def close(self):
         self.console_output('Lobby closed')
+
+        self.send_text(['chat', 'lobby', 'stopped'], category = 'lobby')
+        self.send_text(['fullscreen', 'lobby', 'stopped'], category = 'lobby')
+
         self.running = False
     
     #daemons
