@@ -725,12 +725,12 @@ class UIClientConnected(modules.ui.UIObject):
         self._elements.lobbies_listbox.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
 
         #display items
-        self._elements.leaderboard_label.grid(row = 0, column = 1, sticky = 'NESW')
-        self._elements.leaderboard_frame.grid(row = 1, rowspan = 2, column = 1, sticky = 'NESW')
+        self._elements.leaderboard_label.grid(row = 0, column = 0, sticky = 'NESW')
+        self._elements.leaderboard_frame.grid(row = 1, rowspan = 2, column = 0, sticky = 'NESW')
 
-        self._elements.lobbies_label.grid(row = 0, column = 0, sticky = 'NESW')
-        self._elements.lobbies_frame.grid(row = 1, column = 0, sticky = 'NESW')
-        self._elements.lobbies_refresh.grid(row = 2, column = 0, sticky = 'NESW')
+        self._elements.lobbies_label.grid(row = 0, column = 1, sticky = 'NESW')
+        self._elements.lobbies_frame.grid(row = 1, column = 1, sticky = 'NESW')
+        self._elements.lobbies_refresh.grid(row = 2, column = 1, sticky = 'NESW')
 
         self._elements.button_join.grid(row = 3, column = 1, sticky = 'NESW')
         self._elements.button_disconnect.grid(row = 3, column = 0, sticky = 'NESW')
