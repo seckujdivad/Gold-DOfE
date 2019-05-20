@@ -525,17 +525,23 @@ db_reset: resets the database''')
         if formats is not None:
             string = string.format(*formats)
         
-        if path[0] == 'fullscreen':
-            req = Request(command = 'popmsg', subcommand = 'welcome', arguments = {'text': string})
-        elif path[0] == 'chat':
-            req = Request(command = 'say', subcommand = category, arguments = {'text': string, 'category': category})
-        else:
-            raise ValueError('Invalid text mode "{}"'.format(path[0]))
+        reqs = []
+        for s in string.split('\n'):
+            if path[0] == 'fullscreen':
+                reqs.append(Request(command = 'popmsg', subcommand = 'welcome', arguments = {'text': s}))
+
+            elif path[0] == 'chat':
+                reqs.append(Request(command = 'say', subcommand = category, arguments = {'text': s, 'category': category}))
+
+            else:
+                raise ValueError('Invalid text mode "{}"'.format(path[0]))
         
-        if target is None:
-            self.send_all(req)
-        else:
-            target.send(req)
+        for req in reqs:
+            if target is None:
+                self.send_all(req)
+                
+            else:
+                target.send(req)
     
     def set_gamemode(self, gamemode, force = False):
         if gamemode in self.map.data['gamemode']['supported']:
