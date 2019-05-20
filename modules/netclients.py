@@ -353,7 +353,7 @@ class ServerClient:
         self.send(Request(command = 'update items', subcommand = 'server tick', arguments = {'pushed': states}))
     
     def push_positions(self):
-        self.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.server.get_all_positions([self])}))
+        self.send(Request(command = 'var update w', subcommand = 'player positions', arguments = {'positions': self.lobby.get_all_positions([self])}))
     
     def push_health(self):
         self.write_var('health', self.metadata.health)
