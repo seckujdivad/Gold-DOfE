@@ -79,7 +79,7 @@ class Game:
         self.client.read_var('map')
         
         self.running = True
-        threading.Thread(target = self.main, daemon = True).start()
+        threading.Thread(target = self.main, name = 'Player position updater', daemon = True).start()
         
         #make canvas take focus when the mouse enters, and lose it when it leaves
         self.canvas.bind('<Enter>', lambda event: self.canvas.focus_set())
@@ -699,8 +699,8 @@ class CanvasMessages:
         self.graphical_properties = graphical_properties
         
         
-        threading.Thread(target = self.pipe_receiver).start()
-        threading.Thread(target = self.graphics_handler).start()
+        threading.Thread(target = self.pipe_receiver, name = 'Canvas messages pipe listener', daemon = True).start()
+        threading.Thread(target = self.graphics_handler, name = 'Canvas messages graphics handler', daemon = True).start()
     
     def pipe_receiver(self):
         while self.running:
@@ -794,8 +794,8 @@ class KeyBind:
             y = 0
         self.mouse = mouse
         
-        threading.Thread(target = self._keyhandlerd, name = 'Keyboard input handler daemon').start()
-        threading.Thread(target = self._checkfocusd, name = 'Root has focus daemon').start()
+        threading.Thread(target = self._keyhandlerd, daemon = True, name = 'Keyboard input handler daemon').start()
+        threading.Thread(target = self._checkfocusd, daemon = True, name = 'Root has focus daemon').start()
     
     def _keyhandlerd(self): #daemon to handle key inputs
         keypress_funcid = self.root.bind('<KeyPress>', self._onkeypress)
@@ -1048,7 +1048,7 @@ class PopMessage:
         
         self.message_queue, queue = mp.Pipe()
         
-        threading.Thread(target = self._displayd, name = 'Message display daemon', args = [queue]).start()
+        threading.Thread(target = self._displayd, name = 'Message display daemon', daemon = True, args = [queue]).start()
     
     def queue_message(self, text, duration):
         if duration < 0.2:
