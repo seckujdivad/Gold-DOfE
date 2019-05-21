@@ -138,9 +138,9 @@ class Game:
                                                                                  self.engine,
                                                                                  'player models',
                                                                                  is_player = False)
-                        self.engine.current_map.other_players[data['id']].setpos(x = data['x'],
-                                                                                 y = data['y'],
-                                                                                 rotation = data['rotation'])
+                        self.engine.current_map.other_players[data['id']].set(x = data['x'],
+                                                                              y = data['y'],
+                                                                              rotation = data['rotation'])
                         self.engine.log.add('players', 'Client-server discrepancy, created id {}'.format(data['id']))
                 
                 to_remove = []
