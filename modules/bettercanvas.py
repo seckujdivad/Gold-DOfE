@@ -249,101 +249,10 @@ class Model:
         if autoplay_anims:
             self.start_anims()
         
-        # start interpolation thread
-        self._set_pipe, pipe = mp.Pipe()
-        threading.Thread(target = self._set_handler, args = [pipe], name = 'Interpolation handler', daemon = True).start()
-        
         ## call set
         self.set(force = True)
     
-    def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, timeframe = None, wait = False):
-        return self.set(x, y, rotation, transparency, frame, force, None, True, timeframe, wait)
-    
-    def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None, increment = False, timeframe = None, wait = False):
-        if ([x, y, rotation, transparency, frame, image_set] != [None] * 6) or force:
-            action = {'items': [],
-                      'delay': 0}
-            
-            if wait:
-                action['ticket'] = self._set_queue_output.ticket
-                self._set_queue_output.ticket += 1
-            
-            if timeframe is None:
-                action['items'].append([x, y, rotation, transparency, frame, force, image_set, increment])
-                
-            else:
-                slots = timeframe * self.attributes.interps_per_second
-                
-                if x is None:
-                    xinc = None
-                else:
-                    xinc = x / slots
-                
-                if y is None:
-                    yinc = None
-                else:
-                    yinc = y / slots
-                
-                if rotation is None:
-                    rotationinc = None
-                else:
-                    rotationinc = rotation / slots
-                
-                if transparency is None:
-                    transparencyinc = None
-                else:
-                    transparencyinc = transparency / slots
-                    
-                for i in range(int(slots)):
-                    action['items'].append([xinc, yinc, rotationinc, transparencyinc, frame, force, image_set, True])
-               
-                if not increment:
-                    action['items'].append([x, y, rotation, transparency, frame, force, image_set, False])
-                
-                action['delay'] = timeframe / slots
-            
-            try:
-                self._set_pipe.send(action)
-                
-                if 'ticket' in action:
-                    while not action['ticket'] in self._set_queue_output.outputs:
-                        pass
-                    
-                    output = self._set_queue_output.outputs[action['ticket']]
-                    self._set_queue_output.outputs.pop(action['ticket'])
-                    return output
-                
-            except BrokenPipeError:
-                self.attributes.running = False
-    
-    def _set_handler(self, pipe):
-        current_action = None
-        current_frame = 0
-        last_output = None
-        
-        while self.attributes.running:
-            if current_action is None:
-                current_action = pipe.recv()
-                current_frame = 0
-                
-            else:
-                arg_slice = current_action['items'][current_frame][:7]
-                
-                if current_action['items'][current_frame][7]: #increment
-                    last_output = self._increment(*arg_slice)
-                else:
-                    last_output = self._set(*arg_slice)
-                
-                current_frame += 1
-                if current_frame == len(current_action['items']):
-                    if 'ticket' in current_action:
-                        self._set_queue_output.outputs[current_action['ticket']] = last_output
-                    
-                    current_action = None
-                else:
-                    time.sleep(current_action['delay'])
-    
-    def _increment(self, x, y, rotation, transparency, frame, force, image_set):
+    def increment(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False):
         if x is not None:
             x += self.attributes.pos.x
             
@@ -359,9 +268,9 @@ class Model:
         if frame is not None:
             frame = (frame + self.attributes.anim_controller.frame) % self.attributes.profiles[self.attributes.profile].animation.frames
         
-        self._set(x, y, rotation, transparency, frame, force, image_set)
+        self.set(x, y, rotation, transparency, frame, force)
     
-    def _set(self, x, y, rotation, transparency, frame, force, image_set):
+    def set(self, x = None, y = None, rotation = None, transparency = None, frame = None, force = False, image_set = None):
         prev_image_set = self.attributes.profile
         if image_set is not None:
             self.attributes.profile = image_set
@@ -447,7 +356,7 @@ class Model:
                 old_anim_delay = self.attributes.profiles[self.attributes.profile].animation.delay
                 old_anim_length = self.attributes.profiles[self.attributes.profile].animation.frames
                 
-                self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0, wait = True)
+                self.set(image_set = self.attributes.anim_controller.revert_to, frame = 0)
                 
                 new_elapsed = time.time() - self.attributes.anim_controller.onetime_start
                 frames_elapsed = new_elapsed / self.attributes.profiles[self.attributes.profile].animation.delay
