@@ -1196,7 +1196,9 @@ class Entity(modules.bettercanvas.Model):
             current_mult = 1
         self._strafemove = _strafemove
         
-        threading.Thread(target = self._velocityd, name = 'Velocity daemon', daemon = True).start()
+        if self.attributes.is_player:
+            threading.Thread(target = self._velocityd, name = 'Velocity daemon', daemon = True).start()
+            
         threading.Thread(target = self._scriptd, name = 'Script handling daemon', daemon = True).start()
     
     def set_health(self, value):
