@@ -13,7 +13,6 @@ import importlib.util
 import modules.netclients
 import modules.logging
 import modules.bettercanvas
-import modules.items
 
 
 class Game:
@@ -199,7 +198,7 @@ class Game:
                 updates = request.arguments['pushed']
                 for data in updates:
                     if data['type'] == 'add': #item has just been created
-                        item = modules.items.Item(self.canvcont, data['file name'], self.engine.current_map.path, 'items')
+                        item = Item(data['file name'], self.engine.current_map.path, self.engine, 'items')
                         item.set(x = data['position'][0],
                                  y = data['position'][1],
                                  rotation = self.engine.snap_angle(data['rotation']))
@@ -1410,3 +1409,17 @@ class Entity(modules.bettercanvas.Model):
             
             #update the entity model's position
             self.set(force = True)
+
+
+class Item(Entity):
+    def __init__(self, item_name, map_path, engine, layer):
+        self.item_name = item_name
+        
+        with open(os.path.join(map_path, 'items', item_name), 'r') as file:
+            item_cfg = json.load(file)
+        
+        super().__init__(item_cfg['model'], map_path, engine, layer, is_player = False, server_controlled = True)
+        
+        self.cfgs.item = item_cfg
+        
+        self.attributes.ticket = None
