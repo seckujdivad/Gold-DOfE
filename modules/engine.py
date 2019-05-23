@@ -137,7 +137,7 @@ class Game:
                                                                                  self.engine.current_map.path,
                                                                                  self.engine,
                                                                                  'player models',
-                                                                                 is_player = False)
+                                                                                 is_player = False, server_controlled = True)
                         self.engine.current_map.other_players[data['id']].set(x = data['x'],
                                                                               y = data['y'],
                                                                               rotation = data['rotation'])
@@ -471,7 +471,7 @@ class Engine:
             
             #load player
             self.game.message_pipe.send(['map load', 'Creating player model...'])
-            self.current_map.player = Entity(random.choice(self.cfgs.current_map['entity models'][self.cfgs.current_map['player']['entity']]), self.current_map.path, self, 'player models', is_player = True)
+            self.current_map.player = Entity(random.choice(self.cfgs.current_map['entity models'][self.cfgs.current_map['player']['entity']]), self.current_map.path, self, 'player models', is_player = True, server_controlled = False)
             self.game.message_pipe.send(['map load', 'Loaded player model'])
             self.current_map.player.set(x = 400, y = 300, rotation = 0)
             
@@ -1168,7 +1168,7 @@ class Panel(modules.bettercanvas.Model):
                     print('Script "{}" not in script library'.format(script))
 
 class Entity(modules.bettercanvas.Model):
-    def __init__(self, ent_name, map_path, engine, layer, is_player = False):
+    def __init__(self, ent_name, map_path, engine, layer, is_player = False, server_controlled = False):
         self.ent_name = ent_name
         self.engine = engine
         self.map_path = map_path
@@ -1177,6 +1177,7 @@ class Entity(modules.bettercanvas.Model):
         
         self.engine = engine
         self.attributes.is_player = is_player
+        self.attributes.server_controlled = server_controlled
         
         class velocity:
             x = 0
@@ -1196,22 +1197,21 @@ class Entity(modules.bettercanvas.Model):
             current_mult = 1
         self._strafemove = _strafemove
         
-        if self.attributes.is_player:
-            threading.Thread(target = self._velocityd, name = 'Velocity daemon', daemon = True).start()
-            
-        threading.Thread(target = self._scriptd, name = 'Script handling daemon', daemon = True).start()
+        threading.Thread(target = self._velocityd, name = 'Entity velocity daemon', daemon = True).start()
+        threading.Thread(target = self._scriptd, name = 'Entity script handling daemon', daemon = True).start()
     
     def set_health(self, value):
-        if value is not None and self.attributes.is_player:
-            if self.attributes.health is not None and self.attributes.health > value:
-                self.engine.pulse_item_transparency(self.engine.current_map.event_overlays['damage'])
-        
+        if value is not None:
             self.attributes.health = value
             
-            if self.engine.hud.healthbar is not None:
-                self.engine.hud.healthbar.set_value(self.attributes.health)
-            
-            self.engine.game.client.write_var('health', self.attributes.health)
+            if self.attributes.is_player:
+                if self.attributes.health is not None and self.attributes.health > value:
+                    self.engine.pulse_item_transparency(self.engine.current_map.event_overlays['damage'])
+
+                if self.engine.hud.healthbar is not None:
+                    self.engine.hud.healthbar.set_value(self.attributes.health)
+                
+                self.engine.game.client.write_var('health', self.attributes.health)
     
     def increment_health(self, inc):
         if inc is not None and self.attributes.health is not None:
@@ -1269,25 +1269,26 @@ class Entity(modules.bettercanvas.Model):
             damage = 0
             velcap_is_default = True
             
-            for panel in self.engine.find_panels_underneath(self.attributes.pos.x, self.attributes.pos.y):
-                if self.ent_name in panel.cfgs.material['entities']:
-                    velcap_is_default = False
-                    
-                    if panel.cfgs.material['entities'][self.ent_name]['accelerate'] is not None:
-                        accel = max(accel, panel.cfgs.material['entities'][self.ent_name]['accelerate'])
+            if not self.attributes.server_controlled: #apply movement and damage values from tiles the entity is over
+                for panel in self.engine.find_panels_underneath(self.attributes.pos.x, self.attributes.pos.y):
+                    if self.ent_name in panel.cfgs.material['entities']:
+                        velcap_is_default = False
                         
-                    if panel.cfgs.material['entities'][self.ent_name]['decelerate'] is not None:
-                        decel += panel.cfgs.material['entities'][self.ent_name]['decelerate']
-                        
-                    if panel.cfgs.material['entities'][self.ent_name]['velcap'] is not None:
-                        velcap = max(velcap, panel.cfgs.material['entities'][self.ent_name]['velcap'])
-                        
-                    if panel.cfgs.material['entities'][self.ent_name]['damage'] is not None:
-                        damage += panel.cfgs.material['entities'][self.ent_name]['damage']
+                        if panel.cfgs.material['entities'][self.ent_name]['accelerate'] is not None:
+                            accel = max(accel, panel.cfgs.material['entities'][self.ent_name]['accelerate'])
+                            
+                        if panel.cfgs.material['entities'][self.ent_name]['decelerate'] is not None:
+                            decel += panel.cfgs.material['entities'][self.ent_name]['decelerate']
+                            
+                        if panel.cfgs.material['entities'][self.ent_name]['velcap'] is not None:
+                            velcap = max(velcap, panel.cfgs.material['entities'][self.ent_name]['velcap'])
+                            
+                        if panel.cfgs.material['entities'][self.ent_name]['damage'] is not None:
+                            damage += panel.cfgs.material['entities'][self.ent_name]['damage']
+                
+                self.increment_health(0 - (damage * self.attributes.pos.velocity.delay))
             
-            self.increment_health(0 - (damage * self.attributes.pos.velocity.delay))
-            
-            if self.attributes.is_player:
+            if self.attributes.is_player: #read keyboard inputs for player movement
                 if not accel == 0:
                     if self.engine.keybindhandler.get_state(keybind_data['movement']['up']):
                         self.attributes.pos.velocity.y -= accel
@@ -1314,7 +1315,11 @@ class Entity(modules.bettercanvas.Model):
                 else:
                     current_strafe = None
                 
-                if not current_strafe is None:
+                if current_strafe is None:  #not doing any movement acceleration - apply speed cap
+                    self.attributes.pos.velocity.x = max(0 - velcap, min(velcap, self.attributes.pos.velocity.x))
+                    self.attributes.pos.velocity.y = max(0 - velcap, min(velcap, self.attributes.pos.velocity.y))
+
+                else:
                     if self._strafemove.current_strafe is None or self._strafemove.current_strafe != current_strafe:
                         self._strafemove.current_mult = self._strafemove.mult
                     else:
@@ -1324,12 +1329,6 @@ class Entity(modules.bettercanvas.Model):
                     
                     self.attributes.pos.velocity.x *= self._strafemove.current_mult
                     self.attributes.pos.velocity.y *= self._strafemove.current_mult
-                    
-                else: #not doing any movement acceleration - apply speed cap
-                    if self.attributes.pos.velocity.x > velcap:
-                        self.attributes.pos.velocity.x = velcap
-                    if self.attributes.pos.velocity.y > velcap:
-                        self.attributes.pos.velocity.y = velcap
                 
                 #debug messages
                 if self.engine.debug.flags['engine']['player']['pos']:
@@ -1341,72 +1340,73 @@ class Entity(modules.bettercanvas.Model):
             else:
                 new_vel_x = self.attributes.pos.velocity.x
                 new_vel_y = self.attributes.pos.velocity.x
-                new_vel_x += accel
-                new_vel_y += accel
                 
                 if not decel == 0:
                     new_vel_x /= decel
                     new_vel_y /= decel
                 
-                if not velcap_is_default:
-                    self.attributes.pos.velocity.x = min(velcap, new_vel_x)
-                    self.attributes.pos.velocity.y = min(velcap, new_vel_y)
+                if not velcap_is_default: #cap velocity
+                    self.attributes.pos.velocity.x = max(0 - velcap, min(velcap, new_vel_x))
+                    self.attributes.pos.velocity.y = max(0 - velcap, min(velcap, new_vel_y))
             
+            #apply velocity to position and store last
             old_x = self.attributes.pos.x
             old_y = self.attributes.pos.y
             
             self.attributes.pos.x += self.attributes.pos.velocity.x
             self.attributes.pos.y += self.attributes.pos.velocity.y
             
-            has_clipped = False
-            for panel in self.engine.find_panels_underneath(self.attributes.pos.x, self.attributes.pos.y):
-                if self.attributes.clip and panel.cfgs.material['clip hitbox'] and not has_clipped:
-                    has_clipped = True
-                    normal_angle = None
-                    
-                    if self.engine.hitdetection.accurate:
-                        lines = []
-                        last_x, last_y = panel.attributes.hitbox.geometry[len(panel.attributes.hitbox.geometry) - 1]
-                        for x, y in panel.attributes.hitbox.geometry:
-                            lines.append([[x, last_x], [y, last_y]])
-                            last_x = x
-                            last_y = y
+            if self.attributes.is_player: #clip player movement on tile obstacles
+                has_clipped = False
+                for panel in self.engine.find_panels_underneath(self.attributes.pos.x, self.attributes.pos.y):
+                    if self.attributes.clip and panel.cfgs.material['clip hitbox'] and not has_clipped:
+                        has_clipped = True
+                        normal_angle = None
                         
-                        resultant = None
-                        for line in lines:
-                            res = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, self.attributes.pos.x], [old_y, self.attributes.pos.y]], line)
-                            if type(res) != bool and res is not None:
-                                resultant = res
-                        
-                        if resultant is None:
-                            mindist = None
-                            minline = None
-                            for line in lines:
-                                centre = sum(line[0]) / 2, sum(line[1]) / 2
-                                dist = math.hypot(*centre)
-                                
-                                if mindist is None or dist < mindist:
-                                    mindist = dist
-                                    minline = line
+                        if self.engine.hitdetection.accurate:
+                            lines = []
+                            last_x, last_y = panel.attributes.hitbox.geometry[len(panel.attributes.hitbox.geometry) - 1]
+                            for x, y in panel.attributes.hitbox.geometry:
+                                lines.append([[x, last_x], [y, last_y]])
+                                last_x = x
+                                last_y = y
                             
-                            if mindist is not None and minline is not None:
-                                normal_angle = self.engine.angle(minline[0][1] - minline[0][0], minline[1][1] - minline[1][0])
+                            resultant = None
+                            for line in lines:
+                                res = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, self.attributes.pos.x], [old_y, self.attributes.pos.y]], line)
+                                if type(res) != bool and res is not None:
+                                    resultant = res
+                            
+                            if resultant is None:
+                                mindist = None
+                                minline = None
+                                for line in lines:
+                                    centre = sum(line[0]) / 2, sum(line[1]) / 2
+                                    dist = math.hypot(*centre)
+                                    
+                                    if mindist is None or dist < mindist:
+                                        mindist = dist
+                                        minline = line
                                 
+                                if mindist is not None and minline is not None:
+                                    normal_angle = self.engine.angle(minline[0][1] - minline[0][0], minline[1][1] - minline[1][0])
+                                    
+                            else:
+                                normal_angle = self.engine.angle(resultant[0][1] - resultant[0][0], resultant[1][1] - resultant[1][0])
+                        
                         else:
-                            normal_angle = self.engine.angle(resultant[0][1] - resultant[0][0], resultant[1][1] - resultant[1][0])
-                    
-                    else:
-                        normal_angle = self.engine.angle(self.attributes.pos.x - panel.attributes.pos.x, self.attributes.pos.y - panel.attributes.pos.y)
-                        
-                    if normal_angle is not None:
-                        self.attributes.pos.x -= self.attributes.pos.velocity.x
-                        self.attributes.pos.y -= self.attributes.pos.velocity.y
-                        
-                        mom_angle = self.engine.angle(0 - self.attributes.pos.velocity.x, 0 - self.attributes.pos.velocity.y)
-                        resultant_angle = (2 * normal_angle) - mom_angle
-                        resultant_momentum = math.hypot(self.attributes.pos.velocity.x, self.attributes.pos.velocity.y)
-                        
-                        self.attributes.pos.velocity.x = math.cos(resultant_angle) * resultant_momentum
-                        self.attributes.pos.velocity.y = math.sin(resultant_angle) * resultant_momentum
-                
+                            normal_angle = self.engine.angle(self.attributes.pos.x - panel.attributes.pos.x, self.attributes.pos.y - panel.attributes.pos.y)
+                            
+                        if normal_angle is not None:
+                            self.attributes.pos.x -= self.attributes.pos.velocity.x
+                            self.attributes.pos.y -= self.attributes.pos.velocity.y
+                            
+                            mom_angle = self.engine.angle(0 - self.attributes.pos.velocity.x, 0 - self.attributes.pos.velocity.y)
+                            resultant_angle = (2 * normal_angle) - mom_angle
+                            resultant_momentum = math.hypot(self.attributes.pos.velocity.x, self.attributes.pos.velocity.y)
+                            
+                            self.attributes.pos.velocity.x = math.cos(resultant_angle) * resultant_momentum
+                            self.attributes.pos.velocity.y = math.sin(resultant_angle) * resultant_momentum
+            
+            #update the entity model's position
             self.set(force = True)
