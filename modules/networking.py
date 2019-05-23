@@ -264,21 +264,12 @@ class Lobby:
         self.clients = []
 
         self.team_sizes = [0, 0]
-        self.num_players = property(self._get_num_players)
-        self.num_players = 0
 
         self.gamemode = None
-        self.gamemode_text = property(self._get_gamemode_text, self._set_gamemode_text)
-        self.gamemode_text = 'xvx'
         self.scoreline = [0, 0]
 
         self._tickrate = 15
         self._looptime = 1 / self._tickrate
-        self.tickrate = property(self._get_tickrate, self._set_tickrate)
-        self.looptime = property(self._get_looptime, self._set_looptime)
-
-        self.tickrate = 15
-        self.looptime = 1 / self.tickrate
 
         self.running = True
 
@@ -837,8 +828,12 @@ db_reset: resets the database''')
         for client in self.clients:
             if client.metadata.active:
                 total += 1
-        
         return total
+    
+    tickrate = property(_get_tickrate, _set_tickrate)
+    looptime = property(_get_looptime, _set_looptime)
+    gamemode_text = property(_get_gamemode_text, _set_gamemode_text)
+    num_players = property(_get_num_players)
         
 
 class Request:
