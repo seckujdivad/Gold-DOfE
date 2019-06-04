@@ -1404,12 +1404,8 @@ class Entity(modules.bettercanvas.Model):
                             resultant_angle = (2 * normal_angle) - incidence_angle
                             resultant_velocity = math.hypot(self.attributes.pos.velocity.x, self.attributes.pos.velocity.y)
                             
-                            self.attributes.pos.velocity.x = math.cos(resultant_angle) * resultant_momentum
-                            self.attributes.pos.velocity.y = math.sin(resultant_angle) * resultant_momentum
                             self.attributes.pos.velocity.x = math.cos(resultant_angle) * resultant_velocity
                             self.attributes.pos.velocity.y = math.sin(resultant_angle) * resultant_velocity
-
-                            print(math.degrees(incidence_angle), math.degrees(resultant_angle))
             
             #update the entity model's position
             self.set(force = True)
