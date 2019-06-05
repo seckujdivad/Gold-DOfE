@@ -5,7 +5,6 @@ import threading
 
 import modules.ui
 import modules.engine
-import modules.logging
 import modules.networking
 import modules.editor
 import modules.netclients

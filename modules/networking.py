@@ -9,7 +9,7 @@ import time
 import math
 
 import modules.servercmds
-import modules.logging
+import modules.quicklogs
 import modules.netclients
 import modules.modloader
 import modules.dbaccess
@@ -29,9 +29,9 @@ class Server:
         
         self.frame = frame
         
-        self.log = modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
+        self.log = modules.quicklogs.Log(os.path.join(sys.path[0], 'server', 'logs', 'svlog.txt'))
         
-        self.database = modules.dbaccess.ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'), modules.logging.Log(os.path.join(sys.path[0], 'server', 'logs', 'dblog.txt')))
+        self.database = modules.dbaccess.ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'), modules.quicklogs.Log(os.path.join(sys.path[0], 'server', 'logs', 'dblog.txt')))
 
         self.output_pipe, pipe = mp.Pipe()
         self.cmdline = modules.servercmds.ServerCommandLineUI(self.handle_command, pipe, self.frame)

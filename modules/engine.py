@@ -11,7 +11,7 @@ import math
 import importlib.util
 
 import modules.netclients
-import modules.logging
+import modules.quicklogs
 import modules.bettercanvas
 
 
@@ -27,7 +27,7 @@ class Game:
             name = 'localhost'
         self.server = server
         
-        self.log = modules.logging.Log(os.path.join(sys.path[0], 'user', 'logs', 'client recv.txt'))
+        self.log = modules.quicklogs.Log(os.path.join(sys.path[0], 'user', 'logs', 'client recv.txt'))
         
         self.vars = {}
         
@@ -279,7 +279,7 @@ class Engine:
     def __init__(self, game):
         self.game = game
         
-        self.log = modules.logging.Log(os.path.join(sys.path[0], 'user', 'logs', 'engine.txt'))
+        self.log = modules.quicklogs.Log(os.path.join(sys.path[0], 'user', 'logs', 'engine.txt'))
         
         self.rendermethod = None
         
