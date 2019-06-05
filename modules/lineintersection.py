@@ -12,7 +12,12 @@ def np_cross_product(a, b):
     return np.dot(a, np_perp(b))
 
 def wrap_np_seg_intersect(a, b, considerCollinearOverlapAsIntersect = False):
-    return np_seg_intersect(np.array([np.array(a[0]), np.array(a[1])]), np.array([np.array(b[0]), np.array(b[1])]), considerCollinearOverlapAsIntersect)
+    result = np_seg_intersect(np.array([np.array(a[0]), np.array(a[1])]), np.array([np.array(b[0]), np.array(b[1])]), considerCollinearOverlapAsIntersect)
+
+    if type(result) == np.ndarray:
+        return result.tolist()
+    else:
+        return result
 
 def np_seg_intersect(a, b, considerCollinearOverlapAsIntersect = False):
     # https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/565282#565282
