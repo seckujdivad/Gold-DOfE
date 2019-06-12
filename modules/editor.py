@@ -6,6 +6,7 @@ import json
 
 import modules.modloader
 
+
 class Map:
     def __init__(self, name):
         self.name = name
@@ -34,6 +35,7 @@ class Map:
         with open(os.path.join(self.path, path), 'w') as file:
             json.dump(data, file, sort_keys=True, indent='\t')
 
+
 class EditorSnapin:
     def __init__(self, frame, editorobj, tabobj):
         self.frame = frame
@@ -43,6 +45,11 @@ class EditorSnapin:
         self.ui_styling = self.editorobj.uiobjs.ui_styling
         
         self.name = '[generic]'
+
+        class _elements:
+            pass #isn't used by most objects, but useful for some
+        self._elements = _elements
+
 
 class Editor:
     def __init__(self, page):
