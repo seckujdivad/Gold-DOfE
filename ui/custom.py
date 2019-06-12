@@ -443,15 +443,6 @@ class EditorMaterials(modules.editor.EditorSnapin):
             new_entity_name = tk.StringVar()
         self.vars = vars
         
-        #choose the correct rendering method
-        with open(os.path.join(sys.path[0], 'user', 'config.json')) as file:
-            data = json.load(file)
-        
-        if data['graphics']['PILrender']:
-            self.rendermethod = __import__('PIL.ImageTk').ImageTk.PhotoImage
-        else:
-            self.rendermethod = tk.PhotoImage
-        
         ## make ui elements
         # material chooser
         self.choose_frame = tk.Frame(self.frame)
