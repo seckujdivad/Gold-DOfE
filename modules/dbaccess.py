@@ -116,7 +116,7 @@ class ServerDatabase(DBAccess):
     
     def _daemonfuncs_make(self):
         'Make the \'users\' table in the database. Overwrites if it already exists'
-        self.connection.execute("""CREATE TABLE `users` (
+        self._db_connection.execute("""CREATE TABLE `users` (
 	`username`	TEXT,
 	`lastconn`	REAL,
 	`elo`	REAL,

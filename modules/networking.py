@@ -186,7 +186,7 @@ db_reset: resets the database''')
             self.database.commit()
         
         elif operation == 'db_reset':
-            self.database.reset()
+            self.database.make()
         
         return output
     
@@ -467,7 +467,7 @@ db_reset: resets the database''')
             output.append('Changes to database committed')
         
         elif operation == 'db_reset':
-            self.server.database.reset()
+            self.server.database.make()
         
         return output
     
