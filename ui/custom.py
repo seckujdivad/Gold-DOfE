@@ -1,4 +1,3 @@
-from tkinter import messagebox
 import tkinter as tk
 import multiprocessing as mp
 import os
@@ -11,7 +10,6 @@ import time
 import modules.colops
 import modules.editor
 import modules.bettercanvas
-import modules.dbaccess
 
 class EditorLayout(modules.editor.EditorSnapin):
     """
@@ -1355,33 +1353,3 @@ Remember, clicking on a new hitbox to edit without saving will reset your change
             data['hitbox maxdist'] = math.ceil(dist)
             
             self.editorobj.map.write_json(os.path.join('materials', self.editor.current_material), data)
-
-class EditorServerDBEdit(modules.editor.EditorSnapin):
-    """
-    Edit and troubleshoot the server
-    This editor extension is important as a corrupted database can stop the server from launching
-    """
-    
-    name = 'Database editor'
-    
-    def __init__(self, frame, editorobj, tabobj):
-        super().__init__(frame, editorobj, tabobj)
-        
-        self.tabobj.set_title('connecting to database...')
-        
-        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
-            self.user_config = json.load(file)
-        
-        self.database = modules.dbaccess.ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'))
-
-        #make elements
-        self.tabobj.set_title('making ui elements...')
-
-        self._elements.button_reset = tk.Button(self.frame, text = 'Reset database', command = self._reset_db, **self.ui_styling.get(font_size = 'medium', object_type = tk.Button))
-
-        #display elements
-        self._elements.button_reset.grid(row = 0, column = 0, sticky = 'NESW')
-    
-    #event methods
-    def _reset_db(self):
-        messagebox.showconfirm('Reset', 'Are you sure you want to reset? This will clear all data from the server database')
