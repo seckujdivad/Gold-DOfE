@@ -538,6 +538,8 @@ class UIServerSettings(modules.ui.UIObject):
         self._fetch_settings(os.path.join(sys.path[0], 'server', 'config.json'))
 
         self._vars.purge_database_days.set(0)
+        self._vars.write_db_to.set('backup.db')
+        self._vars.read_db_from.set('backup.db')
     
     def _fetch_settings(self, path):
         with open(path, 'r') as file:
