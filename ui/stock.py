@@ -461,7 +461,10 @@ class UIServerSettings(modules.ui.UIObject):
         
         self._vars.tickrate = tk.IntVar()
         self._vars.port = tk.IntVar()
+
         self._vars.purge_database_days = tk.IntVar()
+        self._vars.write_db_to = tk.StringVar()
+        self._vars.read_db_from = tk.StringVar()
         
         #create UI elements
         self._elements.settings_frame = tk.Frame(frame)
@@ -490,10 +493,10 @@ class UIServerSettings(modules.ui.UIObject):
         #database
         self._elements.cat_database = tk.Label(self._elements.settings_frame, text = 'Database', **self._styling.get(font_size = 'medium', object_type = tk.Label))
 
-        self._elements.backup_database_entry = tk.Entry(self._elements.settings_frame, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
+        self._elements.backup_database_entry = tk.Entry(self._elements.settings_frame, textvariable = self._vars.write_db_to, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
         self._elements.backup_database_button = tk.Button(self._elements.settings_frame, text = 'Make copy with this name', **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
-        self._elements.revert_database_entry = tk.Entry(self._elements.settings_frame, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
+        self._elements.revert_database_entry = tk.Entry(self._elements.settings_frame, textvariable = self._vars.read_db_from, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
         self._elements.revert_database_button = tk.Button(self._elements.settings_frame, text = 'Revert to this database', **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         self._elements.purge_old_database_spinbox = tk.Spinbox(self._elements.settings_frame, from_ = 0, textvariable = self._vars.purge_database_days, **self._styling.get(font_size = 'medium', object_type = tk.Spinbox))
