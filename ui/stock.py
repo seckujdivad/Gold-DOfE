@@ -461,6 +461,7 @@ class UIServerSettings(modules.ui.UIObject):
         
         self._vars.tickrate = tk.IntVar()
         self._vars.port = tk.IntVar()
+        self._vars.purge_database_days = tk.IntVar()
         
         #create UI elements
         self._elements.settings_frame = tk.Frame(frame)
@@ -485,6 +486,33 @@ class UIServerSettings(modules.ui.UIObject):
         self._elements.port_spinbox.grid(row = widget_row + 3, column = 1, sticky = 'NESW')
         
         widget_row += 4
+
+        #database
+        self._elements.cat_database = tk.Label(self._elements.settings_frame, text = 'Database', **self._styling.get(font_size = 'medium', object_type = tk.Label))
+
+        self._elements.backup_database_entry = tk.Entry(self._elements.settings_frame, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
+        self._elements.backup_database_button = tk.Button(self._elements.settings_frame, text = 'Make copy with this name', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+
+        self._elements.revert_database_entry = tk.Entry(self._elements.settings_frame, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
+        self._elements.revert_database_button = tk.Button(self._elements.settings_frame, text = 'Revert to this database', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+
+        self._elements.purge_old_database_spinbox = tk.Spinbox(self._elements.settings_frame, from_ = 0, textvariable = self._vars.purge_database_days, **self._styling.get(font_size = 'medium', object_type = tk.Spinbox))
+        self._elements.purge_old_database_button = tk.Button(self._elements.settings_frame, text = 'Remove inactive longer than x days', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+
+        self._elements.reset_database_button = tk.Button(self._elements.settings_frame, text = 'Reset', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.open_database_button = tk.Button(self._elements.settings_frame, text = 'Open with Windows', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+
+        self._elements.cat_database.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
+        self._elements.backup_database_entry.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
+        self._elements.backup_database_button.grid(row = widget_row + 1, column = 1, sticky = 'NESW')
+        self._elements.revert_database_entry.grid(row = widget_row + 2, column = 0, sticky = 'NESW')
+        self._elements.revert_database_button.grid(row = widget_row + 2, column = 1, sticky = 'NESW')
+        self._elements.purge_old_database_spinbox.grid(row = widget_row + 3, column = 0, sticky = 'NESW')
+        self._elements.purge_old_database_button.grid(row = widget_row + 3, column = 1, sticky = 'NESW')
+        self._elements.reset_database_button.grid(row = widget_row + 4, column = 0, sticky = 'NESW')
+        self._elements.open_database_button.grid(row = widget_row + 4, column = 1, sticky = 'NESW')
+
+        widget_row += 5
         
         #functional buttons
         self._elements.button_close = tk.Button(frame, text = 'Accept', command = self._choice_accept, **self._styling.get(font_size = 'medium', object_type = tk.Button))
@@ -505,6 +533,8 @@ class UIServerSettings(modules.ui.UIObject):
         
     def _on_load(self):
         self._fetch_settings(os.path.join(sys.path[0], 'server', 'config.json'))
+
+        self._vars.purge_database_days.set(0)
     
     def _fetch_settings(self, path):
         with open(path, 'r') as file:
