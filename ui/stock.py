@@ -44,7 +44,7 @@ class UIMenu(modules.ui.UIObject):
         if not pilrender_msg:
             pilrender_msg = 'False (WARNING! - disables sprite rotation and transparency)'
             
-        text_ = 'Name: {}, PIL rendering: {} \nGo to settings to make sure all packages have been installed'.format(settingsdict['user']['name'], pilrender_msg)
+        text_ = 'Name: {}, PIL rendering: {} \nGo to client settings to make sure all packages have been installed'.format(settingsdict['user']['name'], pilrender_msg)
         self._elements.label_userdata.config(text = text_)
         
         self._elements.button_editor.config(command = lambda: self._load_page('editor choose map'))
