@@ -581,6 +581,9 @@ class UIServerSettings(modules.ui.UIObject):
     
     def _choice_db_reset(self):
         answer = messagebox.askokcancel('Are you sure you want to reset?', 'Resetting the database will cause all user data to be lost\nAre you sure you want to continue?')
+        
+        if answer:
+            self._database.make()
     
     def _choice_db_open(self):
         pass
