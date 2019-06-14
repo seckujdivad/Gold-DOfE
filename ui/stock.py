@@ -465,6 +465,8 @@ class UIServerSettings(modules.ui.UIObject):
         self._vars.purge_database_days = tk.IntVar()
         self._vars.write_db_to = tk.StringVar()
         self._vars.read_db_from = tk.StringVar()
+
+        self._database = None
         
         #create UI elements
         self._elements.settings_frame = tk.Frame(frame)
@@ -540,6 +542,11 @@ class UIServerSettings(modules.ui.UIObject):
         self._vars.purge_database_days.set(0)
         self._vars.write_db_to.set('backup.db')
         self._vars.read_db_from.set('backup.db')
+
+        self._database = modules.dbaccess.ServerDatabase(os.path.join(sys.path[0], 'server', 'database.db'))
+    
+    def _on_close(self):
+        self._database.close()
     
     def _fetch_settings(self, path):
         with open(path, 'r') as file:
