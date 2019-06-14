@@ -22,7 +22,7 @@ class UIMenu(modules.ui.UIObject):
         self._elements.button_connect = tk.Button(self.frame, text = 'Connect to a server', **self._styling.get(font_size = 'medium', object_type = tk.Button))
         self._elements.button_host = tk.Button(self.frame, text = 'Host a server', **self._styling.get(font_size = 'medium', object_type = tk.Button))
         self._elements.button_settings = tk.Button(self.frame, text = 'Change client settings', **self._styling.get(font_size = 'medium', object_type = tk.Button))
-        self._elements.button_server_settings = tk.Button(self.frame, text = 'Change server settings', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.button_server_settings = tk.Button(self.frame, text = 'Modify server', **self._styling.get(font_size = 'medium', object_type = tk.Button))
         self._elements.button_quit = tk.Button(self.frame, text = 'Quit', **self._styling.get(font_size = 'medium', object_type = tk.Button))
         self._elements.label_userdata = tk.Label(self.frame, text = 'Loading...', **self._styling.get(font_size = 'small', object_type = tk.Label))
                 
