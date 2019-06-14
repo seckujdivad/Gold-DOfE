@@ -494,16 +494,16 @@ class UIServerSettings(modules.ui.UIObject):
         self._elements.cat_database = tk.Label(self._elements.settings_frame, text = 'Database', **self._styling.get(font_size = 'medium', object_type = tk.Label))
 
         self._elements.backup_database_entry = tk.Entry(self._elements.settings_frame, textvariable = self._vars.write_db_to, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
-        self._elements.backup_database_button = tk.Button(self._elements.settings_frame, text = 'Make copy with this name', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.backup_database_button = tk.Button(self._elements.settings_frame, text = 'Make copy with this name', command = self._choice_db_make_backup, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         self._elements.revert_database_entry = tk.Entry(self._elements.settings_frame, textvariable = self._vars.read_db_from, **self._styling.get(font_size = 'medium', object_type = tk.Entry))
-        self._elements.revert_database_button = tk.Button(self._elements.settings_frame, text = 'Revert to this database', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.revert_database_button = tk.Button(self._elements.settings_frame, text = 'Revert to this database', command = self._choice_db_load_backup, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         self._elements.purge_old_database_spinbox = tk.Spinbox(self._elements.settings_frame, from_ = 0, to = 9999, textvariable = self._vars.purge_database_days, **self._styling.get(font_size = 'medium', object_type = tk.Spinbox))
-        self._elements.purge_old_database_button = tk.Button(self._elements.settings_frame, text = 'Remove users inactive longer than x days', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.purge_old_database_button = tk.Button(self._elements.settings_frame, text = 'Remove users inactive longer than x days', command = self._choice_db_purge_old_users, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
-        self._elements.reset_database_button = tk.Button(self._elements.settings_frame, text = 'Reset', **self._styling.get(font_size = 'medium', object_type = tk.Button))
-        self._elements.open_database_button = tk.Button(self._elements.settings_frame, text = 'Open with Windows', **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.reset_database_button = tk.Button(self._elements.settings_frame, text = 'Reset', command = self._choice_db_reset, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.open_database_button = tk.Button(self._elements.settings_frame, text = 'Open with Windows', command = self._choice_db_open, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         self._elements.cat_database.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
         self._elements.backup_database_entry.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
@@ -568,6 +568,32 @@ class UIServerSettings(modules.ui.UIObject):
     
     def _choice_cancel(self):
         self._load_page('menu')
+    
+    #database ui functions
+    def _choice_db_load_backup(self):
+        pass
+    
+    def _choice_db_make_backup(self):
+        pass
+    
+    def _choice_db_purge_old_users(self):
+        pass
+    
+    def _choice_db_reset(self):
+        answer = messagebox.askokcancel('Are you sure you want to reset?', 'Resetting the database will cause all user data to be lost\nAre you sure you want to continue?')
+    
+    def _choice_db_open(self):
+        pass
+    
+    #database functions
+    def _db_load_backup(self, path):
+        pass
+    
+    def _db_make_backup(self, path):
+        pass
+    
+    def _db_purge_old_users(self, days):
+        pass
 
 
 class UIServerHost(modules.ui.UIObject):
