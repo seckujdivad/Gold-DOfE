@@ -628,17 +628,22 @@ class Engine:
         model.set(transparency = 0)
         self.hud.pulse_in_progress = False
     
-    @staticmethod
-    def angle(delta_x, delta_y):
-        if delta_x == 0:
-            if delta_y > 0:
-                return math.pi / 2
+    def angle(self, delta_x, delta_y, maths_mode = False):
+        if maths_mode: #anticlockwise from right hand horizontal
+            return ((math.pi / 2) - self.angle(delta_x, delta_y)) % (2 * math.pi)
+
+        else: #clockwise from top
+            if delta_x == 0:
+                if delta_y > 0:
+                    return math.pi / 2
+                else:
+                    return (3 * math.pi) / 2
+
+            elif delta_x < 0:
+                return math.atan(delta_y / delta_x) + math.pi
+
             else:
-                return (3 * math.pi) / 2
-        elif delta_x < 0:
-            return math.atan(delta_y / delta_x) + math.pi
-        else:
-            return math.atan(delta_y / delta_x)
+                return math.atan(delta_y / delta_x)
     
     @staticmethod
     def snap_angle(angle):
