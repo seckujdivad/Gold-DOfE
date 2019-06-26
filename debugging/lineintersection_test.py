@@ -50,7 +50,7 @@ class Debugger:
             self._canvas.coords(self._point, 0, 0, 0, 0)
         
         else:
-            self._canvas.coords(self._point, result[0] - 10, result[1] - 10, result[0] + 10, result[1] + 10)
+            self._canvas.coords(self._point, result[0] - 5, result[1] - 5, result[0] + 5, result[1] + 5)
 
 
     def take_focus(self, event = None):
