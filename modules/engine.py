@@ -630,7 +630,7 @@ class Engine:
     
     def angle(self, delta_x, delta_y, maths_mode = False):
         if maths_mode: #anticlockwise from right hand horizontal
-            return ((math.pi / 2) - self.angle(delta_x, delta_y)) % (2 * math.pi)
+            return ((math.pi / 2) - self.angle(delta_x, delta_y, maths_mode = False)) % (2 * math.pi)
 
         else: #clockwise from top
             if delta_x == 0:
@@ -1360,57 +1360,62 @@ class Entity(modules.bettercanvas.Model):
             self.attributes.pos.x += self.attributes.pos.velocity.x
             self.attributes.pos.y += self.attributes.pos.velocity.y
             
-            if self.attributes.is_player: #clip player movement on tile obstacles
-                has_clipped = False
+            #clip player movement on tile obstacles
+            if self.attributes.is_player and self.attributes.clip:
                 for panel in self.engine.find_panels_underneath(self.attributes.pos.x, self.attributes.pos.y):
-                    if self.attributes.clip and panel.cfgs.material['clip hitbox'] and not has_clipped:
-                        has_clipped = True
-                        normal_angle = None
+                    if panel.cfgs.material['clip hitbox'] :
+                        normal_angle = None #none means the player hasn't clipped this panel
                         
                         if self.engine.hitdetection.accurate:
+                            #turn the points that make up the hitbox into a list of lines
                             lines = []
                             last_x, last_y = panel.attributes.hitbox.geometry[len(panel.attributes.hitbox.geometry) - 1]
                             for x, y in panel.attributes.hitbox.geometry:
-                                lines.append([[x, last_x], [y, last_y]])
+                                lines.append([[panel.attributes.pos.x + x, panel.attributes.pos.y + y], [panel.attributes.pos.x + last_x, panel.attributes.pos.y + last_y]])
                                 last_x = x
                                 last_y = y
                             
-                            resultant = None
+                            #find if the player touches the hitbox
                             for line in lines:
-                                res = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, self.attributes.pos.x], [old_y, self.attributes.pos.y]], line)
-                                if type(res) != bool and res is not None:
-                                    resultant = res
-                            
-                            if resultant is None:
-                                mindist = None
-                                minline = None
-                                for line in lines:
-                                    centre = sum(line[0]) / 2, sum(line[1]) / 2
-                                    dist = math.hypot(*centre)
-                                    
-                                    if mindist is None or dist < mindist:
-                                        mindist = dist
-                                        minline = line
-                                
-                                if mindist is not None and minline is not None:
-                                    normal_angle = self.engine.angle(minline[0][1] - minline[0][0], minline[1][1] - minline[1][0])
-                                    
-                            else:
-                                normal_angle = self.engine.angle(resultant[0][1] - resultant[0][0], resultant[1][1] - resultant[1][0])
+                                result = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, old_y], [self.attributes.pos.x, self.attributes.pos.y]], line)
+
+                                if type(result) == list:
+                                    intersection_point = result
+                                    normal_angle = self.engine.angle(line[1][0] - line[0][0], line[1][1] - line[0][1], maths_mode = True)
                         
                         else:
                             normal_angle = self.engine.angle(self.attributes.pos.x - panel.attributes.pos.x, self.attributes.pos.y - panel.attributes.pos.y)
                             
                         if normal_angle is not None:
-                            self.attributes.pos.x -= self.attributes.pos.velocity.x
-                            self.attributes.pos.y -= self.attributes.pos.velocity.y
-                            
-                            incidence_angle = self.engine.angle(0 - self.attributes.pos.velocity.x, 0 - self.attributes.pos.velocity.y)
-                            resultant_angle = (2 * normal_angle) - incidence_angle
-                            resultant_velocity = math.hypot(self.attributes.pos.velocity.x, self.attributes.pos.velocity.y)
-                            
-                            self.attributes.pos.velocity.x = math.cos(resultant_angle) * resultant_velocity
-                            self.attributes.pos.velocity.y = math.sin(resultant_angle) * resultant_velocity
+                            normal_angle %= 2 * math.pi
+
+                            self.attributes.pos.x = old_x
+                            self.attributes.pos.y = old_y
+
+                            if self.engine.hitdetection.accurate:
+                                current_velocity_angle = (self.engine.angle(self.attributes.pos.velocity.x, self.attributes.pos.velocity.y, maths_mode = True) - math.pi / 2) % (math.pi * 2)
+
+                                #move into ij vector space (not xy) where normal line is along i and resultant is along j
+                                ijspace_velocity_angle = current_velocity_angle - normal_angle
+
+                                #calcuate resultant magnitude
+                                ijspace_mag = math.hypot(self.attributes.pos.velocity.x, self.attributes.pos.velocity.y) * math.sin(ijspace_velocity_angle)
+
+                                #move back into xy vector space to apply new velocity
+                                self.attributes.pos.velocity.x = 0 - (ijspace_mag * math.sin(normal_angle))
+                                self.attributes.pos.velocity.y = 0 - (ijspace_mag * math.cos(normal_angle))
+
+                                #apply new velocity
+                                self.attributes.pos.x += self.attributes.pos.velocity.x
+                                self.attributes.pos.y += self.attributes.pos.velocity.y
+
+                            else:
+                                incidence_angle = self.engine.angle(0 - self.attributes.pos.velocity.x, 0 - self.attributes.pos.velocity.y)
+                                resultant_angle = (2 * normal_angle) - incidence_angle
+                                resultant_velocity = math.hypot(self.attributes.pos.velocity.x, self.attributes.pos.velocity.y)
+                                
+                                self.attributes.pos.velocity.x = math.cos(resultant_angle) * resultant_velocity
+                                self.attributes.pos.velocity.y = math.sin(resultant_angle) * resultant_velocity
             
             #update the entity model's position
             self.set(force = True)
