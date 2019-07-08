@@ -4,9 +4,9 @@
 	"editor colour": "#B7B7B7",
 	"entities": {
 		"player": {
-			"accelerate": 50.0,
+			"accelerate": 65.0,
 			"damage": 0.0,
-			"decelerate": 7.5,
+			"decelerate": 8.0,
 			"velcap": 15.0
 		},
 		"player3d": {
