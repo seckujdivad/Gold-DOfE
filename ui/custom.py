@@ -1040,8 +1040,7 @@ class EditorPanelHitbox(modules.editor.EditorSnapin):
         super().__init__(frame, editorobj, tabobj)
         
         class editor:
-            current_img = None
-            current_img_obj = None
+            current_model = None
             current_points = []
             selected_point = None
             current_material = None
@@ -1069,7 +1068,7 @@ class EditorPanelHitbox(modules.editor.EditorSnapin):
         self.mat_list.pack(side = tk.LEFT, fill = tk.BOTH, expand = True)
         
         self.canvas = tk.Canvas(self.frame, bg = 'white', **self.ui_styling.get(font_size = 'small', object_type = tk.Canvas))
-        self.canvcont = modules.bettercanvas.CanvasController(self.canvas, layers = ['user', 'hitboxedit_layers.json'])
+        self.canvcont = modules.bettercanvas.CanvasController(self.canvas, layers = ['user', 'hitboxedit_layers.json'], get_pil = True)
         
         self.coordx_label = tk.Label(self.frame, text = 'X:', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
         self.coordx_spinbox = tk.Spinbox(self.frame, textvariable = self.editor.selection_x, from_ = -999, to = 999, command = self.spinbox_updated, **self.ui_styling.get(font_size = 'small', object_type = tk.Spinbox))
@@ -1138,11 +1137,10 @@ class EditorPanelHitbox(modules.editor.EditorSnapin):
             self.tabobj.set_title(material)
             
             material_data = self.materials[material]
-            
-            self.editor.current_img = tk.PhotoImage(file = os.path.join(self.editorobj.map.path, 'textures', material_data['texture']['address']))
-            
-            if self.editor.current_img_obj is not None:
-                self.canvcont.delete(self.editor.current_img_obj)
+
+            if self.editor.current_model is not None:
+                self.editor.current_model.destroy()
+            self.editor.current_model = modules.bettercanvas.Model(self.canvcont, material_data['model'], self.editorobj.map.path, layer = 'texture')
             
             for obj, x, y in self.editor.current_points:
                 self.canvcont.delete(obj)
@@ -1150,7 +1148,7 @@ class EditorPanelHitbox(modules.editor.EditorSnapin):
             self.editor.centre.x = int(self.canvcont.winfo_width() / 2)
             self.editor.centre.y = int(self.canvcont.winfo_height() / 2)
             
-            self.editor.current_img_obj = self.canvcont.create_image(self.editor.centre.x, self.editor.centre.y, image = self.editor.current_img, layer = 'texture')
+            self.editor.current_model.set(x = self.editor.centre.x, y = self.editor.centre.y)
             
             self.editor.current_material = material
             

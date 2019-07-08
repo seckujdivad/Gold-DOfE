@@ -1,6 +1,7 @@
 {
 	"clip hitbox": true,
 	"display name": "Stone wall",
+	"editor colour": "#595959",
 	"entities": {
 		"player": {
 			"accelerate": 30.0,
@@ -38,6 +39,5 @@
 		"block": 1,
 		"emit": 0
 	},
-	"model": "materials/stone_wall",
-	"editor colour": "#595959"
+	"model": "materials/stone_wall"
 }
