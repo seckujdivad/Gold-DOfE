@@ -2,25 +2,25 @@
 	"messages": {
 		"chat": {
 			"client changed name": "You changed your name to {0}",
+			"lobby": {
+				"stopped": "This lobby has been closed\nPress [Esc] to choose another"
+			},
 			"new mode": {
 				"player": "{0} is now playing",
 				"spectator": "{0} is now spectating"
 			},
-			"player died": "{0} died",
-			"lobby": {
-				"stopped": "This lobby has been closed\nPress [Esc] to choose another"
-			}
+			"player died": "{0} died"
 		},
 		"fullscreen": {
-			"welcome": "Welcome!",
 			"gamemode change": "Gamemode is now\n{0}",
-			"xvx": {
-				"round won": "Team {0} won the round",
-				"game won": "Team {0} won the game",
-				"round draw": "Draw\nRound will be replayed"
-			},
 			"lobby": {
 				"stopped": "Lobby closed"
+			},
+			"welcome": "Welcome!",
+			"xvx": {
+				"game won": "Team {0} won the game",
+				"round draw": "Draw\nRound will be replayed",
+				"round won": "Team {0} won the round"
 			}
 		},
 		"killfeed": [
@@ -35,42 +35,42 @@
 	"player": {
 		"gamemodes": {
 			"deathmatch": {
+				"after game time": 10,
 				"respawn time": 2,
-				"round time": 300,
-				"after game time": 10
-			},
-			"team deathmatch": {
-				"respawn time": 5,
-				"round time": 300,
-				"after game time": 10
-			},
-			"xvx": {
-				"after round time": 2,
-				"min rounds": 5,
-				"after game time": 5,
-				"round time": 120
+				"round time": 300
 			},
 			"pve survival": {
-				"respawn time": 10,
-				"after game time": 20
+				"after game time": 20,
+				"respawn time": 10
+			},
+			"team deathmatch": {
+				"after game time": 10,
+				"respawn time": 5,
+				"round time": 300
+			},
+			"xvx": {
+				"after game time": 5,
+				"after round time": 2,
+				"min rounds": 5,
+				"round time": 120
 			}
 		}
 	},
 	"scripts": {
-		"server": {
-			"autoexec": [
-				"server_autoexec"
-			],
-			"userconnect": [
-				"server_userconnected"
-			]
-		},
 		"lobby": {
 			"autoexec": [
 				"lobby_autoexec"
 			],
 			"userconnect": [
 				"lobby_userconnected"
+			]
+		},
+		"server": {
+			"autoexec": [
+				"server_autoexec"
+			],
+			"userconnect": [
+				"server_userconnected"
 			]
 		}
 	}
