@@ -578,13 +578,13 @@ class UIServerSettings(modules.ui.UIObject):
     
     #database ui functions
     def _choice_db_load_backup(self):
-        pass
+        self._db_load_backup(self._vars.read_db_from.get())
     
     def _choice_db_make_backup(self):
-        pass
+        self._db_make_backup(self._vars.write_db_to.get())
     
     def _choice_db_purge_old_users(self):
-        pass
+        self._db_purge_old_users(self._vars.purge_database_days.get())
     
     def _choice_db_reset(self):
         answer = messagebox.askokcancel('Are you sure you want to reset?', 'Resetting the database will cause all user data to be lost\nAre you sure you want to continue?')
@@ -593,7 +593,8 @@ class UIServerSettings(modules.ui.UIObject):
             self._database.make()
     
     def _choice_db_open(self):
-        pass
+        messagebox.showwarning('Warning!', 'You cannot open this database in an external program while it is open in this game\nClose any active game servers and leave the \'modify server\' submenu before attempting to open the database\nPress \'OK\' to continue')
+        os.system('explorer /select,"server\\database.db"')
     
     #database functions
     def _db_load_backup(self, path):
