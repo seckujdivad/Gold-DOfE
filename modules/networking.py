@@ -609,7 +609,7 @@ db_reset: resets the database''')
             time.sleep(self.cfgs.server['player']['gamemodes']['pve survival']['after game time'])
             self.respawn_all()
     
-    def count_num_alive(self):
+    def num_alive(self):
         count = [0, 0]
 
         for client in self.clients:
