@@ -1,6 +1,7 @@
 {
 	"clip hitbox": false,
 	"display name": "Ice",
+	"editor colour": "#84E6FF",
 	"entities": {
 		"player": {
 			"accelerate": 15.0,
@@ -38,6 +39,5 @@
 		"block": 0,
 		"emit": 0
 	},
-	"model": "materials/ice",
-	"editor colour": "#84E6FF"
+	"model": "materials/ice"
 }

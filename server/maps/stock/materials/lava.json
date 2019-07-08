@@ -1,6 +1,7 @@
 {
 	"clip hitbox": false,
 	"display name": "Lava",
+	"editor colour": "#FF6E00",
 	"entities": {
 		"player": {
 			"accelerate": 10.0,
@@ -38,6 +39,5 @@
 		"block": 0,
 		"emit": 0.5
 	},
-	"model": "materials/lava",
-	"editor colour": "#FF6E00"
+	"model": "materials/lava"
 }
