@@ -502,10 +502,10 @@ class UIServerSettings(modules.ui.UIObject):
         self._elements.revert_database_button = tk.Button(self._elements.settings_frame, text = 'Revert to this database', command = self._choice_db_load_backup, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         self._elements.purge_old_database_spinbox = tk.Spinbox(self._elements.settings_frame, from_ = 0, to = 9999, textvariable = self._vars.purge_database_days, **self._styling.get(font_size = 'medium', object_type = tk.Spinbox))
-        self._elements.purge_old_database_button = tk.Button(self._elements.settings_frame, text = 'Remove users inactive longer than x days', command = self._choice_db_purge_old_users, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.purge_old_database_button = tk.Button(self._elements.settings_frame, text = 'Remove users inactive longer than X days', command = self._choice_db_purge_old_users, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         self._elements.reset_database_button = tk.Button(self._elements.settings_frame, text = 'Reset', command = self._choice_db_reset, **self._styling.get(font_size = 'medium', object_type = tk.Button))
-        self._elements.open_database_button = tk.Button(self._elements.settings_frame, text = 'Open with Windows', command = self._choice_db_open, **self._styling.get(font_size = 'medium', object_type = tk.Button))
+        self._elements.open_database_button = tk.Button(self._elements.settings_frame, text = 'Show in Explorer', command = self._choice_db_open, **self._styling.get(font_size = 'medium', object_type = tk.Button))
 
         self._elements.cat_database.grid(row = widget_row, column = 0, columnspan = 2, sticky = 'NESW')
         self._elements.backup_database_entry.grid(row = widget_row + 1, column = 0, sticky = 'NESW')
@@ -598,10 +598,10 @@ class UIServerSettings(modules.ui.UIObject):
     
     #database functions
     def _db_load_backup(self, path):
-        pass
+        shutil.copy(path, os.path.join(sys.path[0], 'server', 'database.db'))
     
     def _db_make_backup(self, path):
-        pass
+        shutil.copy(os.path.join(sys.path[0], 'server', 'database.db'), path)
     
     def _db_purge_old_users(self, days):
         pass
