@@ -81,6 +81,7 @@ class ServerDatabase(DBAccess):
         self._funcs['get_user_data'] = self._daemonfuncs_get_user_data
         self._funcs['increment_user'] = self._daemonfuncs_increment_user
         self._funcs['get_leaderboard'] = self._daemonfuncs_get_leaderboard
+        self._funcs['purge_inactive'] = self._daemonfuncs_purge_inactive
 
         if self.is_new:
             self.make()
@@ -149,3 +150,6 @@ class ServerDatabase(DBAccess):
                 i += 1
 
             return output
+    
+    def _daemonfuncs_purge_inactive(self, inactive_seconds):
+        self._db_connection.execute('DELETE FROM users WHERE lastconn < (?)', (time.time() - inactive_seconds,))
