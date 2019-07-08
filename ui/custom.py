@@ -514,7 +514,7 @@ class EditorMaterials(modules.editor.EditorSnapin):
         #show the user the texture that they have selected
         self.label_tex = tk.Label(self.frame, text = 'Model: ----', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
         self.base_canvas_tex = tk.Canvas(self.frame, width = 128, height = 64)
-        self.canvas_tex = modules.bettercanvas.CanvasController(self.base_canvas_tex)
+        self.canvas_tex = modules.bettercanvas.CanvasController(self.base_canvas_tex, get_pil = True)
         
         #choose a colour for the editor
         self.label_colour = tk.Label(self.frame, text = 'Editor colour', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
