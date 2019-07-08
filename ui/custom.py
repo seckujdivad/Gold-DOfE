@@ -629,27 +629,28 @@ class EditorMaterials(modules.editor.EditorSnapin):
         time.sleep(0.05)
         
         selection = self.ent_list.curselection()
-        if not selection == ():
-            selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
+        
+        selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
             
-            if not self.vars.damage.get() == '----':
-                entity_name = self.lists.entities[self.entity_selection]
-                
-                selected_material_data['entities'][entity_name]['damage'] = float(self.vars.damage.get())
-                selected_material_data['entities'][entity_name]['accelerate'] = float(self.vars.accel.get())
-                selected_material_data['entities'][entity_name]['decelerate'] = float(self.vars.decel.get())
-                selected_material_data['entities'][entity_name]['velcap'] = float(self.vars.velcap.get())
-            
-            self.entity_selection = selection[0]
-            
+        if not self.vars.damage.get() == '----':
             entity_name = self.lists.entities[self.entity_selection]
             
-            selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
-            
-            self.vars.damage.set(str(selected_material_data['entities'][entity_name]['damage']))
-            self.vars.accel.set(str(selected_material_data['entities'][entity_name]['accelerate']))
-            self.vars.decel.set(str(selected_material_data['entities'][entity_name]['decelerate']))
-            self.vars.velcap.set(str(selected_material_data['entities'][entity_name]['velcap']))
+            selected_material_data['entities'][entity_name]['damage'] = float(self.vars.damage.get())
+            selected_material_data['entities'][entity_name]['accelerate'] = float(self.vars.accel.get())
+            selected_material_data['entities'][entity_name]['decelerate'] = float(self.vars.decel.get())
+            selected_material_data['entities'][entity_name]['velcap'] = float(self.vars.velcap.get())
+        
+        if not selection == ():
+            self.entity_selection = selection[0]
+        
+        entity_name = self.lists.entities[self.entity_selection]
+        
+        selected_material_data = self.material_dicts[self.lists.materials[self.material_selection]]
+        
+        self.vars.damage.set(str(selected_material_data['entities'][entity_name]['damage']))
+        self.vars.accel.set(str(selected_material_data['entities'][entity_name]['accelerate']))
+        self.vars.decel.set(str(selected_material_data['entities'][entity_name]['decelerate']))
+        self.vars.velcap.set(str(selected_material_data['entities'][entity_name]['velcap']))
     
     def choose_texture(self, event = None):
         threading.Thread(target = self._choose_texture).start()
