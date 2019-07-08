@@ -604,7 +604,7 @@ class UIServerSettings(modules.ui.UIObject):
         shutil.copy(os.path.join(sys.path[0], 'server', 'database.db'), path)
     
     def _db_purge_old_users(self, days):
-        pass
+        self._database.purge_inactive(days * 24 * 60 * 60)
 
 
 class UIServerHost(modules.ui.UIObject):
