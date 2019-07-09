@@ -16,7 +16,11 @@
 	"force close": 1,
 	"graphics": {
 		"PILrender": true,
-		"model quality": 3
+		"model quality": 3,
+		"resolution": [
+			832,
+			640
+		]
 	},
 	"hud": {
 		"chat": {
