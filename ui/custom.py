@@ -28,6 +28,7 @@ class EditorLayout(modules.editor.EditorSnapin):
         self.screen_data = []
         self.selection = None
         self.all_scripts = []
+        self._follow_pointer = False
         
         self.canvas = tk.Canvas(self.frame, **self.ui_styling.get(font_size = 'medium', object_type = tk.Canvas))
         
@@ -123,6 +124,7 @@ class EditorLayout(modules.editor.EditorSnapin):
         self.polylist_list.bind('<BackSpace>', self.remove_object)
         self.script_list.bind('<Button>', self.set_scripts)
         self.script_list.bind('<space>', self.set_scripts)
+        self.canvas.bind('<m>', self._toggle_follow_pointer)
         
         self.tabobj.set_title('editing...')
     
@@ -155,6 +157,16 @@ class EditorLayout(modules.editor.EditorSnapin):
         x = '{:>4}'.format(event.x)
         y = '{:>4}'.format(event.y)
         self.label_mousecoords.config(text = 'Mouse - X: {} Y: {}'.format(x.replace(' ', '0'), y.replace(' ', '0')))
+
+        if self._follow_pointer:
+            if self.selection == None:
+                self._follow_pointer = False
+            
+            else:
+                self.polyvar_x.set(event.x)
+                self.polyvar_y.set(event.y)
+
+                self.push_coordinates()
     
     def select_item(self, event):
         canvobj = self.canvas.find_closest(event.x, event.y)
@@ -341,6 +353,13 @@ class EditorLayout(modules.editor.EditorSnapin):
         
         self.screen_data[self.selection] = layout_obj
         print(layout_obj)
+    
+    def _toggle_follow_pointer(self, event):
+        if self.selection is None:
+            self._follow_pointer = False
+        
+        else:
+            self._follow_pointer = not self._follow_pointer
 
 class AddObject:
     '''
