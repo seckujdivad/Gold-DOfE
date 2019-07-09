@@ -1,3 +1,4 @@
+from tkinter import messagebox
 import tkinter as tk
 import multiprocessing as mp
 import os
@@ -281,6 +282,9 @@ class EditorLayout(modules.editor.EditorSnapin):
     
     def save(self, event = None):
         self.tabobj.set_title('saving...')
+
+        messagebox.showinfo('Reminder', 'When you save changes to the layout, the light maps aren\'t automatically remade.\nIf you have made changes to the lighting, remake the lightmaps in the lightmap generator\nHit OK to continue saving')
+
         data = self.editorobj.map.get_json('layout.json')
         
         geomdata = []
