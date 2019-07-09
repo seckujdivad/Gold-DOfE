@@ -15,6 +15,7 @@
 	},
 	"force close": 1,
 	"graphics": {
+		"lightcalc threads": 8,
 		"PILrender": true,
 		"model quality": 3,
 		"resolution": [
