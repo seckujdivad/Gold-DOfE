@@ -9,70 +9,70 @@
 				800,
 				608
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				544
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				480
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				416
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				352
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				288
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				224
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				160
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				96
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				800,
 				32
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
@@ -93,7 +93,7 @@
 				736,
 				480
 			],
-			"material": "stone.json"
+			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
@@ -126,514 +126,505 @@
 		{
 			"coordinates": [
 				736,
-				160
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				736,
-				96
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				736,
-				32
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				672,
-				608
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				672,
-				544
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				672,
-				480
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				672,
-				416
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				672,
-				352
-			],
-			"material": "lava.json"
-		},
-		{
-			"coordinates": [
-				672,
-				288
-			],
-			"material": "lava.json"
-		},
-		{
-			"coordinates": [
-				672,
-				224
-			],
-			"material": "teleport.json",
-			"scripts": [
-				"teleport.py"
-			]
-		},
-		{
-			"coordinates": [
-				672,
-				160
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				672,
-				96
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				672,
-				32
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				608,
-				608
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				608,
-				544
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				608,
-				480
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				608,
-				416
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				608,
-				352
-			],
-			"material": "lava.json"
-		},
-		{
-			"coordinates": [
-				608,
-				288
-			],
-			"material": "lava.json"
-		},
-		{
-			"coordinates": [
-				608,
-				224
-			],
-			"material": "teleport.json",
-			"scripts": [
-				"teleport.py"
-			]
-		},
-		{
-			"coordinates": [
-				608,
-				160
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				608,
-				96
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				608,
-				32
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				544,
-				608
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				544,
-				544
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				544,
-				480
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				544,
-				416
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				544,
-				352
-			],
-			"material": "lava.json"
-		},
-		{
-			"coordinates": [
-				544,
-				288
-			],
-			"material": "lava.json"
-		},
-		{
-			"coordinates": [
-				544,
-				224
-			],
-			"material": "teleport.json",
-			"scripts": [
-				"teleport.py"
-			]
-		},
-		{
-			"coordinates": [
-				544,
-				160
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				544,
-				96
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				544,
-				32
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				608
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				544
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				480
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				416
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				352
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				288
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				224
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				160
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				96
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				480,
-				32
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				608
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				544
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				480
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				416
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				352
-			],
-			"material": "stone.json",
-			"scripts": [
-				"teleport.py"
-			]
-		},
-		{
-			"coordinates": [
-				416,
-				288
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				224
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				160
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				96
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				416,
-				32
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				608
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				544
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				480
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				416
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				352
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				288
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				224
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				160
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				96
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				352,
-				32
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				288,
-				608
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				288,
-				544
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				288,
-				480
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				288,
-				416
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				288,
-				352
-			],
-			"material": "lava.json"
-		},
-		{
-			"coordinates": [
-				288,
-				288
-			],
-			"material": "lava.json"
-		},
-		{
-			"coordinates": [
-				288,
-				224
-			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				288,
 				160
 			],
 			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
+				736,
+				96
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				736,
+				32
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				608
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				544
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				480
+			],
+			"material": "stone_wall.json"
+		},
+		{
+			"coordinates": [
+				672,
+				416
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				352
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				288
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				224
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				160
+			],
+			"material": "stone_wall.json"
+		},
+		{
+			"coordinates": [
+				672,
+				96
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				672,
+				32
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				608
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				544
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				480
+			],
+			"material": "stone_wall.json"
+		},
+		{
+			"coordinates": [
+				608,
+				416
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				352
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				288
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				224
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				160
+			],
+			"material": "stone_wall.json"
+		},
+		{
+			"coordinates": [
+				608,
+				96
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				608,
+				32
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				608
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				544
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				480
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				416
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				352
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				288
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				224
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				160
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				96
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				544,
+				32
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				608
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				544
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				480
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				480,
+				416
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				480,
+				352
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				480,
+				288
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				480,
+				224
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				480,
+				160
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				480,
+				96
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				480,
+				32
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				608
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				544
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				480
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				416,
+				416
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				416,
+				352
+			],
+			"material": "ice.json",
+			"scripts": [
+				"teleport.py"
+			]
+		},
+		{
+			"coordinates": [
+				416,
+				288
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				416,
+				224
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				416,
+				160
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				416,
+				96
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				416,
+				32
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				608
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				544
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				480
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				352,
+				416
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				352,
+				352
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				352,
+				288
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				352,
+				224
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				352,
+				160
+			],
+			"material": "ice.json"
+		},
+		{
+			"coordinates": [
+				352,
+				96
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				352,
+				32
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				608
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				544
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				480
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				416
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				352
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				288
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				224
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
+				288,
+				160
+			],
+			"material": "stone.json"
+		},
+		{
+			"coordinates": [
 				288,
 				96
 			],
@@ -665,7 +656,7 @@
 				224,
 				480
 			],
-			"material": "stone.json"
+			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
@@ -679,14 +670,14 @@
 				224,
 				352
 			],
-			"material": "lava.json"
+			"material": "stone.json"
 		},
 		{
 			"coordinates": [
 				224,
 				288
 			],
-			"material": "lava.json"
+			"material": "stone.json"
 		},
 		{
 			"coordinates": [
@@ -735,7 +726,7 @@
 				160,
 				480
 			],
-			"material": "stone.json"
+			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
@@ -749,14 +740,14 @@
 				160,
 				352
 			],
-			"material": "lava.json"
+			"material": "stone.json"
 		},
 		{
 			"coordinates": [
 				160,
 				288
 			],
-			"material": "lava.json"
+			"material": "stone.json"
 		},
 		{
 			"coordinates": [
@@ -805,7 +796,7 @@
 				96,
 				480
 			],
-			"material": "stone.json"
+			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
@@ -840,7 +831,7 @@
 				96,
 				160
 			],
-			"material": "stone.json"
+			"material": "stone_wall.json"
 		},
 		{
 			"coordinates": [
@@ -861,77 +852,70 @@
 				32,
 				608
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				544
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				480
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				416
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				352
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				288
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				224
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				160
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				96
 			],
-			"material": "stone.json"
+			"material": "lava.json"
 		},
 		{
 			"coordinates": [
 				32,
 				32
 			],
-			"material": "stone.json"
-		},
-		{
-			"coordinates": [
-				500,
-				100
-			],
-			"material": "boulder.json"
+			"material": "lava.json"
 		}
 	]
 }
