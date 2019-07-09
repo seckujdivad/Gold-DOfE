@@ -10,6 +10,7 @@ import time
 import modules.colops
 import modules.editor
 import modules.bettercanvas
+import modules.toolhelp
 
 class EditorLayout(modules.editor.EditorSnapin):
     """
@@ -36,7 +37,7 @@ class EditorLayout(modules.editor.EditorSnapin):
         self.frame_info = tk.Frame(self.frame)
         
         #label showing the position of the mouse
-        self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: 0000 Y: 0000', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
+        self.label_mousecoords = tk.Label(self.frame_info, text = 'Mouse - X: 0000 Y: 0000\nPress F1 for help', **self.ui_styling.get(font_size = 'small', object_type = tk.Label))
         
         #add object coordinate setting UI
         self.polyvar_x = tk.StringVar()
@@ -125,6 +126,7 @@ class EditorLayout(modules.editor.EditorSnapin):
         self.script_list.bind('<Button>', self.set_scripts)
         self.script_list.bind('<space>', self.set_scripts)
         self.canvas.bind('<m>', self._toggle_follow_pointer)
+        self.canvas.bind('<F1>', self.help_window)
         
         self.tabobj.set_title('editing...')
     
@@ -156,7 +158,7 @@ class EditorLayout(modules.editor.EditorSnapin):
     def mouse_coordinates(self, event):
         x = '{:>4}'.format(event.x)
         y = '{:>4}'.format(event.y)
-        self.label_mousecoords.config(text = 'Mouse - X: {} Y: {}'.format(x.replace(' ', '0'), y.replace(' ', '0')))
+        self.label_mousecoords.config(text = 'Mouse - X: {} Y: {}\nPress F1 for help'.format(x.replace(' ', '0'), y.replace(' ', '0')))
 
         if self._follow_pointer:
             if self.selection == None:
@@ -360,6 +362,9 @@ class EditorLayout(modules.editor.EditorSnapin):
         
         else:
             self._follow_pointer = not self._follow_pointer
+    
+    def help_window(self, event = None):
+        modules.toolhelp.Help('editor_layout.json')
 
 class AddObject:
     '''
@@ -440,6 +445,7 @@ class AddObject:
         selection = self.list_list.curselection()
         if not selection == (): #make sure that something has been selected
             self.parent.set_selection_material(self.paths[selection[0]])
+
 
 class EditorMaterials(modules.editor.EditorSnapin):
     """
