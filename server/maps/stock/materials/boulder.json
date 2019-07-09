@@ -1,7 +1,7 @@
 {
 	"clip hitbox": true,
 	"display name": "Boulder",
-	"editor colour": "#B7B7B7",
+	"editor colour": "#6D758D",
 	"entities": {
 		"player": {
 			"accelerate": 65.0,
@@ -12,23 +12,39 @@
 	},
 	"hitbox": [
 		[
-			-32,
-			-32
+			0,
+			-27
 		],
 		[
-			-32,
-			32
+			-25,
+			-23
 		],
 		[
-			32,
-			32
+			-34,
+			2
 		],
 		[
-			32,
-			-32
+			-22,
+			22
+		],
+		[
+			0,
+			28
+		],
+		[
+			22,
+			22
+		],
+		[
+			30,
+			0
+		],
+		[
+			22,
+			-22
 		]
 	],
-	"hitbox maxdist": 46,
+	"hitbox maxdist": 35,
 	"light": {
 		"block": 1,
 		"emit": 0
