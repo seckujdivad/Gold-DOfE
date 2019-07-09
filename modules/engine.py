@@ -399,30 +399,34 @@ class Engine:
             with open(os.path.join(self.current_map.path, 'list.json'), 'r') as file:
                 self.cfgs.current_map = json.load(file)
             self.game.message_pipe.send(['map load', 'Loaded map cfg'])
+
+            #find overlay/lightmap/base position
+            c_x = (self.cfgs.user['graphics']['resolution'][0] / 2) + 4
+            c_y = (self.cfgs.user['graphics']['resolution'][1] / 2) + 2
             
             #load and render base and overlay textures
             if self.cfgs.current_map['background']['base'] is None:
                 self.game.message_pipe.send(['map load', 'No base texture'])
             else:
                 self.current_map.statics.base = modules.bettercanvas.Model(self.game.canvcont, self.cfgs.current_map['background']['base'], self.current_map.path, 'base texture')
-                self.current_map.statics.base.set(x = 402, y = 302)
+                self.current_map.statics.base.set(x = c_x, y = c_y)
                 self.game.message_pipe.send(['map load', 'Loaded base texture'])
             
             if self.cfgs.current_map['background']['overlay'] is None:
                 self.game.message_pipe.send(['map load', 'No overlay texture'])
             else:
                 self.current_map.statics.overlay = modules.bettercanvas.Model(self.game.canvcont, self.cfgs.current_map['background']['overlay'], self.current_map.path, 'overlay')
-                self.current_map.statics.overlay.set(x = 402, y = 302)
+                self.current_map.statics.overlay.set(x = c_x, y = c_y)
                 self.game.message_pipe.send(['map load', 'Loaded overlay texture'])
             
             #create lightmap model
             self.current_map.lightmap = modules.bettercanvas.Model(self.game.canvcont, os.path.join('system', 'lightmap'), self.current_map.path, 'lightmap')
-            self.current_map.lightmap.setpos(402, 302)
+            self.current_map.lightmap.setpos(c_x, c_y)
             
             #load all event textures into memory
             for name in self.cfgs.user['hud']['overlays']:
                 self.current_map.event_overlays[name] = modules.bettercanvas.Model(self.game.canvcont, self.cfgs.user['hud']['overlays'][name], self.current_map.path, 'event overlays')
-                self.current_map.event_overlays[name].set(x = 402, y = 302, rotation = 0, transparency = 0)
+                self.current_map.event_overlays[name].set(x = c_x, y = c_y, rotation = 0, transparency = 0)
             
             #open layout
             with open(os.path.join(self.current_map.path, 'layout.json'), 'r') as file:
@@ -479,7 +483,6 @@ class Engine:
             self.hud.healthbar.set_value(100)
             
             #make inventory display
-            self.hud.invdisp = InventoryBar(self.game.canvcont, [400, 550], os.path.join(self.current_map.path, 'textures'), os.path.join(self.current_map.path, 'items'), self.rendermethod)
             self.hud.invdisp = InventoryBar(self.game.canvcont, [self.cfgs.user['graphics']['resolution'][0] / 2, self.cfgs.user['graphics']['resolution'][1] - 40], os.path.join(self.current_map.path, 'textures'), os.path.join(self.current_map.path, 'items'), self.rendermethod)
             self.hud.invdisp.select_index(0)
             
