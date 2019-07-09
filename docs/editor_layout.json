@@ -1,0 +1,10 @@
+{
+    "title": "Layout Editor",
+    "contents": ["Keybinds:",
+    "M: Move selected object - object will follow cursor",
+    "Del: Delete selected object",
+    "Backspace: Delete selected object",
+    "",
+    "Ctrl+S: Save layout",
+    "Ctrl+R: Reload layout"]
+}
