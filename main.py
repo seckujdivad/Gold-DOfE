@@ -39,7 +39,7 @@ class App:
         
         self.ui.load('menu')
         self.ui.set_base_title('Hydrophobes')
-        self.ui.set_geometry('800x600')
+        self.ui.set_geometry('{}x{}'.format(*settingsdata['graphics']['resolution']))
         if settingsdata['default window state'] in [0, 1]:
             self.ui.root.state(['normal', 'zoomed'][settingsdata['default window state']])
             self.ui.root.attributes('-fullscreen', False)
