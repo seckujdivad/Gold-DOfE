@@ -269,7 +269,7 @@ class EditorLayout(modules.editor.EditorSnapin):
     def select_none(self):
         if self.selection is not None:
             item = self.screen_data[self.selection]
-            self.canvas.itemconfigure(item['canvobj'], fill = item['material data']['texture']['editor colour'], outline = item['material data']['texture']['editor colour'])
+            self.canvas.itemconfigure(item['canvobj'], fill = item['material data']['editor colour'], outline = item['material data']['editor colour'])
             self.update_polycoord_display('----', '----')
             self.selection = None
             self.repopulate_poly_list()
