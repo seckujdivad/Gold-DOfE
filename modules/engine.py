@@ -480,6 +480,7 @@ class Engine:
             
             #make inventory display
             self.hud.invdisp = InventoryBar(self.game.canvcont, [400, 550], os.path.join(self.current_map.path, 'textures'), os.path.join(self.current_map.path, 'items'), self.rendermethod)
+            self.hud.invdisp = InventoryBar(self.game.canvcont, [self.cfgs.user['graphics']['resolution'][0] / 2, self.cfgs.user['graphics']['resolution'][1] - 40], os.path.join(self.current_map.path, 'textures'), os.path.join(self.current_map.path, 'items'), self.rendermethod)
             self.hud.invdisp.select_index(0)
             
             #set up binds for inventory display
@@ -919,6 +920,7 @@ class DisplayBar:
     def destroy(self):
         self.canvcont.delete(self.objects.background)
         self.canvcont.delete(self.objects.display)
+
 
 class InventoryBar:
     def __init__(self, canvcont, coords, textures_path, items_path, rendermethod, num_slots = 5, sprite_dimensions = None, backingcolour = '#A0A0A0', outlinewidth = 5, divider_size = 10, backingcolour_selected = '#EAEAEA'):
