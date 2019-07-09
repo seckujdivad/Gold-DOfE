@@ -2,7 +2,7 @@ import modules.lineintersection
 import math
 
 class CalcSegment:
-    def __init__(self, x0, x1, pipe, map_data, materials, light_sources, blocking_panels, shadows = True):
+    def __init__(self, x0, x1, ycap, pipe, map_data, materials, light_sources, blocking_panels, shadows = True):
         self.pipe = pipe
         self.map_data = map_data
         self.materials = materials
@@ -18,7 +18,7 @@ class CalcSegment:
         
         for x in range(x0, x1, xinc):
             self.pipe.send(['message', '{}-{} at {}'.format(x0, x1, x)])
-            for y in range(1, 600, yinc):
+            for y in range(1, ycap, yinc):
                 self.pipe.send([[x, y], self.calc_light(int((x / xinc) + 1) * xinc, int((y / yinc) + 1) * yinc)])
         self.pipe.send('done')
     

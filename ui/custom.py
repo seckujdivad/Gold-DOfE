@@ -965,7 +965,7 @@ class EditorLightMap(modules.editor.EditorSnapin):
         self.log_list.insert(tk.END, 'Done')
         
         self.log_list.insert(tk.END, 'Making blank lightmap...')
-        image = PILImage.new('RGBA', (800, 600), 'black')
+        image = PILImage.new('RGBA', (mapcfg['geometry'][0], mapcfg['geometry'][1]), 'black')
         pixels = image.load()
         self.log_list.insert(tk.END, 'Done')
         
@@ -1002,10 +1002,19 @@ class EditorLightMap(modules.editor.EditorSnapin):
         
         self.log_list.insert(tk.END, 'Allocating calculation processes...')
         pipe, process_pipe = mp.Pipe()
+
+        #generate segments
+        j = 1
+        segments = []
+        seg_width = int(mapcfg['geometry'][0] / self.user_config['graphics']['lightcalc threads'])
+        for i in range(seg_width, mapcfg['geometry'][0] + seg_width, seg_width):
+            segments.append([j, i])
+            j = i
         
-        for x0, x1 in [[1, 100], [100, 200], [200, 300], [300, 400], [400, 500], [500, 600], [600, 700], [700, 800]]:
+        #allocate segments to processes
+        for x0, x1 in segments:
             self.log_list.insert(tk.END, 'Allocated segment x = {}-{}'.format(x0, x1))
-            mp.Process(target = modules.lightcalc.CalcSegment, args = [x0, x1, process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels, self.user_config['editor']['lightmap']['render shadows']]).start()
+            mp.Process(target = modules.lightcalc.CalcSegment, args = [x0, x1, mapcfg['geometry'][1], process_pipe, self.map_data, self.materials, self.light_sources, self.blocking_panels, self.user_config['editor']['lightmap']['render shadows']]).start()
         
         self.log_list.insert(tk.END, 'Done')
         
