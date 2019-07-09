@@ -1363,7 +1363,7 @@ class Entity(modules.bettercanvas.Model):
             #clip player movement on tile obstacles
             if self.attributes.is_player and self.attributes.clip:
                 for panel in self.engine.find_panels_underneath(self.attributes.pos.x, self.attributes.pos.y):
-                    if panel.cfgs.material['clip hitbox'] :
+                    if panel.cfgs.material['clip hitbox']:
                         normal_angle = None #none means the player hasn't clipped this panel
                         
                         if self.engine.hitdetection.accurate:
@@ -1380,7 +1380,6 @@ class Entity(modules.bettercanvas.Model):
                                 result = self.engine.hitdetection.module.wrap_np_seg_intersect([[old_x, old_y], [self.attributes.pos.x, self.attributes.pos.y]], line)
 
                                 if type(result) == list:
-                                    intersection_point = result
                                     normal_angle = self.engine.angle(line[1][0] - line[0][0], line[1][1] - line[0][1], maths_mode = True)
                         
                         else:
