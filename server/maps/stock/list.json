@@ -52,7 +52,7 @@
 	},
 	"layout": "layout.json",
 	"lighting": {
-		"background": 0.4,
+		"background": 0.7,
 		"dist mult": 0.15,
 		"dynamic range": 1,
 		"map": "models\\system\\lightmap\\lightmap.png"
