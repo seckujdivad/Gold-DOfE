@@ -1048,7 +1048,15 @@ class PopMessage:
             divisions = 0
             transition_time = 0
             max_size = 0
+            x = 0
+            y = 0
         self.graphical_properties = graphical_properties
+
+        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+            settingsdata = json.load(file)
+        
+        self.graphical_properties.x = settingsdata['graphics']['resolution'][0] / 2
+        self.graphical_properties.y = settingsdata['graphics']['resolution'][1] / 2
         
         self.message_queue, queue = mp.Pipe()
         
@@ -1063,7 +1071,7 @@ class PopMessage:
         while True:
             text_, duration = queue.recv()
             
-            self.canvobj = self.canvcont.create_text(400, 300, text = text_, font = (self.graphical_properties.font, 0), fill = self.graphical_properties.colour, justify = tk.CENTER, layer = 'hud')
+            self.canvobj = self.canvcont.create_text(self.graphical_properties.x, self.graphical_properties.y, text = text_, font = (self.graphical_properties.font, 0), fill = self.graphical_properties.colour, justify = tk.CENTER, layer = 'hud')
             
             delay = self.graphical_properties.transition_time / self.graphical_properties.divisions
             size_increase = self.graphical_properties.max_size / self.graphical_properties.divisions
