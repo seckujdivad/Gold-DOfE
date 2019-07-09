@@ -1,6 +1,11 @@
 {
 	"animation": {
-		"sync window": [0.5, 0.5, 0.5, 0.5]
+		"sync window": [
+			0.5,
+			0.5,
+			0.5,
+			0.5
+		]
 	},
 	"background": {
 		"base": "system/background",
