@@ -357,7 +357,9 @@ class UIGame(modules.ui.UIObject):
         self.internal_name = 'game'
         
         #create UI elements
-        self._elements.canvas = tk.Canvas(frame, width = 800, height = 600, bg = 'purple', **self._styling.get(font_size = 'medium', object_type = tk.Canvas))
+        with open(os.path.join(sys.path[0], 'user', 'config.json'), 'r') as file:
+            config = json.load(file)
+        self._elements.canvas = tk.Canvas(frame, width = config['graphics']['resolution'][0], height = config['graphics']['resolution'][1], bg = 'purple', **self._styling.get(font_size = 'medium', object_type = tk.Canvas))
                 
         self._elements.canvas.grid(row = 0, column = 0)
         
